@@ -3,50 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nature Core Game v4.5</title>
+    <title>Nature Core Game v4.6</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
+        /* 1. ПЕРЕМЕННЫЕ И НАСТРОЙКИ ЦВЕТОВ */
         :root {
             --primary-green: #4caf50;
             --rarity-common: #4caf50; --rarity-rare: #0070dd; --rarity-epic: #a335ee; --rarity-leg: #ffb100;
             --dark-bg: #050a05; --glow-color: #4caf50;
             --gold-gradient: linear-gradient(90deg, #ffd700, #fff5b1, #ffb100, #ffd700);
         }
+        
         body { background: var(--dark-bg); color: #e0f2e0; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
         
-        /* Фон и виньетка */
+        /* 2. ФОН И ВИЗУАЛЬНЫЕ ЭФФЕКТЫ */
         #app-bg { position: fixed; inset: 0; z-index: -2; background-size: cover; background-position: center; filter: brightness(0.3); transition: 1s; transform: scale(1.05); }
         .bg-overlay { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 20%, var(--dark-bg) 100%); }
 
+        /* 3. СТРУКТУРА ЭКРАНОВ */
         section { display: none; flex-direction: column; align-items: center; padding: 15px; height: calc(100vh - 75px); box-sizing: border-box; overflow-y: auto; width: 100%; z-index: 1; }
         section.active { display: flex !important; }
 
-        /* Элементы Артефакта */
+        /* 4. ГАЛЕРЕЯ АРТЕФАКТОВ */
         .artifact-canvas { width: 180px; height: 180px; position: relative; margin: 10px 0; border-radius: 35px; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.9); background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; }
         .layer { position: absolute; inset: 0; object-fit: cover; pointer-events: none; }
         .layer-core { width: 82%; height: 82%; inset: 9%; animation: core-float 3s infinite ease-in-out; }
         @keyframes core-float { 0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--glow-color)); } 50% { transform: translateY(-8px); filter: drop-shadow(0 0 25px var(--glow-color)); } }
 
-        /* Селектор (скрытый ползунок) */
+        /* СПИСОК NFT (Скроллбар скрыт) */
         .artifact-selector { display: flex; gap: 12px; overflow-x: auto; width: 100%; padding: 10px 0; scrollbar-width: none; }
         .artifact-selector::-webkit-scrollbar { display: none; }
         .thumb { width: 55px; height: 55px; border-radius: 12px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; transition: 0.3s; cursor: pointer; }
         .thumb.active { opacity: 1; border-color: white; transform: scale(1.1); }
 
-        /* Атрибуты */
+        /* АТРИБУТЫ (Стиль стекла) */
         .attr-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 10px 0; }
         .attr-item { background: rgba(255,255,255,0.06); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 12px; text-align: center; min-width: 85px; }
         .attr-label { font-size: 7px; opacity: 0.5; text-transform: uppercase; }
         .attr-value { font-size: 10px; font-weight: 800; }
 
-        /* Игровая сцена Сада */
+        /* 5. ИГРОВАЯ СЦЕНА (ЛУЧ И ДЕРЕВО) */
         .game-scene { position: relative; width: 100%; height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; margin: 15px 0; }
         .mini-artifact { width: 80px; height: 80px; border-radius: 20px; background: rgba(0,0,0,0.6); border: 2px solid var(--glow-color); box-shadow: 0 0 20px var(--glow-color); z-index: 10; }
         .energy-beam { position: absolute; top: 85px; width: 4px; background: linear-gradient(to bottom, var(--glow-color), var(--primary-green)); box-shadow: 0 0 15px var(--glow-color); z-index: 5; animation: beam-flicker 0.2s infinite alternate; }
         @keyframes beam-flicker { from { opacity: 0.5; } to { opacity: 1; } }
         .tree-unit { font-size: 80px; filter: drop-shadow(0 0 10px var(--primary-green)); z-index: 10; }
 
-        /* Кнопки и Навигация */
+        /* 6. КНОПКИ И МЕНЮ */
         .btn-game { background: var(--gold-gradient); background-size: 200% 100%; color: #000; border: none; padding: 12px 25px; border-radius: 15px; font-weight: 900; cursor: pointer; margin: 10px 0; }
         .btn-game:disabled { opacity: 0.3; cursor: not-allowed; }
         .nav-bar { height: 75px; background: rgba(5, 10, 5, 0.95); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; z-index: 1000; }
@@ -59,6 +62,7 @@
     <div id="app-bg"></div>
     <div class="bg-overlay"></div>
 
+    <!-- ЭКРАН СКЛАДА -->
     <section id="screen-core" class="active">
         <div id="artifact-name" style="font-weight:900; letter-spacing:2px;">Nature Artifact</div>
         <div class="artifact-selector" id="nft-list"></div>
@@ -70,9 +74,11 @@
         <div class="attr-container" id="nft-attrs"></div>
         <button id="btn-use-main" class="btn-game" style="display:none; background:var(--primary-green);" onclick="activateGarden()">Установить в Сад</button>
         <div id="ton-connect-btn"></div>
-        <footer>&copy; 2026 Nature Core Project. All intellectual property belongs to the creator.</footer>
+        <!-- ТВОЙ ФУТЕР ЗАЩИТЫ -->
+        <footer>&copy; 2026 Nature Core Project. All intellectual property, including artifact layers and designs, belongs to the creator. Unauthorized commercial use is prohibited.</footer>
     </section>
 
+    <!-- ЭКРАН САДА -->
     <section id="screen-garden">
         <div style="font-size: 24px; font-weight: 900;" id="coin-balance">0.00 $NCORE</div>
         <div class="game-scene">
@@ -98,6 +104,9 @@
         let treeLevel = parseInt(localStorage.getItem('ncore_tree_lvl')) || 1;
         const treeStages = ["🌱", "🌿", "🌳", "🌳✨"];
 
+        // ИМЕНА ЯДЕР
+        const CORE_NAMES = { "Common 1": "Wood Core", "Common 2": "Stone Core", "Common 3": "Metal Core", "Rare 1": "Frost Core", "Rare 2": "Storm Core", "Rare 3": "Ember Core", "Rare 4": "Terra Core", "Epic 1": "Void Core", "Epic 2": "Plasma Core", "Epic 3": "Solar Core", "Legendary 1": "Nature Core", "Legendary 2": "Ancient Core", "Legendary 3": "Eternal Core" };
+
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({ manifestUrl: 'https://podolie13-coder.github.io/nature-core-app/tonconnect-manifest.json', buttonRootId: 'ton-connect-btn' });
 
         function switchTab(sId, el) {
@@ -108,6 +117,7 @@
             if(sId === 'screen-garden') refreshGarden();
         }
 
+        // ЦВЕТ РЕДКОСТИ
         function getRarityColor(text) {
             const t = text.toLowerCase();
             if (t.includes('rare')) return 'var(--rarity-rare)';
@@ -116,6 +126,7 @@
             return 'var(--rarity-common)';
         }
 
+        // ЗАГРУЗКА АРТЕФАКТА
         async function buildArtifact(index) {
             selectedArtifact = userNfts[index];
             const id = selectedArtifact.metadata.name.match(/#(\d+)/)[1];
@@ -149,9 +160,11 @@
             } catch(e) {}
         }
 
-        function activateGarden() { activeArtifact = selectedArtifact; localStorage.setItem('ncore_active_art', JSON.stringify(activeArtifact)); switchTab('screen-garden', document.querySelectorAll('.nav-item')[1]); }
+        // РАБОТА САДА
+        function activateGarden() { activeArtifact = selectedArtifact; switchTab('screen-garden', document.querySelectorAll('.nav-item')[1]); }
         function refreshGarden() { if(!activeArtifact) return; document.getElementById('mini-core-img').src = activeArtifact.corePath; document.getElementById('beam').style.height = "100px"; document.getElementById('tree-unit').innerText = treeStages[Math.min(treeLevel-1, 3)]; }
 
+        // ДОХОД И ОБНОВЛЕНИЕ
         setInterval(() => { if(activeArtifact) { balance += 0.01 * treeLevel; updateUI(); } }, 1000);
         function updateUI() { 
             document.getElementById('coin-balance').innerText = `${balance.toFixed(2)} $NCORE`;
@@ -161,6 +174,7 @@
         }
         function upgradeTree() { if(balance >= 10) { balance -= 10; treeLevel++; updateUI(); refreshGarden(); } }
 
+        // ПОДКЛЮЧЕНИЕ КОШЕЛЬКА
         tonConnectUI.onStatusChange(async (w) => { if(w) { 
             const res = await fetch(`https://tonapi.io/v2/accounts/${w.account.address}/nfts?collection=${COLLECTION}`);
             const d = await res.json();
