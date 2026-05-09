@@ -3,170 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nature Core Engine v3.8</title>
+    <title>Nature Core Engine v3.9</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
-        /* Обновленный блок переменных для гибкого дизайна */
         :root {
             --primary-green: #4caf50;
+            --rarity-common: #4caf50;
             --rarity-rare: #0070dd;
             --rarity-epic: #a335ee;
             --rarity-leg: #ffb100;
-            
-            /* Новые переменные для дизайна */
-            --glass-bg: rgba(255, 255, 255, 0.07);
-            --glass-border: rgba(255, 255, 255, 0.12);
-            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-            --main-font: 'Exo 2', sans-serif; /* Пример игрового шрифта */
-        }
-        
-        /* Улучшенная карточка атрибута с эффектом стекла */
-        .attr-item {
-            background: var(--glass-bg);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--card-shadow);
-            padding: 8px 14px;
-            border-radius: 14px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        /* Анимация при наведении/нажатии на элемент коллекции */
-        .thumb {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .thumb:active {
-            transform: scale(0.9);
-            filter: brightness(1.2);
-        }
-        
-        /* Красивая кнопка с градиентом и свечением */
-        .btn-main {
-            background: linear-gradient(135deg, var(--primary-green) 0%, #2e7d32 100%);
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
-            border: none;
-            transition: 0.3s;
-        }
-        
-        .btn-main:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+            --dark-bg: #050a05;
+            --glow-color: #4caf50;
+            --gold-gradient: linear-gradient(90deg, #ffd700, #fff5b1, #ffb100, #ffd700);
         }
 
         body {
             background: var(--dark-bg);
             color: #e0f2e0;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
             margin: 0; padding: 0; height: 100vh;
             display: flex; flex-direction: column;
             overflow: hidden;
             position: relative;
         }
 
+        /* Улучшенный живой фон с эффектом виньетки */
         #app-bg {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -2; 
             background-size: cover;
             background-position: center;
-            filter: blur(15px) brightness(0.3);
+            filter: brightness(0.4);
             transition: background-image 1s ease-in-out;
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
         .bg-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -1;
-            background: radial-gradient(circle at center, transparent 0%, var(--dark-bg) 100%);
+            background: radial-gradient(circle at center, transparent 20%, var(--dark-bg) 100%);
         }
 
         section { 
-            display: none; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 10px; 
-            height: calc(100vh - 70px); 
-            box-sizing: border-box; 
-            overflow-y: auto;
-            width: 100%;
+            display: none; flex-direction: column; align-items: center; 
+            padding: 15px; height: calc(100vh - 75px); box-sizing: border-box; 
+            overflow-y: auto; width: 100%; z-index: 1;
         }
         section.active { display: flex !important; }
 
-        #artifact-name { font-size: 16px; font-weight: 900; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 2px; }
+        #artifact-name { font-size: 18px; font-weight: 900; margin: 10px 0 5px; text-transform: uppercase; letter-spacing: 2px; text-align: center; }
 
         #origin-badge { 
             font-size: 10px; font-weight: 900; color: #000;
             background: var(--gold-gradient); background-size: 300% 100%;
-            padding: 4px 12px; border-radius: 20px; margin-bottom: 8px; 
+            padding: 4px 15px; border-radius: 20px; margin-bottom: 15px; 
             box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
             animation: gold-flow 3s linear infinite; display: none;
         }
 
         @keyframes gold-flow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
 
+        /* Окно артефакта */
         .artifact-canvas {
-            width: 180px; height: 180px; position: relative; margin: 10px 0;
+            width: 180px; height: 180px; position: relative; margin-bottom: 15px;
             display: flex; align-items: center; justify-content: center;
-            border-radius: 30px; overflow: hidden;
-            box-shadow: 0 0 25px rgba(0,0,0,0.9); background: rgba(0,0,0,0.6);
+            border-radius: 35px; overflow: hidden;
+            box-shadow: 0 0 30px rgba(0,0,0,0.9); background: rgba(0,0,0,0.7);
         }
-
-        .attr-container {
-            display: flex; flex-wrap: wrap; justify-content: center;
-            gap: 6px; width: 100%; max-width: 320px; margin: 10px 0;
-        }
-        
-        .attr-item {
-            background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.1); padding: 5px 12px;
-            border-radius: 12px; text-align: center; min-width: 80px;
-        }
-        .attr-label { font-size: 7px; opacity: 0.5; text-transform: uppercase; margin-bottom: 2px; color: #fff; }
-        .attr-value { font-size: 10px; font-weight: bold; }
-
-        /* ИСПРАВЛЕНО: Стили полосы прокрутки для ПК */
-        .artifact-selector { 
-            display: flex; 
-            gap: 12px; 
-            overflow-x: auto; 
-            width: 100%; 
-            padding: 10px 5px; 
-            min-height: 80px; 
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Настройка внешнего вида скроллбара (Chrome, Edge, Safari) */
-        .artifact-selector::-webkit-scrollbar {
-            height: 4px; /* Тонкая полоска */
-        }
-        .artifact-selector::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-        .artifact-selector::-webkit-scrollbar-thumb {
-            background: var(--primary-green);
-            border-radius: 10px;
-            box-shadow: 0 0 5px var(--primary-green);
-        }
-
-        .thumb { width: 52px; height: 52px; border-radius: 10px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; cursor: pointer; transition: 0.3s; }
-        .thumb.active { opacity: 1; border-color: white; transform: scale(1.1); }
-
-        .nav-bar { 
-            height: 70px; background: rgba(0,0,0,0.9); border-top: 1px solid rgba(255,255,255,0.1); 
-            display: flex; justify-content: space-around; align-items: center; 
-            position: fixed; bottom: 0; width: 100%; z-index: 100;
-        }
-        .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.6; font-size: 10px; cursor: pointer; }
-        .nav-item.active { opacity: 1; color: var(--primary-green); }
 
         .layer { position: absolute; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
         .layer-core { width: 82%; height: 82%; animation: core-float 3s infinite ease-in-out; }
-        @keyframes core-float { 0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--glow-color)); } 50% { transform: translateY(-7px); filter: drop-shadow(0 0 25px var(--glow-color)); } }
+        @keyframes core-float { 0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--glow-color)); } 50% { transform: translateY(-8px); filter: drop-shadow(0 0 25px var(--glow-color)); } }
+
+        /* Коллекция - ПОЛЗУНОК СКРЫТ */
+        .artifact-selector { 
+            display: flex; gap: 12px; overflow-x: auto; width: 100%; 
+            padding: 10px 0; min-height: 75px; scroll-behavior: smooth;
+            scrollbar-width: none; /* Скрываем в Firefox */
+        }
+        .artifact-selector::-webkit-scrollbar { display: none; /* Скрываем в Chrome/Safari */ }
+
+        .thumb { width: 55px; height: 55px; border-radius: 12px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; transition: 0.3s; cursor: pointer; }
+        .thumb.active { opacity: 1; border-color: white; transform: scale(1.1); box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+
+        /* Стеклянные атрибуты */
+        .attr-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; max-width: 340px; margin: 10px 0; }
+        .attr-item {
+            background: rgba(255,255,255,0.06); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1); padding: 8px 15px;
+            border-radius: 15px; text-align: center; min-width: 90px;
+        }
+        .attr-label { font-size: 8px; opacity: 0.5; text-transform: uppercase; margin-bottom: 3px; color: #fff; letter-spacing: 1px; }
+        .attr-value { font-size: 11px; font-weight: 800; }
+
+        /* Нижняя навигация - ВОССТАНОВЛЕНА */
+        .nav-bar { 
+            height: 75px; background: rgba(5, 10, 5, 0.95); 
+            border-top: 1px solid rgba(255,255,255,0.1); 
+            display: flex; justify-content: space-around; align-items: center; 
+            position: fixed; bottom: 0; width: 100%; z-index: 1000;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; font-size: 11px; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { opacity: 1; color: var(--primary-green); }
+        .nav-item span:first-child { font-size: 20px; margin-bottom: 4px; }
+
+        /* Кнопка сбора */
+        .btn-harvest {
+            background: var(--primary-green); color: #000; border: none; padding: 12px 30px;
+            border-radius: 15px; font-weight: 900; font-size: 15px; cursor: pointer;
+            margin: 10px 0; box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+            transition: 0.2s;
+        }
+        .btn-harvest:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -174,10 +124,14 @@
     <div id="app-bg"></div>
     <div class="bg-overlay"></div>
 
+    <!-- ГЛАВНЫЙ ЭКРАН -->
     <section id="screen-core" class="active">
         <div id="artifact-name">Nature Artifact</div>
         <div id="origin-badge">👑 Genesis Edition 👑</div>
-        <div class="artifact-selector" id="nft-list"></div>
+        
+        <div class="artifact-selector" id="nft-list">
+            <!-- Сюда подгрузятся NFT -->
+        </div>
         
         <div id="canvas-container" class="artifact-canvas" style="display: none;">
             <img src="" id="img-bg" class="layer">
@@ -186,14 +140,40 @@
         </div>
 
         <div class="attr-container" id="nft-attrs"></div>
-        <div id="ton-connect-btn" style="margin-top: 20px;"></div>
+        
+        <button class="btn-harvest" id="harvest-btn" style="display: none;" onclick="harvestEnergy()">Собрать энергию</button>
+        <div id="ton-connect-btn"></div>
     </section>
 
-    <!-- Скрипт остается прежним (v3.7) -->
+    <!-- ЭКРАН ТОКЕНА -->
+    <section id="screen-token">
+        <h1>Nature Token</h1>
+        <div style="font-size: 60px; margin: 40px 0;">🪙</div>
+        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px; text-align: center; border: 1px dashed var(--primary-green);">
+            <h2 style="color: var(--primary-green);">$NCORE</h2>
+            <p>Добытая энергия будет конвертирована в токены после листинга.</p>
+        </div>
+    </section>
+
+    <!-- ЭКРАН КВЕСТОВ -->
+    <section id="screen-quests">
+        <h1>Задания</h1>
+        <p style="opacity: 0.5; margin-top: 50px;">Новые испытания появятся скоро...</p>
+    </section>
+
+    <nav class="nav-bar">
+        <div class="nav-item active" onclick="switchTab('screen-core', this)"><span>🌿</span><span>Артефакт</span></div>
+        <div class="nav-item" onclick="switchTab('screen-token', this)"><span>🪙</span><span>Токен</span></div>
+        <div class="nav-item" onclick="switchTab('screen-quests', this)"><span>📜</span><span>Задания</span></div>
+    </nav>
+
     <script>
         const PATH_ASSETS = 'assets/';
         const COLLECTION = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
         let userNfts = [];
+        let totalBalance = parseFloat(localStorage.getItem('ncore_total')) || 0;
+        let sessionAccrual = 0;
+        let miningTimer = null;
 
         const CORE_NAMES = {
             "Common 1": "Wood Core", "Common 2": "Stone Core", "Common 3": "Metal Core",
@@ -209,36 +189,31 @@
 
         function switchTab(screenId, el) {
             document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-            const target = document.getElementById(screenId);
-            if(target) target.classList.add('active');
+            document.getElementById(screenId).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             el.classList.add('active');
         }
 
         function getRarityColor(text) {
-            const lowText = text.toLowerCase();
-            if (lowText.includes('rare')) return 'var(--rarity-rare)';
-            if (lowText.includes('epic')) return 'var(--rarity-epic)';
-            if (lowText.includes('leg')) return 'var(--rarity-leg)';
+            const t = text.toLowerCase();
+            if (t.includes('rare')) return 'var(--rarity-rare)';
+            if (t.includes('epic')) return 'var(--rarity-epic)';
+            if (t.includes('leg')) return 'var(--rarity-leg)';
             return 'var(--rarity-common)';
         }
 
-        function formatAttributeValue(val) {
+        function formatVal(val) {
             if (!val) return "";
             if (val.startsWith('bg_')) return val.replace('bg_', '').replace(/_/g, ' ');
             if (val.startsWith('Y_')) {
-                const parts = val.split('_');
-                if (parts.length >= 3) {
-                    const rarity = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
-                    return CORE_NAMES[`${rarity} ${parts[2]}`] || `${rarity} ${parts[2]} Type`;
-                }
+                const p = val.split('_');
+                const r = p[1].charAt(0).toUpperCase() + p[1].slice(1);
+                return CORE_NAMES[`${r} ${p[2]}`] || `${r} ${p[2]} Type`;
             }
             if (val.startsWith('frame_')) {
-                const parts = val.split('_');
-                if (parts.length >= 3) {
-                    const rarity = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
-                    return `${rarity} ${parts[2]} Frame`;
-                }
+                const p = val.split('_');
+                const r = p[1].charAt(0).toUpperCase() + p[1].slice(1);
+                return `${r} ${p[2]} Frame`;
             }
             return val;
         }
@@ -253,44 +228,59 @@
                 const meta = await response.json();
                 document.getElementById('artifact-name').innerText = meta.name || `Artifact #${id}`;
                 
-                const originBadge = document.getElementById('origin-badge');
-                originBadge.style.display = (id <= 50) ? 'block' : 'none';
+                const badge = document.getElementById('origin-badge');
+                badge.style.display = (id <= 50) ? 'block' : 'none';
+                if(id <= 50) badge.innerText = `👑 Genesis Edition ${id}/50 👑`;
 
-                const attrContainer = document.getElementById('nft-attrs');
-                attrContainer.innerHTML = '';
-                let bgFile = "", frameFile = "", coreFile = "";
+                const attrBox = document.getElementById('nft-attrs');
+                attrBox.innerHTML = '';
+                let bgF = "", frameF = "", coreF = "";
 
                 meta.attributes.forEach(attr => {
                     const type = attr.trait_type;
-                    const rawVal = attr.value;
-                    const niceVal = formatAttributeValue(rawVal);
-                    const color = getRarityColor(rawVal);
+                    const val = attr.value;
+                    const niceVal = formatVal(val);
+                    const color = getRarityColor(val);
 
                     const div = document.createElement('div');
                     div.className = 'attr-item';
                     div.style.borderColor = color;
-                    div.innerHTML = `
-                        <div class="attr-label">${type}</div>
-                        <div class="attr-value" style="color: ${color}">${niceVal}</div>
-                    `;
-                    attrContainer.appendChild(div);
+                    div.innerHTML = `<div class="attr-label">${type}</div><div class="attr-value" style="color:${color}">${niceVal}</div>`;
+                    attrBox.appendChild(div);
 
-                    const typeLow = type.toLowerCase();
-                    if (typeLow === 'background') bgFile = rawVal + ".png";
-                    if (typeLow === 'frame') frameFile = rawVal + ".png";
-                    if (typeLow === 'core') coreFile = rawVal + ".png";
+                    if (type.toLowerCase() === 'background') bgF = val + ".png";
+                    if (type.toLowerCase() === 'frame') frameF = val + ".png";
+                    if (type.toLowerCase() === 'core') coreF = val + ".png";
                 });
 
-                document.getElementById('img-bg').src = `${PATH_ASSETS}backgrounds/${bgFile}`;
-                document.getElementById('img-frame').src = `${PATH_ASSETS}frames/${frameFile}`;
-                document.getElementById('img-core').src = `${PATH_ASSETS}cores/${coreFile}`;
-                document.getElementById('app-bg').style.backgroundImage = `url('${PATH_ASSETS}backgrounds/${bgFile}')`;
+                document.getElementById('img-bg').src = `${PATH_ASSETS}backgrounds/${bgF}`;
+                document.getElementById('img-frame').src = `${PATH_ASSETS}frames/${frameF}`;
+                document.getElementById('img-core').src = `${PATH_ASSETS}cores/${coreF}`;
+                document.getElementById('app-bg').style.backgroundImage = `url('${PATH_ASSETS}backgrounds/${bgF}')`;
 
-                let rarityColor = getRarityColor(frameFile);
-                document.documentElement.style.setProperty('--glow-color', rarityColor);
+                let rColor = getRarityColor(frameF);
+                document.documentElement.style.setProperty('--glow-color', rColor);
                 document.getElementById('canvas-container').style.display = 'flex';
+                document.getElementById('harvest-btn').style.display = 'block';
+
+                startMining(frameF, id);
                 document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
-            } catch (err) { console.error("Error loading NFT data:", err); }
+            } catch (err) { console.error(err); }
+        }
+
+        function startMining(f, id) {
+            if (miningTimer) clearInterval(miningTimer);
+            let p = 100;
+            if (f.toLowerCase().includes('rare')) p = 250;
+            if (id <= 50) p += 150;
+            miningTimer = setInterval(() => { sessionAccrual += p * 0.00001; }, 1000);
+        }
+
+        function harvestEnergy() {
+            totalBalance += sessionAccrual;
+            sessionAccrual = 0;
+            localStorage.setItem('ncore_total', totalBalance);
+            alert("Энергия собрана!");
         }
 
         tonConnectUI.onStatusChange(async (wallet) => {
