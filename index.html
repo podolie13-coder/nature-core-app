@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nature Core Engine v4.0</title>
+    <title>Nature Core Engine v4.2</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         :root {
@@ -27,7 +27,6 @@
             position: relative;
         }
 
-        /* Живой фон с виньеткой */
         #app-bg {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -65,7 +64,6 @@
 
         @keyframes gold-flow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
 
-        /* Окно артефакта 180x180 */
         .artifact-canvas {
             width: 180px; height: 180px; position: relative; margin: 15px 0;
             display: flex; align-items: center; justify-content: center;
@@ -77,7 +75,6 @@
         .layer-core { width: 82%; height: 82%; animation: core-float 3s infinite ease-in-out; }
         @keyframes core-float { 0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--glow-color)); } 50% { transform: translateY(-8px); filter: drop-shadow(0 0 25px var(--glow-color)); } }
 
-        /* Список коллекции без видимого ползунка */
         .artifact-selector { 
             display: flex; gap: 12px; overflow-x: auto; width: 100%; 
             padding: 10px 0; min-height: 75px; scroll-behavior: smooth;
@@ -88,24 +85,22 @@
         .thumb { width: 55px; height: 55px; border-radius: 12px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; transition: 0.3s; cursor: pointer; }
         .thumb.active { opacity: 1; border-color: white; transform: scale(1.1); }
 
-        /* Стеклянные атрибуты */
         .attr-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; max-width: 340px; margin: 10px 0; }
         .attr-item {
             background: rgba(255,255,255,0.06); backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.1); padding: 8px 15px;
             border-radius: 15px; text-align: center; min-width: 90px;
         }
-        .attr-label { font-size: 8px; opacity: 0.5; text-transform: uppercase; margin-bottom: 3px; color: #fff; letter-spacing: 1px; }
+        .attr-label { font-size: 8px; opacity: 0.5; text-transform: uppercase; margin-bottom: 3px; color: #fff; }
         .attr-value { font-size: 11px; font-weight: 800; }
 
-        /* Нижняя навигация */
         .nav-bar { 
             height: 75px; background: rgba(5, 10, 5, 0.95); 
             border-top: 1px solid rgba(255,255,255,0.1); 
             display: flex; justify-content: space-around; align-items: center; 
             position: fixed; bottom: 0; width: 100%; z-index: 1000;
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; font-size: 11px; cursor: pointer; transition: 0.3s; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; font-size: 11px; cursor: pointer; }
         .nav-item.active { opacity: 1; color: var(--primary-green); }
 
         #ton-connect-btn { margin-top: auto; margin-bottom: 20px; }
@@ -116,35 +111,39 @@
     <div id="app-bg"></div>
     <div class="bg-overlay"></div>
 
-    <!-- ЭКРАН ГАЛЕРЕИ -->
     <section id="screen-core" class="active">
         <div id="artifact-name">Nature Artifact</div>
         <div id="origin-badge">👑 Genesis Edition 👑</div>
-        
         <div class="artifact-selector" id="nft-list"></div>
-        
         <div id="canvas-container" class="artifact-canvas" style="display: none;">
             <img src="" id="img-bg" class="layer">
             <img src="" id="img-frame" class="layer" style="z-index: 2;">
             <img src="" id="img-core" class="layer layer-core" style="z-index: 3;">
         </div>
-
         <div class="attr-container" id="nft-attrs"></div>
-        
-        <!-- КНОПКА УДАЛЕНА -->
         <div id="ton-connect-btn"></div>
+        
+        <!-- НОВОЕ: Твоя защита подлинности -->
+        <footer style="margin-top: 20px; font-size: 10px; opacity: 0.4; text-align: center; padding-bottom: 10px; width: 90%;">
+            &copy; 2026 Nature Core Project. All intellectual property, including artifact layers and designs, belongs to the creator. Unauthorized commercial use is prohibited.
+        </footer>
     </section>
 
-    <!-- ОСТАЛЬНЫЕ ЭКРАНЫ -->
     <section id="screen-token">
         <h1>Nature Token</h1>
         <div style="font-size: 60px; margin: 40px 0;">🪙</div>
-        <p>Здесь в будущем будет сбор энергии и обмен на $NCORE.</p>
+        <p>Система $NCORE в разработке.</p>
+        <footer style="margin-top: auto; font-size: 10px; opacity: 0.4; text-align: center; padding-bottom: 10px;">
+            &copy; 2026 Nature Core Project.
+        </footer>
     </section>
 
     <section id="screen-quests">
         <h1>Задания</h1>
         <p style="opacity: 0.5; margin-top: 50px;">Скоро...</p>
+        <footer style="margin-top: auto; font-size: 10px; opacity: 0.4; text-align: center; padding-bottom: 10px;">
+            &copy; 2026 Nature Core Project.
+        </footer>
     </section>
 
     <nav class="nav-bar">
@@ -157,9 +156,7 @@
         const PATH_ASSETS = 'assets/';
         const COLLECTION = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
         let userNfts = [];
-        let totalBalance = parseFloat(localStorage.getItem('ncore_total')) || 0;
-        let sessionAccrual = 0;
-        let miningTimer = null;
+        const metadataCache = new Map();
 
         const CORE_NAMES = {
             "Common 1": "Wood Core", "Common 2": "Stone Core", "Common 3": "Metal Core",
@@ -210,13 +207,18 @@
             const id = idMatch ? parseInt(idMatch[1]) : (index + 1);
             
             try {
-                const response = await fetch(`${PATH_ASSETS}metadata/${id}.json`);
-                const meta = await response.json();
+                let meta;
+                if (metadataCache.has(id)) {
+                    meta = metadataCache.get(id);
+                } else {
+                    const response = await fetch(`${PATH_ASSETS}metadata/${id}.json`);
+                    meta = await response.json();
+                    metadataCache.set(id, meta);
+                }
+
                 document.getElementById('artifact-name').innerText = meta.name || `Artifact #${id}`;
-                
                 const badge = document.getElementById('origin-badge');
                 badge.style.display = (id <= 50) ? 'block' : 'none';
-                if(id <= 50) badge.innerText = `👑 Genesis Edition ${id}/50 👑`;
 
                 const attrBox = document.getElementById('nft-attrs');
                 attrBox.innerHTML = '';
@@ -248,17 +250,33 @@
                 document.documentElement.style.setProperty('--glow-color', rColor);
                 document.getElementById('canvas-container').style.display = 'flex';
 
-                startMining(frameF, id);
                 document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
+                preloadNext(index + 1);
             } catch (err) { console.error(err); }
         }
 
-        function startMining(f, id) {
-            if (miningTimer) clearInterval(miningTimer);
-            let p = 100;
-            if (f.toLowerCase().includes('rare')) p = 250;
-            if (id <= 50) p += 150;
-            miningTimer = setInterval(() => { sessionAccrual += p * 0.00001; }, 1000);
+        function preloadNext(nextIndex) {
+            if (nextIndex >= userNfts.length) return;
+            const nextNft = userNfts[nextIndex];
+            const idMatch = nextNft.metadata.name.match(/#(\d+)/);
+            const id = idMatch ? parseInt(idMatch[1]) : (nextIndex + 1);
+
+            if (!metadataCache.has(id)) {
+                fetch(`${PATH_ASSETS}metadata/${id}.json`)
+                    .then(res => res.json())
+                    .then(meta => {
+                        metadataCache.set(id, meta);
+                        meta.attributes.forEach(attr => {
+                            const val = attr.value;
+                            const type = attr.trait_type.toLowerCase();
+                            let f = "";
+                            if (type === 'background') f = "backgrounds";
+                            if (type === 'frame') f = "frames";
+                            if (type === 'core') f = "cores";
+                            if (f) new Image().src = `${PATH_ASSETS}${f}/${val}.png`;
+                        });
+                    });
+            }
         }
 
         tonConnectUI.onStatusChange(async (wallet) => {
@@ -280,11 +298,6 @@
                 }
             }
         });
-
-        <footer style="margin-top: 20px; font-size: 10px; opacity: 0.4; text-align: center;">
-    &copy; 2026 Nature Core Project. All intellectual property, including artifact layers and designs, belongs to the creator. Unauthorized commercial use is prohibited.
-</footer>
-        
     </script>
 </body>
 </html>
