@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nature Core Engine v2.4</title>
-    <!-- Подключение библиотеки TON Connect -->
+    <title>Nature Core Engine v2.6</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         :root {
@@ -27,7 +26,7 @@
 
         h1 { font-size: 16px; margin: 5px 0; color: var(--primary-green); text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Поле отображения NFT (180px) */
+        /* Поле артефакта уменьшено до 180px для мобильных */
         .artifact-canvas {
             width: 180px; height: 180px;
             position: relative;
@@ -51,12 +50,10 @@
 
         @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
 
-        /* Список NFT */
         .artifact-selector { display: flex; gap: 8px; overflow-x: auto; width: 100%; padding: 5px 0; scrollbar-width: none; }
         .thumb { width: 50px; height: 50px; border-radius: 8px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.5; }
         .thumb.active { opacity: 1; border-color: white; }
 
-        /* Статистика */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 320px; }
         .stat-card { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
         .stat-val { font-size: 16px; font-weight: bold; color: var(--primary-green); }
@@ -90,13 +87,12 @@
         </div>
 
         <div class="artifact-canvas" id="canvas-container" style="display: none;">
-            <!-- Слои артефакта -->
             <img src="" id="img-bg" class="layer layer-bg">
             <img src="" id="img-frame" class="layer layer-frame">
             <img src="" id="img-core" class="layer layer-core">
         </div>
 
-        <div id="status-msg" style="margin: 10px; font-size: 12px; opacity: 0.5;">Подключите TON</div>
+        <div id="status-msg" style="margin: 10px; font-size: 12px; opacity: 0.5;">Подключите кошелек</div>
         <button class="btn-main" id="harvest-btn" style="display: none;" onclick="harvestEnergy()">Собрать энергию</button>
         <div id="ton-connect-btn"></div>
     </section>
@@ -122,9 +118,6 @@
 
         document.getElementById('total-val').innerText = totalBalance.toFixed(2);
 
-        /**
-         * Сборка артефакта с точным соответствием имен файлов
-         */
         async function buildArtifact(index) {
             const nft = userNfts[index];
             if (!nft) return;
@@ -133,6 +126,7 @@
             document.getElementById('status-msg').innerText = `Сборка #${id}...`;
 
             try {
+                // Загружаем JSON. Код прочитает его с учетом больших букв!
                 const response = await fetch(`${PATH_ASSETS}metadata/${id}.json`);
                 if (!response.ok) throw new Error("JSON missing");
                 const meta = await response.json();
@@ -141,20 +135,19 @@
 
                 meta.attributes.forEach(attr => {
                     const type = attr.trait_type.toLowerCase();
-                    // ТЕПЕРЬ ИСПОЛЬЗУЕМ ЗНАЧЕНИЕ КАК ЕСТЬ (с учетом больших букв)
-                    const val = attr.value; 
+                    const val = attr.value; // Берем значение "как есть" из JSON
 
                     if (type === 'background') bgFile = val + ".png";
                     if (type === 'frame') frameFile = val + ".png";
                     if (type === 'core') coreFile = val + ".png";
                 });
 
-                // Код ищет файлы точно по именам из JSON
+                // Код ищет файлы точно по именам из JSON (например, bg_AncientRuins.png)
                 document.getElementById('img-bg').src = `${PATH_ASSETS}backgrounds/${bgFile}`;
                 document.getElementById('img-frame').src = `${PATH_ASSETS}frames/${frameFile}`;
                 document.getElementById('img-core').src = `${PATH_ASSETS}cores/${coreFile}`;
 
-                // Настройка цвета свечения
+                // Визуальные эффекты редкости
                 let rarityColor = "#4caf50";
                 if (frameFile.toLowerCase().includes('rare')) rarityColor = "#0070dd";
                 else if (frameFile.toLowerCase().includes('epic')) rarityColor = "#a335ee";
@@ -170,13 +163,10 @@
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('status-msg').innerText = "Ошибка метаданных";
+                document.getElementById('status-msg').innerText = "Ошибка: проверьте JSON и имена файлов";
             }
         }
 
-        /**
-         * Логика накопления
-         */
         function startMining(frameFile, id) {
             if (miningTimer) clearInterval(miningTimer);
             let power = 100;
