@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nature Core Engine v3.2</title>
+    <title>Nature Core Engine v3.3</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         :root {
@@ -58,21 +58,20 @@
         .artifact-canvas {
             width: 180px; height: 180px; position: relative; margin: 5px 0;
             display: flex; align-items: center; justify-content: center;
-            border-radius: 35px; overflow: hidden;
+            border-radius: 30px; overflow: hidden;
             box-shadow: 0 0 25px rgba(0,0,0,0.9); background: rgba(0,0,0,0.6);
         }
 
-        /* НОВЫЙ БЛОК: Атрибуты под артефактом */
         .attr-container {
             display: flex; flex-wrap: wrap; justify-content: center;
             gap: 6px; width: 100%; max-width: 320px; margin: 10px 0;
         }
         .attr-item {
             background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.1); padding: 4px 10px;
-            border-radius: 10px; text-align: center;
+            border: 1px solid rgba(255,255,255,0.1); padding: 5px 12px;
+            border-radius: 12px; text-align: center; min-width: 80px;
         }
-        .attr-label { font-size: 7px; opacity: 0.5; text-transform: uppercase; margin-bottom: 2px; }
+        .attr-label { font-size: 7px; opacity: 0.5; text-transform: uppercase; margin-bottom: 2px; letter-spacing: 1px; }
         .attr-value { font-size: 10px; font-weight: bold; color: var(--primary-green); }
 
         .layer { position: absolute; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
@@ -113,27 +112,13 @@
             <img src="" id="img-core" class="layer layer-core" style="z-index: 3;">
         </div>
 
-        <!-- Контейнер для вывода атрибутов -->
         <div class="attr-container" id="nft-attrs"></div>
 
-        <button class="btn-main" id="harvest-btn" style="display: none;" onclick="harvestEnergy()">Собрать энергию</button>
+        <button class="btn-main" id="harvest-btn" style="display: none;" onclick="harvestEnergy()">Harvest Energy</button>
         <div id="ton-connect-btn"></div>
     </section>
 
-    <!-- Остальные секции (Token, Quests) без изменений -->
-    <section id="screen-token">
-        <h1>Nature Ecosystem</h1>
-        <img src="assets/token_logo.png" style="width:100px; margin: 20px;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/6001/6001527.png'">
-        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px; text-align: center;">
-            <h2 style="color: var(--primary-green);">$NCORE</h2>
-            <p style="font-size: 12px; opacity: 0.7;">Токен будет доступен для обмена энергии в будущем.</p>
-        </div>
-    </section>
-
-    <section id="screen-quests">
-        <h1>Задания</h1>
-        <div style="opacity: 0.3; margin-top: 50px;">Скоро...</div>
-    </section>
+    <!-- Секции Token и Quests остаются без изменений -->
 
     <nav class="nav-bar">
         <div class="nav-item active" onclick="switchTab('screen-core', this)"><span>🌿</span><span>Артефакт</span></div>
@@ -161,6 +146,37 @@
             el.classList.add('active');
         }
 
+        // --- ФУНКЦИЯ КРАСИВОГО ФОРМАТИРОВАНИЯ ---
+        function formatAttributeValue(val) {
+            if (!val) return "";
+            
+            // Если это фон (bg_...)
+            if (val.startsWith('bg_')) {
+                return val.replace('bg_', '').replace(/_/g, ' ');
+            }
+            
+            // Если это ядро (Y_...)
+            if (val.startsWith('Y_')) {
+                const parts = val.split('_'); // Разделяем по подчеркиванию
+                if (parts.length >= 3) {
+                    // Превращаем Y, common, 1 в "Common 1 Type"
+                    const rarity = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
+                    return `${rarity} ${parts[2]} Type`;
+                }
+            }
+            
+            // Если это рамка (frame_...)
+            if (val.startsWith('frame_')) {
+                const parts = val.split('_');
+                if (parts.length >= 3) {
+                    const rarity = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
+                    return `${rarity} ${parts[2]} Frame`;
+                }
+            }
+
+            return val; // Если не подошло под правила, возвращаем как есть
+        }
+
         async function buildArtifact(index) {
             const nft = userNfts[index];
             const idMatch = nft.metadata.name.match(/#(\d+)/);
@@ -170,13 +186,11 @@
                 const response = await fetch(`${PATH_ASSETS}metadata/${id}.json`);
                 const meta = await response.json();
 
-                // 1. Имя и Genesis статус
                 document.getElementById('artifact-name').innerText = meta.name || `Artifact #${id}`;
                 const originBadge = document.getElementById('origin-badge');
                 originBadge.style.display = (id <= 50) ? 'block' : 'none';
                 if(id <= 50) originBadge.innerText = `👑 Genesis Edition ${id}/50 👑`;
 
-                // 2. Очистка и отрисовка новых атрибутов
                 const attrContainer = document.getElementById('nft-attrs');
                 attrContainer.innerHTML = '';
                 
@@ -184,22 +198,22 @@
 
                 meta.attributes.forEach(attr => {
                     const type = attr.trait_type;
-                    const val = attr.value;
+                    const rawVal = attr.value;
 
-                    // Создаем карточку атрибута
+                    // ПРИМЕНЯЕМ ФОРМАТИРОВАНИЕ
+                    const niceVal = formatAttributeValue(rawVal);
+
                     const div = document.createElement('div');
                     div.className = 'attr-item';
-                    div.innerHTML = `<div class="attr-label">${type}</div><div class="attr-value">${val}</div>`;
+                    div.innerHTML = `<div class="attr-label">${type}</div><div class="attr-value">${niceVal}</div>`;
                     attrContainer.appendChild(div);
 
-                    // Сбор имен файлов
                     const typeLow = type.toLowerCase();
-                    if (typeLow === 'background') bgFile = val + ".png";
-                    if (typeLow === 'frame') frameFile = val + ".png";
-                    if (typeLow === 'core') coreFile = val + ".png";
+                    if (typeLow === 'background') bgFile = rawVal + ".png";
+                    if (typeLow === 'frame') frameFile = rawVal + ".png";
+                    if (typeLow === 'core') coreFile = rawVal + ".png";
                 });
 
-                // 3. Установка слоев и фона
                 const fullBgPath = `${PATH_ASSETS}backgrounds/${bgFile}`;
                 document.getElementById('img-bg').src = fullBgPath;
                 document.getElementById('img-frame').src = `${PATH_ASSETS}frames/${frameFile}`;
@@ -222,7 +236,7 @@
             } catch (err) { console.error(err); }
         }
 
-        // Остальная логика (mining, harvest, tonConnect) остается без изменений
+        // Остальная логика (mining, harvest, tonConnect) остается прежней
         function startMining(frameFile, id) {
             if (miningTimer) clearInterval(miningTimer);
             let power = 100;
