@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nature Core Game v5.1</title>
+    <title>Nature Core Game v5.2</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         :root {
@@ -18,11 +18,8 @@
         #app-bg { position: fixed; inset: 0; z-index: -2; background-size: cover; background-position: center; filter: brightness(0.3); transition: 1s; transform: scale(1.05); }
         .bg-overlay { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 20%, var(--dark-bg) 100%); }
 
-        /* Оверлей для анимации портала */
-        #portal-overlay {
-            position: fixed; inset: 0; background: white; opacity: 0; 
-            z-index: 2000; pointer-events: none; transition: opacity 0.8s ease-in-out;
-        }
+        /* Портал */
+        #portal-overlay { position: fixed; inset: 0; background: white; opacity: 0; z-index: 2000; pointer-events: none; transition: opacity 0.8s ease-in-out; }
 
         .view-container { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; }
         .view-container.active { display: flex; }
@@ -30,27 +27,29 @@
         section { display: none; flex-direction: column; align-items: center; padding: 15px; width: 100%; height: calc(100vh - 75px); box-sizing: border-box; overflow-y: auto; }
         section.active { display: flex !important; }
 
-        /* Окно артефакта */
+        /* Холст артефакта */
         .artifact-canvas { 
             width: 180px; height: 180px; position: relative; margin: 10px 0; 
             border-radius: 35px; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.9); 
             background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center;
-            transition: transform 1.2s ease-in; /* Для анимации входа */
+            transition: transform 1.2s ease-in;
         }
-        .canvas-portal { transform: scale(10); filter: brightness(5); } /* Эффект входа в портал */
+        .canvas-portal { transform: scale(10); filter: brightness(5); }
 
         .layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
         .layer-bg { z-index: 1; }
-        .layer-frame { z-index: 2; } /* ОПРАВА ТЕПЕРЬ ТУТ */
+        .layer-frame { z-index: 2; }
         .layer-core { width: 82%; height: 82%; inset: 9%; z-index: 3; animation: core-float 3s infinite ease-in-out; }
         
         @keyframes core-float { 0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--glow-color)); } 50% { transform: translateY(-8px); filter: drop-shadow(0 0 25px var(--glow-color)); } }
 
+        /* Селектор NFT */
         .artifact-selector { display: flex; gap: 12px; overflow-x: auto; width: 100%; padding: 10px 0; scrollbar-width: none; }
         .artifact-selector::-webkit-scrollbar { display: none; }
         .thumb { width: 55px; height: 55px; border-radius: 12px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; transition: 0.3s; cursor: pointer; }
         .thumb.active { opacity: 1; border-color: white; transform: scale(1.1); }
 
+        /* Атрибуты */
         .attr-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 10px 0; }
         .attr-item { background: rgba(255,255,255,0.06); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 12px; text-align: center; min-width: 85px; }
         .attr-label { font-size: 7px; opacity: 0.5; text-transform: uppercase; }
@@ -58,7 +57,17 @@
 
         /* Игровое поле */
         .game-scene { position: relative; width: 100%; height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: space-between; margin: 20px 0; }
-        .mini-artifact { width: 80px; height: 80px; border-radius: 20px; background: rgba(0,0,0,0.6); border: 2px solid var(--glow-color); box-shadow: 0 0 20px var(--glow-color); z-index: 10; overflow: hidden; }
+        
+        /* Мини-артефакт в Саду (Многослойный) */
+        .mini-artifact { 
+            width: 80px; height: 80px; border-radius: 20px; 
+            background: rgba(0,0,0,0.6); border: 2px solid var(--glow-color); 
+            box-shadow: 0 0 20px var(--glow-color); z-index: 10; 
+            overflow: hidden; position: relative;
+        }
+        .mini-layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .mini-core { width: 80%; height: 80%; inset: 10%; z-index: 3; }
+
         .energy-beam { position: absolute; top: 85px; width: 4px; background: linear-gradient(to bottom, var(--glow-color), var(--primary-green)); box-shadow: 0 0 15px var(--glow-color); z-index: 5; animation: beam-flicker 0.2s infinite alternate; }
         @keyframes beam-flicker { from { opacity: 0.5; } to { opacity: 1; } }
         .tree-unit { font-size: 100px; filter: drop-shadow(0 0 20px var(--primary-green)); z-index: 10; }
@@ -73,7 +82,7 @@
 <body>
     <div id="app-bg"></div>
     <div class="bg-overlay"></div>
-    <div id="portal-overlay"></div> <!-- Портал -->
+    <div id="portal-overlay"></div>
 
     <div id="main-menu" class="view-container active">
         <section id="screen-core" class="active">
@@ -81,7 +90,7 @@
             <div class="artifact-selector" id="nft-list"></div>
             <div id="canvas-container" class="artifact-canvas" style="display:none;">
                 <img src="" id="img-bg" class="layer layer-bg">
-                <img src="" id="img-frame" class="layer layer-frame"> <!-- Исправлено -->
+                <img src="" id="img-frame" class="layer layer-frame">
                 <img src="" id="img-core" class="layer layer-core">
             </div>
             <div class="attr-container" id="nft-attrs"></div>
@@ -90,16 +99,13 @@
             <footer>&copy; 2026 Nature Core Project. All intellectual property belongs to the creator.</footer>
         </section>
 
+        <!-- Остальные секции (Token, Quests) -->
         <section id="screen-token">
             <h2>Токен $NCORE</h2>
             <div style="font-size: 50px; margin: 30px;">🪙</div>
             <p id="total-earned">Баланс: 0.00</p>
         </section>
-
-        <section id="screen-quests">
-            <h2>Задания</h2>
-            <p style="opacity: 0.5;">Скоро...</p>
-        </section>
+        <section id="screen-quests"><h2>Задания</h2><p style="opacity: 0.5;">Скоро...</p></section>
 
         <nav class="nav-bar">
             <div class="nav-item active" onclick="switchTab('screen-core', this)"><span>🌿</span><span>Склад</span></div>
@@ -113,8 +119,11 @@
         <div style="font-size: 24px; font-weight: 900; text-align: center; margin-top:20px;" id="coin-balance">0.00 $NCORE</div>
         
         <div class="game-scene">
+            <!-- МНОГОСЛОЙНЫЙ МИНИ-АРТЕФАКТ -->
             <div id="garden-mini-art" class="mini-artifact">
-                <img src="" id="mini-core-img" style="width:100%; height:100%; object-fit:contain;">
+                <img src="" id="mini-bg-img" class="mini-layer" style="z-index:1;">
+                <img src="" id="mini-frame-img" class="mini-layer" style="z-index:2;">
+                <img src="" id="mini-core-img" class="mini-layer mini-core" style="z-index:3;">
             </div>
             <div id="beam" class="energy-beam" style="height:0;"></div>
             <div id="tree-unit" class="tree-unit">🌱</div>
@@ -140,32 +149,23 @@
             document.getElementById(sId).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             el.classList.add('active');
-            if(sId === 'screen-token') document.getElementById('total-earned').innerText = `Баланс: ${balance.toFixed(2)}`;
         }
 
-        // --- АНИМАЦИЯ ПОРТАЛА ---
         function enterGame() {
             const canvas = document.getElementById('canvas-container');
             const overlay = document.getElementById('portal-overlay');
-            
-            // 1. Начинаем увеличивать артефакт (вход в портал)
             canvas.classList.add('canvas-portal');
             overlay.style.opacity = "1";
             overlay.style.pointerEvents = "all";
-
             setTimeout(() => {
-                // 2. Переключаем экраны, пока всё белое
                 document.getElementById('main-menu').classList.remove('active');
                 document.getElementById('game-view').classList.add('active');
                 refreshGarden();
-
                 setTimeout(() => {
-                    // 3. Плавно убираем оверлей и сбрасываем масштаб канваса
-                    overlay.style.opacity = "0";
-                    overlay.style.pointerEvents = "none";
+                    overlay.style.opacity = "0"; overlay.style.pointerEvents = "none";
                     canvas.classList.remove('canvas-portal');
                 }, 100);
-            }, 1200); // Длительность увеличения
+            }, 1200);
         }
 
         function exitGame() {
@@ -216,13 +216,16 @@
                     if(t === 'frame') frameF = a.value + ".png";
                 });
                 
-                // ИСПРАВЛЕНИЕ ЗАГРУЗКИ ОПРАВЫ
-                document.getElementById('img-core').src = `${PATH_ASSETS}cores/${coreF}`;
-                document.getElementById('img-bg').src = `${PATH_ASSETS}backgrounds/${bgF}`;
-                document.getElementById('img-frame').src = `${PATH_ASSETS}frames/${frameF}`; // Гарантированная загрузка
-                
+                // СОХРАНЯЕМ ПУТИ К СЛОЯМ
                 selectedArtifact.corePath = `${PATH_ASSETS}cores/${coreF}`;
-                document.getElementById('app-bg').style.backgroundImage = `url('${PATH_ASSETS}backgrounds/${bgF}')`;
+                selectedArtifact.bgPath = `${PATH_ASSETS}backgrounds/${bgF}`;
+                selectedArtifact.framePath = `${PATH_ASSETS}frames/${frameF}`;
+
+                document.getElementById('img-core').src = selectedArtifact.corePath;
+                document.getElementById('img-bg').src = selectedArtifact.bgPath;
+                document.getElementById('img-frame').src = selectedArtifact.framePath;
+                
+                document.getElementById('app-bg').style.backgroundImage = `url('${selectedArtifact.bgPath}')`;
                 document.documentElement.style.setProperty('--glow-color', getRarityColor(frameF));
                 
                 document.getElementById('canvas-container').style.display = 'flex';
@@ -233,7 +236,11 @@
 
         function refreshGarden() {
             if(!selectedArtifact) return;
+            // ОБНОВЛЯЕМ ВСЕ СЛОИ В САДУ
+            document.getElementById('mini-bg-img').src = selectedArtifact.bgPath;
+            document.getElementById('mini-frame-img').src = selectedArtifact.framePath;
             document.getElementById('mini-core-img').src = selectedArtifact.corePath;
+            
             document.getElementById('beam').style.height = "160px";
             document.getElementById('tree-unit').innerText = treeStages[Math.min(treeLevel-1, 3)];
             updateUI();
@@ -241,8 +248,7 @@
 
         setInterval(() => {
             if(document.getElementById('game-view').classList.contains('active') && selectedArtifact) {
-                balance += 0.01 * treeLevel;
-                updateUI();
+                balance += 0.01 * treeLevel; updateUI();
             }
         }, 1000);
 
@@ -250,8 +256,7 @@
             document.getElementById('coin-balance').innerText = `${balance.toFixed(2)} $NCORE`;
             document.getElementById('upgrade-info').innerText = `Уровень древа: ${treeLevel}`;
             document.getElementById('btn-upgrade-tree').disabled = !(balance >= 10 && treeLevel < 4);
-            localStorage.setItem('ncore_balance', balance); 
-            localStorage.setItem('ncore_tree_lvl', treeLevel);
+            localStorage.setItem('ncore_balance', balance); localStorage.setItem('ncore_tree_lvl', treeLevel);
         }
 
         function upgradeTree() {
