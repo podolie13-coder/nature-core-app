@@ -27,61 +27,62 @@
 
         section {
             display: none; flex-direction: column; align-items: center;
-            padding: 15px; height: calc(100vh - 70px); overflow-y: auto; box-sizing: border-box;
+            padding: 15px; height: calc(100vh - 70px); box-sizing: border-box;
         }
         section.active { display: flex; }
 
         .header { text-align: center; width: 100%; margin-bottom: 5px; }
         h1 { font-size: 18px; margin: 0; color: var(--primary-green); text-transform: uppercase; letter-spacing: 2px; }
 
-        /* Селектор с цветовой индикацией */
-        .artifact-selector {
-            display: flex; gap: 10px; overflow-x: auto; width: 100%;
-            padding: 10px 5px; margin-bottom: 10px; scrollbar-width: none;
+        /* Конструктор слоев */
+        .artifact-container {
+            width: 220px; height: 220px;
+            position: relative;
+            margin: 20px 0;
+            display: flex; align-items: center; justify-content: center;
         }
-        .artifact-selector::-webkit-scrollbar { display: none; }
+
+        .layer {
+            position: absolute;
+            width: 100%; height: 100%;
+            object-fit: contain;
+            transition: all 0.5s ease;
+        }
+
+        /* Анимация парения для ядра */
+        .layer-core {
+            z-index: 3;
+            animation: float 4s infinite ease-in-out;
+        }
+
+        /* Анимация пульсации для рамки */
+        .layer-frame {
+            z-index: 2;
+            animation: pulse-frame 6s infinite ease-in-out;
+        }
+
+        .layer-bg { z-index: 1; opacity: 0.6; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-15px) scale(1.05); }
+        }
+
+        @keyframes pulse-frame {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.02); }
+        }
+
+        /* Остальные стили */
+        .artifact-selector { display: flex; gap: 10px; overflow-x: auto; width: 100%; padding: 10px 5px; }
+        .thumb { width: 50px; height: 50px; border-radius: 10px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.5; }
+        .thumb.active { opacity: 1; border-color: #fff !important; }
         
-        .thumb {
-            width: 50px; height: 50px; border-radius: 10px; flex-shrink: 0;
-            cursor: pointer; opacity: 0.5; transition: 0.3s; object-fit: cover;
-            border: 2px solid transparent;
-        }
-        .thumb.active { opacity: 1; transform: scale(1.1); border-color: #fff !important; }
-
-        /* Цвета рамок для миниатюр */
-        .border-common { border-color: var(--rarity-common); }
-        .border-rare { border-color: var(--rarity-rare); }
-        .border-epic { border-color: var(--rarity-epic); }
-        .border-legendary { border-color: var(--rarity-legendary); }
-
         .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 340px; }
-        .balance-card { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
-        .bal-val { font-size: 18px; font-weight: 800; }
-
-        /* Центр: Артефакт и Свечение */
-        .artifact-display {
-            width: 190px; height: 190px; border-radius: 30px; position: relative;
-            margin: 15px 0; display: flex; align-items: center; justify-content: center;
-        }
-        .artifact-display::before {
-            content: ''; position: absolute; width: 140%; height: 140%;
-            background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
-            animation: pulse-glow 4s infinite ease-in-out; z-index: -1;
-            transition: background 0.5s;
-        }
-        @keyframes pulse-glow { 0%, 100% { opacity: 0.2; transform: scale(0.9); } 50% { opacity: 0.6; transform: scale(1.1); } }
-        .artifact-image { width: 100%; height: 100%; object-fit: cover; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); }
-
-        /* Бейдж редкости под артефактом */
-        .rarity-label {
-            font-size: 12px; font-weight: 900; text-transform: uppercase;
-            padding: 4px 12px; border-radius: 20px; border: 1px solid;
-            margin-bottom: 10px; letter-spacing: 1px;
-        }
-
-        .traits-container { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 15px; }
-        .trait-tag { background: rgba(255,255,255,0.05); padding: 3px 7px; border-radius: 6px; font-size: 9px; border: 1px solid rgba(255,255,255,0.1); }
-
+        .balance-card { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 12px; text-align: center; }
+        
+        .rarity-label { font-size: 12px; font-weight: 900; padding: 4px 12px; border-radius: 20px; border: 1px solid; margin-bottom: 10px; }
+        
         .btn-harvest { background: var(--primary-green); color: #000; border: none; padding: 12px; border-radius: 15px; font-weight: 900; width: 100%; max-width: 280px; margin-top: auto; margin-bottom: 10px; }
         
         .nav-bar { height: 70px; background: rgba(0,0,0,0.9); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; }
@@ -107,14 +108,14 @@
             </div>
         </div>
 
-        <div class="artifact-display">
-            <img src="" id="nft-img" class="artifact-image" style="display:none;">
-            <div id="loader">Connect Wallet...</div>
+        <div class="artifact-container" id="artifact-engine" style="display: none;">
+            <img src="" id="layer-bg" class="layer layer-bg">
+            <img src="" id="layer-frame" class="layer layer-frame">
+            <img src="" id="layer-core" class="layer layer-core">
         </div>
+        <div id="loader">Connect Wallet...</div>
 
-        <div id="rarity-badge" class="rarity-label" style="display:none;">Common</div>
-
-        <div id="traits-box" class="traits-container"></div>
+        <div id="rarity-badge" class="rarity-label" style="display:none;"></div>
 
         <button class="btn-harvest" id="harvest-btn" onclick="harvest()" style="display:none;">Harvest Energy</button>
         <div id="ton-connect-button"></div>
@@ -133,9 +134,7 @@
     <script>
         const COLLECTION = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
         let allNfts = [];
-        let accumulating = 0;
         let total = parseFloat(localStorage.getItem('ncore_v1_total')) || 0;
-        let currentRate = 0;
         let timer = null;
 
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
@@ -152,24 +151,13 @@
             navElement.classList.add('active');
         }
 
-        function harvest() {
-            if (accumulating > 0) {
-                total += accumulating;
-                accumulating = 0;
-                localStorage.setItem('ncore_v1_total', total);
-                document.getElementById('total-balance').innerText = total.toFixed(2);
-                document.getElementById('live-balance').innerText = "0.0000";
-            }
-        }
-
-        // Функция определения редкости по атрибутам
         function getRarityInfo(attributes) {
-            let info = { name: 'Common', color: '#4caf50', bonus: 0, class: 'border-common' };
+            let info = { name: 'Common', color: '#4caf50', bonus: 100, class: 'border-common', file: 'common' };
             attributes.forEach(attr => {
                 const val = attr.value.toLowerCase();
-                if (val.includes('rare')) info = { name: 'Rare', color: '#0070dd', bonus: 100, class: 'border-rare' };
-                if (val.includes('epic')) info = { name: 'Epic', color: '#a335ee', bonus: 300, class: 'border-epic' };
-                if (val.includes('legendary')) info = { name: 'Legendary', color: '#ffb100', bonus: 800, class: 'border-legendary' };
+                if (val.includes('rare')) info = { name: 'Rare', color: '#0070dd', bonus: 200, class: 'border-rare', file: 'rare' };
+                if (val.includes('epic')) info = { name: 'Epic', color: '#a335ee', bonus: 400, class: 'border-epic', file: 'epic' };
+                if (val.includes('legendary')) info = { name: 'Legendary', color: '#ffb100', bonus: 900, class: 'border-legendary', file: 'legendary' };
             });
             return info;
         }
@@ -178,38 +166,34 @@
             const nft = allNfts[index];
             const attributes = nft.metadata.attributes || [];
             const rarity = getRarityInfo(attributes);
-            const nftId = parseInt(nft.metadata.name.split('#')[1]);
-
-            // Обновляем визуал артефакта
-            document.getElementById('nft-img').src = nft.metadata.image;
-            document.getElementById('nft-img').style.display = 'block';
-
-            // Обновляем бейдж и свечение
-            const badge = document.getElementById('rarity-badge');
-            badge.innerText = `${rarity.name} #${nftId}`;
-            badge.style.borderColor = rarity.color;
-            badge.style.color = rarity.color;
-            badge.style.display = 'block';
-            document.documentElement.style.setProperty('--glow-color', rarity.color + '66');
-
-            // Трейты
-            const traitsBox = document.getElementById('traits-box');
-            traitsBox.innerHTML = '';
-            attributes.forEach(attr => {
-                const tag = document.createElement('div');
-                tag.className = 'trait-tag';
-                tag.innerText = `${attr.trait_type}: ${attr.value}`;
-                traitsBox.appendChild(tag);
+            
+            // Собираем слои
+            // ВАЖНО: замени пути на свои, когда загрузишь файлы
+            document.getElementById('layer-frame').src = `assets/frames/${rarity.file}.png`;
+            
+            // Пример поиска ядра в атрибутах
+            let coreType = 'default';
+            attributes.forEach(a => {
+                if(a.trait_type === 'Core' || a.trait_type === 'Cores') coreType = a.value.toLowerCase();
             });
+            document.getElementById('layer-core').src = `assets/cores/${coreType}.png`;
+            document.getElementById('layer-bg').src = `assets/bg/main_bg.png`;
 
-            // Расчет силы
-            let power = 100 + rarity.bonus;
-            if (nftId <= 50) power += 50;
-            currentRate = power * 0.1;
+            document.getElementById('artifact-engine').style.display = 'flex';
 
+            // Бейдж
+            const badge = document.getElementById('rarity-badge');
+            badge.innerText = `${rarity.name} #${nft.metadata.name.split('#')[1]}`;
+            badge.style.color = rarity.color;
+            badge.style.borderColor = rarity.color;
+            badge.style.display = 'block';
+
+            // Расчет
+            let currentRate = rarity.bonus * 0.1;
             document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
 
             if (timer) clearInterval(timer);
+            let accumulating = 0;
             timer = setInterval(() => {
                 accumulating += (currentRate / 86400) / 10;
                 document.getElementById('live-balance').innerText = accumulating.toFixed(4);
@@ -230,10 +214,9 @@
                         const selector = document.getElementById('selector');
                         selector.innerHTML = '';
                         allNfts.forEach((nft, i) => {
-                            const r = getRarityInfo(nft.metadata.attributes || []);
                             const img = document.createElement('img');
-                            img.src = nft.metadata.image;
-                            img.className = `thumb ${r.class}`;
+                            img.src = nft.metadata.image; // Для превью используем общую картинку
+                            img.className = `thumb`;
                             img.onclick = () => selectArtifact(i);
                             selector.appendChild(img);
                         });
@@ -242,6 +225,16 @@
                 } catch (e) { console.error(e); }
             }
         });
+
+        function harvest() {
+            let val = parseFloat(document.getElementById('live-balance').innerText);
+            if (val > 0) {
+                total += val;
+                localStorage.setItem('ncore_v1_total', total);
+                document.getElementById('total-balance').innerText = total.toFixed(2);
+                document.getElementById('live-balance').innerText = "0.0000";
+            }
+        }
     </script>
 </body>
 </html>
