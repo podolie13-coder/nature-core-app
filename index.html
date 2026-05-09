@@ -144,46 +144,69 @@
         }
 
         // Логика подбора файлов из метаданных
-        function getAssetPath(attributes) {
-            let info = { 
-                rarity: 'common', 
-                color: '#4caf50', 
-                bg: 'bg_MysticForest.png',
-                frameNum: 1,
-                coreNum: 1,
-                prefix: 'common'
-            };
+           function getAssetPath(attributes) {
+        let info = { 
+            rarity: 'common', 
+            color: '#4caf50', 
+            bg: 'bg_MysticForest.png',
+            frameNum: 1,
+            coreNum: 1,
+            prefix: 'common' // по умолчанию
+        };
+    
+        attributes.forEach(attr => {
+            const type = attr.trait_type.toLowerCase();
+            const val = attr.value;
+    
+            // Поиск фона
+            if (type.includes('background')) {
+                if (val.includes('Void')) info.bg = 'bg_Abyssal_Void.png';
+                else if (val.includes('Ruins')) info.bg = 'bg_AncientRuins.png';
+                else if (val.includes('Forge')) info.bg = 'bg_EtherealForge.png';
+                else if (val.includes('Frozen')) info.bg = 'bg_Frozen.png';
+                else info.bg = 'bg_MysticForest.png';
+            }
+    
+            // Поиск редкости и номера рамки
+            if (type.includes('frame')) {
+                const numMatch = val.match(/\d+/);
+                if (numMatch) info.frameNum = numMatch[0];
+                
+                const lowerVal = val.toLowerCase();
+                if (lowerVal.includes('rare')) { info.rarity = 'rare'; info.prefix = 'rare'; info.color = '#0070dd'; }
+                else if (lowerVal.includes('epic')) { info.rarity = 'epic'; info.prefix = 'epic'; info.color = '#a335ee'; }
+                else if (lowerVal.includes('leg')) { info.rarity = 'legendary'; info.prefix = 'leg'; info.color = '#ffb100'; }
+                else { info.rarity = 'common'; info.prefix = 'common'; info.color = '#4caf50'; }
+            }
+    
+            // Поиск номера ядра
+            if (type.includes('core')) {
+                const numMatch = val.match(/\d+/);
+                if (numMatch) info.coreNum = numMatch[0];
+            }
+        });
+    
+        return info;
+    }
 
-            attributes.forEach(attr => {
-                const type = attr.trait_type.toLowerCase();
-                const val = attr.value;
+// Внутри selectArtifact обнови этот блок:
+function selectArtifact(index) {
+    const nft = allNfts[index];
+    const assets = getAssetPath(nft.metadata.attributes || []);
+    
+    // ПРОВЕРЬ ЭТИ ПУТИ! Они должны точно совпадать с твоими папками в GitHub
+    const bgPath = `Background/${assets.bg}`;
+    const framePath = `frames/frame_${assets.prefix}_${assets.frameNum}.png`;
+    const corePath = `cores/Y_${assets.prefix}_${assets.coreNum}.png`;
 
-                if (type.includes('background')) {
-                    // Маппинг фонов
-                    if (val.includes('Void')) info.bg = 'bg_Abyssal_Void.png';
-                    if (val.includes('Ruins')) info.bg = 'bg_AncientRuins.png';
-                    if (val.includes('Forge')) info.bg = 'bg_EtherealForge.png';
-                    if (val.includes('Frozen')) info.bg = 'bg_Frozen.png';
-                }
+    console.log("Загрузка слоев:", {bgPath, framePath, corePath}); // Для отладки
 
-                if (type.includes('frame')) {
-                    // Вытягиваем число из строки типа "Frame #5"
-                    const numMatch = val.match(/\d+/);
-                    if (numMatch) info.frameNum = numMatch[0];
-                    
-                    if (val.toLowerCase().includes('rare')) { info.rarity = 'rare'; info.prefix = 'rare'; info.color = '#0070dd'; }
-                    if (val.toLowerCase().includes('epic')) { info.rarity = 'epic'; info.prefix = 'epic'; info.color = '#a335ee'; }
-                    if (val.toLowerCase().includes('leg')) { info.rarity = 'legendary'; info.prefix = 'leg'; info.color = '#ffb100'; }
-                }
-
-                if (type.includes('core')) {
-                    const numMatch = val.match(/\d+/);
-                    if (numMatch) info.coreNum = numMatch[0];
-                }
-            });
-
-            return info;
-        }
+    document.getElementById('layer-bg').src = bgPath;
+    document.getElementById('layer-frame').src = framePath;
+    document.getElementById('layer-core').src = corePath;
+    
+    // ... остальной код (badge, power, и т.д.)
+}
 
         function selectArtifact(index) {
             const nft = allNfts[index];
