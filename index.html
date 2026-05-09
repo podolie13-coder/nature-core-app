@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nature Core Engine v3.9</title>
+    <title>Nature Core Engine v4.0</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         :root {
@@ -27,7 +27,7 @@
             position: relative;
         }
 
-        /* Улучшенный живой фон с эффектом виньетки */
+        /* Живой фон с виньеткой */
         #app-bg {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -65,9 +65,9 @@
 
         @keyframes gold-flow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
 
-        /* Окно артефакта */
+        /* Окно артефакта 180x180 */
         .artifact-canvas {
-            width: 180px; height: 180px; position: relative; margin-bottom: 15px;
+            width: 180px; height: 180px; position: relative; margin: 15px 0;
             display: flex; align-items: center; justify-content: center;
             border-radius: 35px; overflow: hidden;
             box-shadow: 0 0 30px rgba(0,0,0,0.9); background: rgba(0,0,0,0.7);
@@ -77,16 +77,16 @@
         .layer-core { width: 82%; height: 82%; animation: core-float 3s infinite ease-in-out; }
         @keyframes core-float { 0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--glow-color)); } 50% { transform: translateY(-8px); filter: drop-shadow(0 0 25px var(--glow-color)); } }
 
-        /* Коллекция - ПОЛЗУНОК СКРЫТ */
+        /* Список коллекции без видимого ползунка */
         .artifact-selector { 
             display: flex; gap: 12px; overflow-x: auto; width: 100%; 
             padding: 10px 0; min-height: 75px; scroll-behavior: smooth;
-            scrollbar-width: none; /* Скрываем в Firefox */
+            scrollbar-width: none;
         }
-        .artifact-selector::-webkit-scrollbar { display: none; /* Скрываем в Chrome/Safari */ }
+        .artifact-selector::-webkit-scrollbar { display: none; }
 
         .thumb { width: 55px; height: 55px; border-radius: 12px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; transition: 0.3s; cursor: pointer; }
-        .thumb.active { opacity: 1; border-color: white; transform: scale(1.1); box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+        .thumb.active { opacity: 1; border-color: white; transform: scale(1.1); }
 
         /* Стеклянные атрибуты */
         .attr-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; max-width: 340px; margin: 10px 0; }
@@ -98,7 +98,7 @@
         .attr-label { font-size: 8px; opacity: 0.5; text-transform: uppercase; margin-bottom: 3px; color: #fff; letter-spacing: 1px; }
         .attr-value { font-size: 11px; font-weight: 800; }
 
-        /* Нижняя навигация - ВОССТАНОВЛЕНА */
+        /* Нижняя навигация */
         .nav-bar { 
             height: 75px; background: rgba(5, 10, 5, 0.95); 
             border-top: 1px solid rgba(255,255,255,0.1); 
@@ -107,16 +107,8 @@
         }
         .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; font-size: 11px; cursor: pointer; transition: 0.3s; }
         .nav-item.active { opacity: 1; color: var(--primary-green); }
-        .nav-item span:first-child { font-size: 20px; margin-bottom: 4px; }
 
-        /* Кнопка сбора */
-        .btn-harvest {
-            background: var(--primary-green); color: #000; border: none; padding: 12px 30px;
-            border-radius: 15px; font-weight: 900; font-size: 15px; cursor: pointer;
-            margin: 10px 0; box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
-            transition: 0.2s;
-        }
-        .btn-harvest:active { transform: scale(0.95); }
+        #ton-connect-btn { margin-top: auto; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -124,14 +116,12 @@
     <div id="app-bg"></div>
     <div class="bg-overlay"></div>
 
-    <!-- ГЛАВНЫЙ ЭКРАН -->
+    <!-- ЭКРАН ГАЛЕРЕИ -->
     <section id="screen-core" class="active">
         <div id="artifact-name">Nature Artifact</div>
         <div id="origin-badge">👑 Genesis Edition 👑</div>
         
-        <div class="artifact-selector" id="nft-list">
-            <!-- Сюда подгрузятся NFT -->
-        </div>
+        <div class="artifact-selector" id="nft-list"></div>
         
         <div id="canvas-container" class="artifact-canvas" style="display: none;">
             <img src="" id="img-bg" class="layer">
@@ -141,24 +131,20 @@
 
         <div class="attr-container" id="nft-attrs"></div>
         
-        <button class="btn-harvest" id="harvest-btn" style="display: none;" onclick="harvestEnergy()">Собрать энергию</button>
+        <!-- КНОПКА УДАЛЕНА -->
         <div id="ton-connect-btn"></div>
     </section>
 
-    <!-- ЭКРАН ТОКЕНА -->
+    <!-- ОСТАЛЬНЫЕ ЭКРАНЫ -->
     <section id="screen-token">
         <h1>Nature Token</h1>
         <div style="font-size: 60px; margin: 40px 0;">🪙</div>
-        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px; text-align: center; border: 1px dashed var(--primary-green);">
-            <h2 style="color: var(--primary-green);">$NCORE</h2>
-            <p>Добытая энергия будет конвертирована в токены после листинга.</p>
-        </div>
+        <p>Здесь в будущем будет сбор энергии и обмен на $NCORE.</p>
     </section>
 
-    <!-- ЭКРАН КВЕСТОВ -->
     <section id="screen-quests">
         <h1>Задания</h1>
-        <p style="opacity: 0.5; margin-top: 50px;">Новые испытания появятся скоро...</p>
+        <p style="opacity: 0.5; margin-top: 50px;">Скоро...</p>
     </section>
 
     <nav class="nav-bar">
@@ -261,7 +247,6 @@
                 let rColor = getRarityColor(frameF);
                 document.documentElement.style.setProperty('--glow-color', rColor);
                 document.getElementById('canvas-container').style.display = 'flex';
-                document.getElementById('harvest-btn').style.display = 'block';
 
                 startMining(frameF, id);
                 document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
@@ -274,13 +259,6 @@
             if (f.toLowerCase().includes('rare')) p = 250;
             if (id <= 50) p += 150;
             miningTimer = setInterval(() => { sessionAccrual += p * 0.00001; }, 1000);
-        }
-
-        function harvestEnergy() {
-            totalBalance += sessionAccrual;
-            sessionAccrual = 0;
-            localStorage.setItem('ncore_total', totalBalance);
-            alert("Энергия собрана!");
         }
 
         tonConnectUI.onStatusChange(async (wallet) => {
