@@ -1,0 +1,19 @@
+{
+    "name": "Nature Artifact #98",
+    "description": "Elemental artifact forged to protect the real world. A percentage of all proceeds funds global nature conservation initiatives.",
+    "image": "98.png",
+    "attributes": [
+        {
+            "trait_type": "Background",
+            "value": "bg_EtherealForge"
+        },
+        {
+            "trait_type": "Core",
+            "value": "Y_rare_4"
+        },
+        {
+            "trait_type": "Frame",
+            "value": "frame_rare_6"
+        }
+    ]
+}

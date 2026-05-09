@@ -1,0 +1,19 @@
+{
+    "name": "Nature Artifact #86",
+    "description": "Elemental artifact forged to protect the real world. A percentage of all proceeds funds global nature conservation initiatives.",
+    "image": "86.png",
+    "attributes": [
+        {
+            "trait_type": "Background",
+            "value": "bg_MysticForest"
+        },
+        {
+            "trait_type": "Core",
+            "value": "Y_rare_4"
+        },
+        {
+            "trait_type": "Frame",
+            "value": "frame_common_6"
+        }
+    ]
+}

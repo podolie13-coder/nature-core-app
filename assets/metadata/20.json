@@ -1,0 +1,19 @@
+{
+    "name": "Nature Artifact #20",
+    "description": "Elemental artifact forged to protect the real world. A percentage of all proceeds funds global nature conservation initiatives.",
+    "image": "20.png",
+    "attributes": [
+        {
+            "trait_type": "Background",
+            "value": "bg_Frozen"
+        },
+        {
+            "trait_type": "Core",
+            "value": "Y_common_1"
+        },
+        {
+            "trait_type": "Frame",
+            "value": "frame_epic_13"
+        }
+    ]
+}
