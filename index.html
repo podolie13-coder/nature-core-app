@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nature Core Engine v2.6</title>
+    <title>Nature Core Engine v2.7</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         :root {
@@ -14,19 +14,38 @@
 
         body {
             background: var(--dark-bg);
-            background: radial-gradient(circle at center, #112211 0%, #050a05 100%);
             color: #e0f2e0;
             font-family: 'Segoe UI', sans-serif;
             margin: 0; padding: 0; height: 100vh;
             display: flex; flex-direction: column; overflow: hidden;
+            position: relative;
         }
 
-        section { display: none; flex-direction: column; align-items: center; padding: 10px; height: calc(100vh - 70px); box-sizing: border-box; }
+        /* НОВОЕ: Полноэкранный задний фон приложения */
+        #app-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; /* Уходит на самый задний план */
+            background-size: cover;
+            background-position: center;
+            filter: blur(15px) brightness(0.4); /* Размытие и затемнение для читаемости */
+            transition: background-image 1s ease-in-out; /* Плавная смена */
+            transform: scale(1.1); /* Чтобы не было белых краев при размытии */
+        }
+
+        /* Наложение градиента поверх фона для глубины */
+        .bg-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at center, transparent 0%, var(--dark-bg) 100%);
+        }
+
+        section { display: none; flex-direction: column; align-items: center; padding: 10px; height: calc(100vh - 70px); box-sizing: border-box; z-index: 1; }
         section.active { display: flex; }
 
         h1 { font-size: 16px; margin: 5px 0; color: var(--primary-green); text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Компактный размер 180px */
         .artifact-canvas {
             width: 180px; height: 180px;
             position: relative;
@@ -55,21 +74,24 @@
         .thumb.active { opacity: 1; border-color: white; }
 
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 320px; }
-        .stat-card { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .stat-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(5px); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
         .stat-val { font-size: 16px; font-weight: bold; color: var(--primary-green); }
-        .stat-label { font-size: 7px; opacity: 0.5; text-transform: uppercase; }
 
         .btn-main {
             background: var(--primary-green); color: black; border: none; padding: 10px 25px;
             border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; margin-top: auto; margin-bottom: 10px;
         }
 
-        .nav-bar { height: 60px; background: rgba(0,0,0,0.9); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; }
+        .nav-bar { height: 60px; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; }
         .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; font-size: 9px; }
         .nav-item.active { opacity: 1; color: var(--primary-green); }
     </style>
 </head>
 <body>
+
+    <!-- НОВОЕ: Элементы фонового оформления -->
+    <div id="app-bg"></div>
+    <div class="bg-overlay"></div>
 
     <section id="screen-core" class="active">
         <h1>Nature Core</h1>
@@ -78,22 +100,21 @@
         <div class="stats-grid" id="ui-stats" style="display: none;">
             <div class="stat-card">
                 <div class="stat-val" id="accrual-val">0.0000</div>
-                <div class="stat-label">Power</div>
+                <div style="font-size: 7px; opacity: 0.5; text-transform: uppercase;">Power</div>
             </div>
             <div class="stat-card">
                 <div class="stat-val" id="total-val">0.00</div>
-                <div class="stat-label">Total NCORE</div>
+                <div style="font-size: 7px; opacity: 0.5; text-transform: uppercase;">Total NCORE</div>
             </div>
         </div>
 
         <div class="artifact-canvas" id="canvas-container" style="display: none;">
-            <!-- Слои: сначала фон, потом рамка, сверху ядро -->
             <img src="" id="img-bg" class="layer layer-bg">
             <img src="" id="img-frame" class="layer layer-frame">
             <img src="" id="img-core" class="layer layer-core">
         </div>
 
-        <div id="status-msg" style="margin: 10px; font-size: 12px; opacity: 0.5;">Подключите кошелек</div>
+        <div id="status-msg" style="margin: 10px; font-size: 12px; opacity: 0.5;">Подключите TON</div>
         <button class="btn-main" id="harvest-btn" style="display: none;" onclick="harvestEnergy()">Собрать энергию</button>
         <div id="ton-connect-btn"></div>
     </section>
@@ -104,7 +125,7 @@
     </nav>
 
     <script>
-        const PATH_ASSETS = 'assets/'; // Путь к папке assets
+        const PATH_ASSETS = 'assets/';
         const COLLECTION = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
         
         let userNfts = [];
@@ -121,13 +142,10 @@
 
         async function buildArtifact(index) {
             const nft = userNfts[index];
-            if (!nft) return;
-
             const id = nft.metadata.name.split('#')[1] || (index + 1);
             document.getElementById('status-msg').innerText = `Сборка #${id}...`;
 
             try {
-                // Загружаем JSON. Используем точное имя файла
                 const response = await fetch(`${PATH_ASSETS}metadata/${id}.json`);
                 if (!response.ok) throw new Error("JSON missing");
                 const meta = await response.json();
@@ -136,24 +154,27 @@
 
                 meta.attributes.forEach(attr => {
                     const type = attr.trait_type.toLowerCase();
-                    const val = attr.value; // Берем значение как есть
+                    const val = attr.value; 
 
                     if (type === 'background') bgFile = val + ".png";
                     if (type === 'frame') frameFile = val + ".png";
                     if (type === 'core') coreFile = val + ".png";
                 });
 
-                // Устанавливаем картинки по путям
-                document.getElementById('img-bg').src = `${PATH_ASSETS}backgrounds/${bgFile}`;
+                // Установка изображений в артефакт
+                const fullBgPath = `${PATH_ASSETS}backgrounds/${bgFile}`;
+                document.getElementById('img-bg').src = fullBgPath;
                 document.getElementById('img-frame').src = `${PATH_ASSETS}frames/${frameFile}`;
                 document.getElementById('img-core').src = `${PATH_ASSETS}cores/${coreFile}`;
 
-                // Цвет свечения зависит от редкости в имени файла
+                // НОВОЕ: Меняем общий фон приложения
+                document.getElementById('app-bg').style.backgroundImage = `url('${fullBgPath}')`;
+
+                // Настройка цвета свечения
                 let rarityColor = "#4caf50";
-                const lowerFrame = frameFile.toLowerCase();
-                if (lowerFrame.includes('rare')) rarityColor = "#0070dd";
-                else if (lowerFrame.includes('epic')) rarityColor = "#a335ee";
-                else if (lowerFrame.includes('leg')) rarityColor = "#ffb100";
+                if (frameFile.toLowerCase().includes('rare')) rarityColor = "#0070dd";
+                else if (frameFile.toLowerCase().includes('epic')) rarityColor = "#a335ee";
+                else if (frameFile.toLowerCase().includes('leg')) rarityColor = "#ffb100";
 
                 document.documentElement.style.setProperty('--glow-color', rarityColor);
                 document.getElementById('canvas-container').style.display = 'flex';
@@ -165,15 +186,14 @@
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('status-msg').innerText = "Ошибка: проверьте JSON и имена файлов";
+                document.getElementById('status-msg').innerText = "Ошибка сборки";
             }
         }
 
         function startMining(frameFile, id) {
             if (miningTimer) clearInterval(miningTimer);
             let power = 100;
-            const lowerFrame = frameFile.toLowerCase();
-            if (lowerFrame.includes('rare')) power = 250;
+            if (frameFile.toLowerCase().includes('rare')) power = 250;
             if (parseInt(id) <= 50) power += 150;
             const rate = power * 0.00001;
             miningTimer = setInterval(() => {
