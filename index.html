@@ -2,55 +2,132 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Nature Core App</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
+        :root {
+            --primary-green: #4caf50;
+            --glow-green: rgba(76, 175, 80, 0.4);
+            --dark-bg: #050a05;
+        }
+
         body {
-            background: #0a0f0a; /* Темный лесной фон */
+            background: var(--dark-bg);
+            /* Градиент создает эффект глубины леса */
+            background: radial-gradient(circle at center, #0a1a0a 0%, #050a05 100%);
             color: #e0f2e0;
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
             overflow: hidden;
         }
-        #ton-connect-button {
+
+        .header {
+            text-align: center;
             margin-top: 20px;
         }
-        .status {
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: #4caf50;
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--primary-green);
+            text-shadow: 0 0 15px var(--glow-green);
         }
+
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        /* Контейнер для будущего артефакта */
+        .artifact-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            position: relative;
+        }
+
+        .artifact-placeholder {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--glow-green) 0%, transparent 70%);
+            border: 1px dashed rgba(76, 175, 80, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: pulse 3s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+
+        .ui-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #ton-connect-button {
+            display: flex;
+            justify-content: center;
+        }
+
     </style>
 </head>
 <body>
 
-    <h1>Nature Core</h1>
-    <p>Подключите кошелек для доступа к Артефактам</p>
+    <div class="header">
+        <h1>Nature Core</h1>
+        <div class="subtitle" id="status-text">Ожидание подключения...</div>
+    </div>
 
-    <div id="ton-connect-button"></div>
+    <div class="artifact-container">
+        <div class="artifact-placeholder">
+            <span style="font-size: 12px; opacity: 0.5; text-align: center;">Место для<br>Артефакта</span>
+        </div>
+    </div>
+
+    <div class="ui-panel">
+        <div id="ton-connect-button"></div>
+    </div>
 
     <script>
-    // Используем правильное имя объекта библиотеки
-    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-        manifestUrl: 'https://podolie13-coder.github.io/nature-core-app/tonconnect-manifest.json',
-        buttonRootId: 'ton-connect-button'
-    });
+        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+            manifestUrl: 'https://podolie13-coder.github.io/nature-core-app/tonconnect-manifest.json',
+            buttonRootId: 'ton-connect-button'
+        });
 
-    // Слушатель статуса кошелька (для отладки)
-    tonConnectUI.onStatusChange(wallet => {
-        if (wallet) {
-            console.log('Кошелек подключен:', wallet);
-            document.querySelector('p').innerText = 'Кошелек успешно подключен!';
-        }
-    });
-</script>
-    
+        tonConnectUI.onStatusChange(wallet => {
+            const statusText = document.getElementById('status-text');
+            if (wallet) {
+                statusText.innerText = 'Артефакт активен';
+                statusText.style.color = '#4caf50';
+            } else {
+                statusText.innerText = 'Подключите кошелек для доступа';
+                statusText.style.color = '#e0f2e0';
+            }
+        });
     </script>
 </body>
 </html>
