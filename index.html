@@ -3,298 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nature Core Engine v2.0</title>
-    <!-- Подключение библиотеки TON Connect для связи с кошельком -->
+    <title>Nature Core Engine v2.4</title>
+    <!-- Подключение библиотеки TON Connect -->
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         :root {
             --primary-green: #4caf50;
             --dark-bg: #050a05;
-            --glow-color: #4caf50; /* Цвет свечения, меняется динамически */
+            --glow-color: #4caf50;
         }
 
         body {
             background: var(--dark-bg);
             background: radial-gradient(circle at center, #112211 0%, #050a05 100%);
             color: #e0f2e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             margin: 0; padding: 0; height: 100vh;
             display: flex; flex-direction: column; overflow: hidden;
         }
 
-        /* Основные секции (экраны) */
-        section { display: none; flex-direction: column; align-items: center; padding: 20px; height: calc(100vh - 70px); box-sizing: border-box; }
+        section { display: none; flex-direction: column; align-items: center; padding: 10px; height: calc(100vh - 70px); box-sizing: border-box; }
         section.active { display: flex; }
 
-        h1 { font-size: 22px; margin: 0 0 15px 0; color: var(--primary-green); text-transform: uppercase; letter-spacing: 2px; }
+        h1 { font-size: 16px; margin: 5px 0; color: var(--primary-green); text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Контейнер для отображения NFT артефакта */
+        /* Поле отображения NFT (180px) */
         .artifact-canvas {
-            width: 280px; height: 280px;
+            width: 180px; height: 180px;
             position: relative;
             margin: 10px 0;
             display: flex; align-items: center; justify-content: center;
-            border-radius: 40px;
+            border-radius: 30px;
             overflow: hidden;
-            box-shadow: 0 0 30px rgba(0,0,0,0.6);
-            background: rgba(0,0,0,0.4);
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.5);
         }
 
-        /* Слои артефакта */
-        .layer { position: absolute; width: 100%; height: 100%; object-fit: cover; pointer-events: none; transition: opacity 0.5s ease; }
+        .layer { position: absolute; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
         .layer-bg { z-index: 1; }
-        .layer-frame { z-index: 2; animation: pulse 4s infinite ease-in-out; }
-        .layer-core { z-index: 3; width: 85%; height: 85%; animation: float 3s infinite ease-in-out; }
+        .layer-frame { z-index: 2; animation: pulse 4s infinite; }
+        .layer-core { z-index: 3; width: 80%; height: 80%; animation: float 3s infinite ease-in-out; }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 15px var(--glow-color)); }
-            50% { transform: translateY(-10px) scale(1.02); filter: drop-shadow(0 0 30px var(--glow-color)); }
+            0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--glow-color)); }
+            50% { transform: translateY(-5px); filter: drop-shadow(0 0 20px var(--glow-color)); }
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 0.8; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.02); }
-        }
+        @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
 
-        /* Селектор NFT (горизонтальная прокрутка) */
-        .artifact-selector { 
-            display: flex; gap: 12px; overflow-x: auto; width: 100%; 
-            padding: 10px 0; margin-bottom: 10px; scrollbar-width: none; 
-        }
-        .thumb { 
-            width: 60px; height: 60px; border-radius: 12px; flex-shrink: 0; 
-            border: 2px solid transparent; opacity: 0.5; cursor: pointer; transition: 0.3s;
-        }
-        .thumb.active { opacity: 1; border-color: white; transform: scale(1.1); }
+        /* Список NFT */
+        .artifact-selector { display: flex; gap: 8px; overflow-x: auto; width: 100%; padding: 5px 0; scrollbar-width: none; }
+        .thumb { width: 50px; height: 50px; border-radius: 8px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.5; }
+        .thumb.active { opacity: 1; border-color: white; }
 
-        /* Интерфейс баланса */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 360px; margin-bottom: 20px; }
-        .stat-card { 
-            background: rgba(255,255,255,0.07); padding: 12px; border-radius: 16px; 
-            text-align: center; border: 1px solid rgba(255,255,255,0.1);
-        }
-        .stat-val { font-size: 20px; font-weight: bold; color: var(--primary-green); }
-        .stat-label { font-size: 9px; opacity: 0.6; text-transform: uppercase; margin-top: 4px; }
+        /* Статистика */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 320px; }
+        .stat-card { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .stat-val { font-size: 16px; font-weight: bold; color: var(--primary-green); }
+        .stat-label { font-size: 7px; opacity: 0.5; text-transform: uppercase; }
 
-        /* Кнопки и навигация */
         .btn-main {
-            background: var(--primary-green); color: black; border: none; padding: 15px 40px;
-            border-radius: 18px; font-weight: 800; font-size: 16px; cursor: pointer;
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3); transition: 0.3s;
+            background: var(--primary-green); color: black; border: none; padding: 10px 25px;
+            border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; margin-top: auto; margin-bottom: 10px;
         }
-        .btn-main:active { transform: scale(0.95); }
 
-        .nav-bar { 
-            height: 70px; background: rgba(0,0,0,0.9); border-top: 1px solid rgba(255,255,255,0.1); 
-            display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; 
-        }
-        .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; font-size: 10px; cursor: pointer; transition: 0.3s; }
+        .nav-bar { height: 60px; background: rgba(0,0,0,0.9); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; font-size: 9px; }
         .nav-item.active { opacity: 1; color: var(--primary-green); }
     </style>
 </head>
 <body>
 
-    <!-- ЭКРАН 1: Ядро (Основной) -->
     <section id="screen-core" class="active">
         <h1>Nature Core</h1>
-        
         <div class="artifact-selector" id="nft-list"></div>
 
         <div class="stats-grid" id="ui-stats" style="display: none;">
             <div class="stat-card">
                 <div class="stat-val" id="accrual-val">0.0000</div>
-                <div class="stat-label">Текущая мощность</div>
+                <div class="stat-label">Power</div>
             </div>
             <div class="stat-card">
                 <div class="stat-val" id="total-val">0.00</div>
-                <div class="stat-label">Всего NCORE</div>
+                <div class="stat-label">Total NCORE</div>
             </div>
         </div>
 
         <div class="artifact-canvas" id="canvas-container" style="display: none;">
-            <img src="" id="img-bg" class="layer layer-bg" onerror="this.style.opacity=0">
-            <img src="" id="img-frame" class="layer layer-frame" onerror="this.style.opacity=0">
-            <img src="" id="img-core" class="layer layer-core" onerror="this.style.opacity=0">
+            <!-- Слои артефакта -->
+            <img src="" id="img-bg" class="layer layer-bg">
+            <img src="" id="img-frame" class="layer layer-frame">
+            <img src="" id="img-core" class="layer layer-core">
         </div>
 
-        <div id="status-msg" style="margin: 20px; text-align: center; font-size: 14px; opacity: 0.7;">Подключите кошелек</div>
-
+        <div id="status-msg" style="margin: 10px; font-size: 12px; opacity: 0.5;">Подключите TON</div>
         <button class="btn-main" id="harvest-btn" style="display: none;" onclick="harvestEnergy()">Собрать энергию</button>
-        
-        <div id="ton-connect-btn" style="margin-top: 15px;"></div>
+        <div id="ton-connect-btn"></div>
     </section>
 
-    <!-- ЭКРАН 2: Квесты -->
-    <section id="screen-quests">
-        <h1>Квесты</h1>
-        <div style="opacity: 0.4; margin-top: 50px;">Задания появятся в следующем обновлении</div>
-    </section>
-
-    <!-- НИЖНЯЯ ПАНЕЛЬ -->
     <nav class="nav-bar">
-        <div class="nav-item active" onclick="switchTab('screen-core', this)"><span>🌿</span><span>Артефакт</span></div>
-        <div class="nav-item" onclick="switchTab('screen-quests', this)"><span>📜</span><span>Задания</span></div>
+        <div class="nav-item active" onclick="location.reload()"><span>🌿</span><span>Core</span></div>
+        <div class="nav-item"><span>📜</span><span>Quests</span></div>
     </nav>
 
     <script>
-        /**
-         * ДОКУМЕНТАЦИЯ И ПАРАМЕТРЫ
-         */
-        const COLLECTION_ADDRESS = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
-        const PATH_ASSETS = 'assets/'; // Путь к папке с ресурсами
+        const PATH_ASSETS = 'assets/';
+        const COLLECTION = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
         
         let userNfts = [];
         let totalBalance = parseFloat(localStorage.getItem('ncore_total')) || 0;
         let sessionAccrual = 0;
         let miningTimer = null;
 
-        // Инициализация TON Connect
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: 'https://podolie13-coder.github.io/nature-core-app/tonconnect-manifest.json',
             buttonRootId: 'ton-connect-btn'
         });
 
-        // Отображение начального баланса
         document.getElementById('total-val').innerText = totalBalance.toFixed(2);
 
         /**
-         * Переключение вкладок
-         */
-        function switchTab(screenId, el) {
-            document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
-        }
-
-        /**
-         * Основная функция сборки артефакта на основе JSON-метаданных
+         * Сборка артефакта с точным соответствием имен файлов
          */
         async function buildArtifact(index) {
             const nft = userNfts[index];
             if (!nft) return;
 
-            // Извлекаем ID (например, "Artifact #50" -> 50)
             const id = nft.metadata.name.split('#')[1] || (index + 1);
-            
-            const statusMsg = document.getElementById('status-msg');
-            statusMsg.innerText = `Загрузка артефакта #${id}...`;
+            document.getElementById('status-msg').innerText = `Сборка #${id}...`;
 
             try {
-                // Загружаем JSON файл метаданных
                 const response = await fetch(`${PATH_ASSETS}metadata/${id}.json`);
-                if (!response.ok) throw new Error("JSON не найден");
+                if (!response.ok) throw new Error("JSON missing");
                 const meta = await response.json();
 
-                let bg = "", frame = "", core = "";
+                let bgFile = "", frameFile = "", coreFile = "";
 
-                // Парсим атрибуты из JSON
                 meta.attributes.forEach(attr => {
                     const type = attr.trait_type.toLowerCase();
-                    const val = attr.value.toLowerCase();
+                    // ТЕПЕРЬ ИСПОЛЬЗУЕМ ЗНАЧЕНИЕ КАК ЕСТЬ (с учетом больших букв)
+                    const val = attr.value; 
 
-                    if (type === 'background') bg = val + ".png";
-                    if (type === 'frame') frame = val + ".png";
-                    if (type === 'core') core = val + ".png";
+                    if (type === 'background') bgFile = val + ".png";
+                    if (type === 'frame') frameFile = val + ".png";
+                    if (type === 'core') coreFile = val + ".png";
                 });
 
-                // Устанавливаем изображения
-                document.getElementById('img-bg').src = `${PATH_ASSETS}backgrounds/${bg}`;
-                document.getElementById('img-frame').src = `${PATH_ASSETS}frames/${frame}`;
-                document.getElementById('img-core').src = `${PATH_ASSETS}cores/${core}`;
+                // Код ищет файлы точно по именам из JSON
+                document.getElementById('img-bg').src = `${PATH_ASSETS}backgrounds/${bgFile}`;
+                document.getElementById('img-frame').src = `${PATH_ASSETS}frames/${frameFile}`;
+                document.getElementById('img-core').src = `${PATH_ASSETS}cores/${coreFile}`;
 
-                // Настраиваем свечение в зависимости от редкости
+                // Настройка цвета свечения
                 let rarityColor = "#4caf50";
-                if (frame.includes('rare')) rarityColor = "#0070dd";
-                else if (frame.includes('epic')) rarityColor = "#a335ee";
-                else if (frame.includes('leg')) rarityColor = "#ffb100";
+                if (frameFile.toLowerCase().includes('rare')) rarityColor = "#0070dd";
+                else if (frameFile.toLowerCase().includes('epic')) rarityColor = "#a335ee";
+                else if (frameFile.toLowerCase().includes('leg')) rarityColor = "#ffb100";
 
                 document.documentElement.style.setProperty('--glow-color', rarityColor);
-                
-                // Визуальное переключение
                 document.getElementById('canvas-container').style.display = 'flex';
-                statusMsg.style.display = 'none';
+                document.getElementById('status-msg').style.display = 'none';
                 document.getElementById('harvest-btn').style.display = 'block';
 
-                // Запуск логики майнинга
-                startMining(frame, id);
-
-                // Подсветка активной иконки
+                startMining(frameFile, id);
                 document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
 
             } catch (err) {
                 console.error(err);
-                statusMsg.innerText = "Ошибка сборки: проверьте наличие JSON и картинок";
+                document.getElementById('status-msg').innerText = "Ошибка метаданных";
             }
         }
 
         /**
-         * Логика начисления баллов
+         * Логика накопления
          */
-        function startMining(frameName, id) {
+        function startMining(frameFile, id) {
             if (miningTimer) clearInterval(miningTimer);
-            
-            // Базовая мощность
             let power = 100;
-            if (frameName.includes('rare')) power = 250;
-            else if (frameName.includes('epic')) power = 550;
-            else if (frameName.includes('leg')) power = 1200;
-            
-            // Бонус для первых 50 NFT
+            if (frameFile.toLowerCase().includes('rare')) power = 250;
             if (parseInt(id) <= 50) power += 150;
-
-            const ratePerSecond = power * 0.00001; // Коэффициент начисления
-
+            const rate = power * 0.00001;
             miningTimer = setInterval(() => {
-                sessionAccrual += ratePerSecond;
+                sessionAccrual += rate;
                 document.getElementById('accrual-val').innerText = sessionAccrual.toFixed(4);
             }, 1000);
         }
 
-        /**
-         * Сбор накопленной энергии
-         */
         function harvestEnergy() {
-            if (sessionAccrual <= 0) return;
-            
             totalBalance += sessionAccrual;
             sessionAccrual = 0;
-            
             localStorage.setItem('ncore_total', totalBalance);
             document.getElementById('total-val').innerText = totalBalance.toFixed(2);
             document.getElementById('accrual-val').innerText = "0.0000";
         }
 
-        /**
-         * Слушатель TON кошелька
-         */
         tonConnectUI.onStatusChange(async (wallet) => {
             if (wallet) {
-                document.getElementById('status-msg').innerText = "Сканирование кошелька...";
-                try {
-                    const response = await fetch(`https://tonapi.io/v2/accounts/${wallet.account.address}/nfts?collection=${COLLECTION_ADDRESS}`);
-                    const data = await response.json();
-                    
-                    if (data.nft_items && data.nft_items.length > 0) {
-                        userNfts = data.nft_items;
-                        document.getElementById('ui-stats').style.display = 'grid';
-                        
-                        const list = document.getElementById('nft-list');
-                        list.innerHTML = '';
-                        userNfts.forEach((nft, i) => {
-                            const img = document.createElement('img');
-                            img.src = nft.metadata.image;
-                            img.className = 'thumb';
-                            img.onclick = () => buildArtifact(i);
-                            list.appendChild(img);
-                        });
-
-                        buildArtifact(0); // Загружаем первую NFT
-                    } else {
-                        document.getElementById('status-msg').innerText = "NFT коллекции не найдены";
-                    }
-                } catch (e) {
-                    document.getElementById('status-msg').innerText = "Ошибка сети API";
+                const response = await fetch(`https://tonapi.io/v2/accounts/${wallet.account.address}/nfts?collection=${COLLECTION}`);
+                const data = await response.json();
+                if (data.nft_items) {
+                    userNfts = data.nft_items;
+                    document.getElementById('ui-stats').style.display = 'grid';
+                    const list = document.getElementById('nft-list');
+                    list.innerHTML = '';
+                    userNfts.forEach((nft, i) => {
+                        const img = document.createElement('img');
+                        img.src = nft.metadata.image;
+                        img.className = 'thumb';
+                        img.onclick = () => buildArtifact(i);
+                        list.appendChild(img);
+                    });
+                    buildArtifact(0);
                 }
             }
         });
