@@ -26,7 +26,7 @@
 
         h1 { font-size: 16px; margin: 5px 0; color: var(--primary-green); text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Поле артефакта уменьшено до 180px для мобильных */
+        /* Компактный размер 180px */
         .artifact-canvas {
             width: 180px; height: 180px;
             position: relative;
@@ -87,6 +87,7 @@
         </div>
 
         <div class="artifact-canvas" id="canvas-container" style="display: none;">
+            <!-- Слои: сначала фон, потом рамка, сверху ядро -->
             <img src="" id="img-bg" class="layer layer-bg">
             <img src="" id="img-frame" class="layer layer-frame">
             <img src="" id="img-core" class="layer layer-core">
@@ -103,7 +104,7 @@
     </nav>
 
     <script>
-        const PATH_ASSETS = 'assets/';
+        const PATH_ASSETS = 'assets/'; // Путь к папке assets
         const COLLECTION = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
         
         let userNfts = [];
@@ -126,7 +127,7 @@
             document.getElementById('status-msg').innerText = `Сборка #${id}...`;
 
             try {
-                // Загружаем JSON. Код прочитает его с учетом больших букв!
+                // Загружаем JSON. Используем точное имя файла
                 const response = await fetch(`${PATH_ASSETS}metadata/${id}.json`);
                 if (!response.ok) throw new Error("JSON missing");
                 const meta = await response.json();
@@ -135,23 +136,24 @@
 
                 meta.attributes.forEach(attr => {
                     const type = attr.trait_type.toLowerCase();
-                    const val = attr.value; // Берем значение "как есть" из JSON
+                    const val = attr.value; // Берем значение как есть
 
                     if (type === 'background') bgFile = val + ".png";
                     if (type === 'frame') frameFile = val + ".png";
                     if (type === 'core') coreFile = val + ".png";
                 });
 
-                // Код ищет файлы точно по именам из JSON (например, bg_AncientRuins.png)
+                // Устанавливаем картинки по путям
                 document.getElementById('img-bg').src = `${PATH_ASSETS}backgrounds/${bgFile}`;
                 document.getElementById('img-frame').src = `${PATH_ASSETS}frames/${frameFile}`;
                 document.getElementById('img-core').src = `${PATH_ASSETS}cores/${coreFile}`;
 
-                // Визуальные эффекты редкости
+                // Цвет свечения зависит от редкости в имени файла
                 let rarityColor = "#4caf50";
-                if (frameFile.toLowerCase().includes('rare')) rarityColor = "#0070dd";
-                else if (frameFile.toLowerCase().includes('epic')) rarityColor = "#a335ee";
-                else if (frameFile.toLowerCase().includes('leg')) rarityColor = "#ffb100";
+                const lowerFrame = frameFile.toLowerCase();
+                if (lowerFrame.includes('rare')) rarityColor = "#0070dd";
+                else if (lowerFrame.includes('epic')) rarityColor = "#a335ee";
+                else if (lowerFrame.includes('leg')) rarityColor = "#ffb100";
 
                 document.documentElement.style.setProperty('--glow-color', rarityColor);
                 document.getElementById('canvas-container').style.display = 'flex';
@@ -170,7 +172,8 @@
         function startMining(frameFile, id) {
             if (miningTimer) clearInterval(miningTimer);
             let power = 100;
-            if (frameFile.toLowerCase().includes('rare')) power = 250;
+            const lowerFrame = frameFile.toLowerCase();
+            if (lowerFrame.includes('rare')) power = 250;
             if (parseInt(id) <= 50) power += 150;
             const rate = power * 0.00001;
             miningTimer = setInterval(() => {
