@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nature Core Engine v3.3</title>
+    <title>Nature Core Engine v3.4</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         :root {
@@ -114,16 +114,14 @@
 
         <div class="attr-container" id="nft-attrs"></div>
 
-        <button class="btn-main" id="harvest-btn" style="display: none;" onclick="harvestEnergy()">Harvest Energy</button>
+        <button class="btn-main" id="harvest-btn" style="display: none;" onclick="harvestEnergy()">Собрать энергию</button>
         <div id="ton-connect-btn"></div>
     </section>
 
-    <!-- Секции Token и Quests остаются без изменений -->
-
     <nav class="nav-bar">
         <div class="nav-item active" onclick="switchTab('screen-core', this)"><span>🌿</span><span>Артефакт</span></div>
-        <div class="nav-item" onclick="switchTab('screen-token', this)"><span>🪙</span><span>Токен</span></div>
-        <div class="nav-item" onclick="switchTab('screen-quests', this)"><span>📜</span><span>Задания</span></div>
+        <div class="nav-item"><span>🪙</span><span>Токен</span></div>
+        <div class="nav-item"><span>📜</span><span>Задания</span></div>
     </nav>
 
     <script>
@@ -133,6 +131,16 @@
         let totalBalance = parseFloat(localStorage.getItem('ncore_total')) || 0;
         let sessionAccrual = 0;
         let miningTimer = null;
+
+        // --- НОВЫЙ СЛОВАРЬ ИМЕН ---
+        const CORE_NAMES = {
+            "Common 1": "Wood Core",
+            "Common 2": "Stone Core",
+            "Common 3": "Metal Core",
+            "Rare 1": "Frost Core",
+            "Epic 1": "Void Core",
+            "Legendary 1": "Nature Core"
+        };
 
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: 'https://podolie13-coder.github.io/nature-core-app/tonconnect-manifest.json',
@@ -146,22 +154,27 @@
             el.classList.add('active');
         }
 
-        // --- ФУНКЦИЯ КРАСИВОГО ФОРМАТИРОВАНИЯ ---
         function formatAttributeValue(val) {
             if (!val) return "";
             
-            // Если это фон (bg_...)
+            // Если это фон
             if (val.startsWith('bg_')) {
                 return val.replace('bg_', '').replace(/_/g, ' ');
             }
             
             // Если это ядро (Y_...)
             if (val.startsWith('Y_')) {
-                const parts = val.split('_'); // Разделяем по подчеркиванию
+                const parts = val.split('_');
                 if (parts.length >= 3) {
-                    // Превращаем Y, common, 1 в "Common 1 Type"
                     const rarity = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
-                    return `${rarity} ${parts[2]} Type`;
+                    const technicalName = `${rarity} ${parts[2]}`;
+                    
+                    // ПРОВЕРКА ПО СЛОВАРЮ
+                    if (CORE_NAMES[technicalName]) {
+                        return CORE_NAMES[technicalName];
+                    }
+                    
+                    return `${technicalName} Type`;
                 }
             }
             
@@ -174,7 +187,7 @@
                 }
             }
 
-            return val; // Если не подошло под правила, возвращаем как есть
+            return val;
         }
 
         async function buildArtifact(index) {
@@ -199,8 +212,6 @@
                 meta.attributes.forEach(attr => {
                     const type = attr.trait_type;
                     const rawVal = attr.value;
-
-                    // ПРИМЕНЯЕМ ФОРМАТИРОВАНИЕ
                     const niceVal = formatAttributeValue(rawVal);
 
                     const div = document.createElement('div');
@@ -228,15 +239,13 @@
 
                 document.documentElement.style.setProperty('--glow-color', rarityColor);
                 document.getElementById('canvas-container').style.display = 'flex';
-                document.getElementById('harvest-btn').style.display = 'block';
 
                 startMining(frameFile, id);
                 document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
-
             } catch (err) { console.error(err); }
         }
 
-        // Остальная логика (mining, harvest, tonConnect) остается прежней
+        // Остальные функции без изменений
         function startMining(frameFile, id) {
             if (miningTimer) clearInterval(miningTimer);
             let power = 100;
