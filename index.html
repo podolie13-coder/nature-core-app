@@ -14,10 +14,9 @@
 
         body {
             background: var(--dark-bg);
-            /* Градиент создает эффект глубины леса */
             background: radial-gradient(circle at center, #0a1a0a 0%, #050a05 100%);
             color: #e0f2e0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -28,52 +27,42 @@
             overflow: hidden;
         }
 
-        .header {
-            text-align: center;
-            margin-top: 20px;
-        }
+        .header { text-align: center; margin-top: 20px; }
+        h1 { font-size: 28px; margin-bottom: 5px; letter-spacing: 2px; text-transform: uppercase; color: var(--primary-green); text-shadow: 0 0 15px var(--glow-green); }
+        .subtitle { font-size: 14px; opacity: 0.7; }
 
-        h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--primary-green);
-            text-shadow: 0 0 15px var(--glow-green);
-        }
-
-        .subtitle {
-            font-size: 14px;
-            opacity: 0.7;
-        }
-
-        /* Контейнер для будущего артефакта */
         .artifact-container {
             flex-grow: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             width: 100%;
-            position: relative;
         }
 
-        .artifact-placeholder {
-            width: 250px;
-            height: 250px;
-            border-radius: 50%;
+        .artifact-display {
+            width: 280px;
+            height: 280px;
+            border-radius: 20px;
             background: radial-gradient(circle, var(--glow-green) 0%, transparent 70%);
-            border: 1px dashed rgba(76, 175, 80, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            animation: pulse 3s infinite ease-in-out;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.2);
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.05); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 0.5; }
+        .artifact-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none; /* Скрыта пока не найдена NFT */
+        }
+
+        .loader {
+            font-size: 12px;
+            opacity: 0.5;
+            text-align: center;
         }
 
         .ui-panel {
@@ -84,15 +73,10 @@
             padding: 20px;
             width: 100%;
             max-width: 350px;
-            text-align: center;
             margin-bottom: 20px;
         }
 
-        #ton-connect-button {
-            display: flex;
-            justify-content: center;
-        }
-
+        #ton-connect-button { display: flex; justify-content: center; }
     </style>
 </head>
 <body>
@@ -103,8 +87,9 @@
     </div>
 
     <div class="artifact-container">
-        <div class="artifact-placeholder">
-            <span style="font-size: 12px; opacity: 0.5; text-align: center;">Место для<br>Артефакта</span>
+        <div class="artifact-display" id="artifact-box">
+            <img src="" alt="Artifact" class="artifact-image" id="nft-img">
+            <div class="loader" id="loader-text">Место для<br>Артефакта</div>
         </div>
     </div>
 
@@ -113,19 +98,51 @@
     </div>
 
     <script>
+        const COLLECTION_ADDRESS = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
+
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: 'https://podolie13-coder.github.io/nature-core-app/tonconnect-manifest.json',
             buttonRootId: 'ton-connect-button'
         });
 
-        tonConnectUI.onStatusChange(wallet => {
+        tonConnectUI.onStatusChange(async (wallet) => {
             const statusText = document.getElementById('status-text');
+            const loaderText = document.getElementById('loader-text');
+            const nftImg = document.getElementById('nft-img');
+
             if (wallet) {
-                statusText.innerText = 'Артефакт активен';
-                statusText.style.color = '#4caf50';
+                statusText.innerText = 'Сканирование кошелька...';
+                const address = wallet.account.address;
+                
+                try {
+                    // Используем публичный API TON для поиска NFT
+                    const response = await fetch(`https://tonapi.io/v2/accounts/${address}/nfts?collection=${COLLECTION_ADDRESS}`);
+                    const data = await response.json();
+
+                    if (data.nft_items && data.nft_items.length > 0) {
+                        const nft = data.nft_items[0]; // Берем первый найденный артефакт
+                        const imageUrl = nft.metadata.image;
+                        
+                        // Показываем картинку
+                        nftImg.src = imageUrl;
+                        nftImg.style.display = 'block';
+                        loaderText.style.display = 'none';
+                        statusText.innerText = `Артефакт: ${nft.metadata.name}`;
+                        statusText.style.color = '#4caf50';
+                    } else {
+                        statusText.innerText = 'Артефакты не найдены';
+                        statusText.style.color = '#ff5252';
+                        loaderText.innerText = 'У вас нет NFT\nэтой коллекции';
+                    }
+                } catch (e) {
+                    console.error(e);
+                    statusText.innerText = 'Ошибка связи с блокчейном';
+                }
             } else {
                 statusText.innerText = 'Подключите кошелек для доступа';
-                statusText.style.color = '#e0f2e0';
+                nftImg.style.display = 'none';
+                loaderText.style.display = 'block';
+                loaderText.innerText = 'Место для\nАртефакта';
             }
         });
     </script>
