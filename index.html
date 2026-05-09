@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nature Core Engine v3.7</title>
+    <title>Nature Core Engine v3.8</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         :root {
@@ -81,26 +81,41 @@
             gap: 6px; width: 100%; max-width: 320px; margin: 10px 0;
         }
         
-        /* Стили карточки атрибута */
         .attr-item {
             background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);
             border: 1px solid rgba(255,255,255,0.1); padding: 5px 12px;
             border-radius: 12px; text-align: center; min-width: 80px;
-            transition: 0.3s;
         }
         .attr-label { font-size: 7px; opacity: 0.5; text-transform: uppercase; margin-bottom: 2px; color: #fff; }
         .attr-value { font-size: 10px; font-weight: bold; }
 
-        .layer { position: absolute; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-        .layer-core { width: 82%; height: 82%; animation: core-float 3s infinite ease-in-out; }
-
-        @keyframes core-float { 
-            0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--glow-color)); }
-            50% { transform: translateY(-7px); filter: drop-shadow(0 0 25px var(--glow-color)); }
+        /* ИСПРАВЛЕНО: Стили полосы прокрутки для ПК */
+        .artifact-selector { 
+            display: flex; 
+            gap: 12px; 
+            overflow-x: auto; 
+            width: 100%; 
+            padding: 10px 5px; 
+            min-height: 80px; 
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .artifact-selector { display: flex; gap: 8px; overflow-x: auto; width: 100%; padding: 5px 0; min-height: 60px; scrollbar-width: none; }
-        .thumb { width: 52px; height: 52px; border-radius: 10px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; }
+        /* Настройка внешнего вида скроллбара (Chrome, Edge, Safari) */
+        .artifact-selector::-webkit-scrollbar {
+            height: 4px; /* Тонкая полоска */
+        }
+        .artifact-selector::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        .artifact-selector::-webkit-scrollbar-thumb {
+            background: var(--primary-green);
+            border-radius: 10px;
+            box-shadow: 0 0 5px var(--primary-green);
+        }
+
+        .thumb { width: 52px; height: 52px; border-radius: 10px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; cursor: pointer; transition: 0.3s; }
         .thumb.active { opacity: 1; border-color: white; transform: scale(1.1); }
 
         .nav-bar { 
@@ -110,6 +125,10 @@
         }
         .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.6; font-size: 10px; cursor: pointer; }
         .nav-item.active { opacity: 1; color: var(--primary-green); }
+
+        .layer { position: absolute; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .layer-core { width: 82%; height: 82%; animation: core-float 3s infinite ease-in-out; }
+        @keyframes core-float { 0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--glow-color)); } 50% { transform: translateY(-7px); filter: drop-shadow(0 0 25px var(--glow-color)); } }
     </style>
 </head>
 <body>
@@ -132,12 +151,7 @@
         <div id="ton-connect-btn" style="margin-top: 20px;"></div>
     </section>
 
-    <nav class="nav-bar">
-        <div class="nav-item active" onclick="switchTab('screen-core', this)"><span>🌿</span><span>Артефакт</span></div>
-        <div class="nav-item"><span>🪙</span><span>Токен</span></div>
-        <div class="nav-item"><span>📜</span><span>Задания</span></div>
-    </nav>
-
+    <!-- Скрипт остается прежним (v3.7) -->
     <script>
         const PATH_ASSETS = 'assets/';
         const COLLECTION = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
@@ -163,7 +177,6 @@
             el.classList.add('active');
         }
 
-        // НОВОЕ: Функция определения цвета по тексту редкости
         function getRarityColor(text) {
             const lowText = text.toLowerCase();
             if (lowText.includes('rare')) return 'var(--rarity-rare)';
@@ -213,13 +226,10 @@
                     const type = attr.trait_type;
                     const rawVal = attr.value;
                     const niceVal = formatAttributeValue(rawVal);
-                    
-                    // НОВОЕ: Получаем цвет редкости
                     const color = getRarityColor(rawVal);
 
                     const div = document.createElement('div');
                     div.className = 'attr-item';
-                    // Применяем цвет к тексту и рамке атрибута
                     div.style.borderColor = color;
                     div.innerHTML = `
                         <div class="attr-label">${type}</div>
