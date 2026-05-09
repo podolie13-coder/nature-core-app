@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nature Core Engine v2.7</title>
+    <title>Nature Core Engine v2.9</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         :root {
             --primary-green: #4caf50;
             --dark-bg: #050a05;
             --glow-color: #4caf50;
+            --gold-gradient: linear-gradient(90deg, #ffd700, #fff5b1, #ffb100, #ffd700);
         }
 
         body {
@@ -21,19 +22,17 @@
             position: relative;
         }
 
-        /* НОВОЕ: Полноэкранный задний фон приложения */
         #app-bg {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1; /* Уходит на самый задний план */
+            z-index: -1;
             background-size: cover;
             background-position: center;
-            filter: blur(10px) brightness(0.4); /* Размытие и затемнение для читаемости */
-            transition: background-image 1s ease-in-out; /* Плавная смена */
-            transform: scale(1.1); /* Чтобы не было белых краев при размытии */
+            filter: blur(15px) brightness(0.3);
+            transition: background-image 1s ease-in-out;
+            transform: scale(1.1);
         }
 
-        /* Наложение градиента поверх фона для глубины */
         .bg-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -44,67 +43,96 @@
         section { display: none; flex-direction: column; align-items: center; padding: 10px; height: calc(100vh - 70px); box-sizing: border-box; z-index: 1; }
         section.active { display: flex; }
 
-        h1 { font-size: 16px; margin: 5px 0; color: var(--primary-green); text-transform: uppercase; letter-spacing: 1px; }
+        /* --- НОВЫЕ СТИЛИ ЭЛИТНОЙ ПЛАШКИ GENESIS --- */
+        #artifact-name { font-size: 16px; font-weight: 900; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+
+        #origin-badge { 
+            font-size: 10px; 
+            font-weight: 900; 
+            color: #000;
+            background: var(--gold-gradient);
+            background-size: 300% 100%;
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            margin-bottom: 12px; 
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+            animation: gold-flow 3s linear infinite, genesis-pulse 2s infinite alternate;
+            display: none;
+            text-transform: uppercase;
+        }
+
+        @keyframes gold-flow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        @keyframes genesis-pulse {
+            from { transform: scale(1); box-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
+            to { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+        }
+        /* ------------------------------------------ */
 
         .artifact-canvas {
             width: 180px; height: 180px;
             position: relative;
-            margin: 10px 0;
+            margin: 5px 0;
             display: flex; align-items: center; justify-content: center;
-            border-radius: 30px;
+            border-radius: 35px;
             overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            background: rgba(0,0,0,0.5);
+            box-shadow: 0 0 25px rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.6);
         }
 
         .layer { position: absolute; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
         .layer-bg { z-index: 1; }
-        .layer-frame { z-index: 2; animation: pulse 4s infinite; }
-        .layer-core { z-index: 3; width: 80%; height: 80%; animation: float 3s infinite ease-in-out; }
+        .layer-frame { z-index: 2; animation: frame-pulse 5s infinite; }
+        .layer-core { z-index: 3; width: 82%; height: 82%; animation: core-float 3s infinite ease-in-out; }
 
-        @keyframes float {
+        @keyframes core-float {
             0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--glow-color)); }
-            50% { transform: translateY(-5px); filter: drop-shadow(0 0 20px var(--glow-color)); }
+            50% { transform: translateY(-7px); filter: drop-shadow(0 0 25px var(--glow-color)); }
         }
 
-        @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+        @keyframes frame-pulse { 0%, 100% { opacity: 0.85; } 50% { opacity: 1; } }
 
         .artifact-selector { display: flex; gap: 8px; overflow-x: auto; width: 100%; padding: 5px 0; scrollbar-width: none; }
-        .thumb { width: 50px; height: 50px; border-radius: 8px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.5; }
-        .thumb.active { opacity: 1; border-color: white; }
+        .thumb { width: 52px; height: 52px; border-radius: 10px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; transition: 0.3s; }
+        .thumb.active { opacity: 1; border-color: white; transform: scale(1.1); }
 
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 320px; }
-        .stat-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(5px); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-        .stat-val { font-size: 16px; font-weight: bold; color: var(--primary-green); }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 320px; }
+        .stat-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(8px); padding: 10px; border-radius: 14px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .stat-val { font-size: 17px; font-weight: bold; color: var(--primary-green); }
 
         .btn-main {
-            background: var(--primary-green); color: black; border: none; padding: 10px 25px;
-            border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; margin-top: auto; margin-bottom: 10px;
+            background: var(--primary-green); color: black; border: none; padding: 12px 35px;
+            border-radius: 15px; font-weight: 800; font-size: 15px; cursor: pointer; margin-top: auto; margin-bottom: 15px;
         }
 
-        .nav-bar { height: 60px; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; font-size: 9px; }
+        .nav-bar { height: 65px; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.6; font-size: 10px; }
         .nav-item.active { opacity: 1; color: var(--primary-green); }
     </style>
 </head>
 <body>
 
-    <!-- НОВОЕ: Элементы фонового оформления -->
     <div id="app-bg"></div>
     <div class="bg-overlay"></div>
 
     <section id="screen-core" class="active">
-        <h1>Nature Core</h1>
+        <div id="artifact-name">Nature Artifact</div>
+        <!-- ТЕПЕРЬ ЭТО ЭЛИТНАЯ ПЛАШКА -->
+        <div id="origin-badge">👑 Genesis Edition 👑</div>
+
         <div class="artifact-selector" id="nft-list"></div>
 
         <div class="stats-grid" id="ui-stats" style="display: none;">
             <div class="stat-card">
                 <div class="stat-val" id="accrual-val">0.0000</div>
-                <div style="font-size: 7px; opacity: 0.5; text-transform: uppercase;">Power</div>
+                <div style="font-size: 8px; opacity: 0.6; text-transform: uppercase;">Mining Power</div>
             </div>
             <div class="stat-card">
                 <div class="stat-val" id="total-val">0.00</div>
-                <div style="font-size: 7px; opacity: 0.5; text-transform: uppercase;">Total NCORE</div>
+                <div style="font-size: 8px; opacity: 0.6; text-transform: uppercase;">Core Assets</div>
             </div>
         </div>
 
@@ -114,8 +142,8 @@
             <img src="" id="img-core" class="layer layer-core">
         </div>
 
-        <div id="status-msg" style="margin: 10px; font-size: 12px; opacity: 0.5;">Подключите TON</div>
-        <button class="btn-main" id="harvest-btn" style="display: none;" onclick="harvestEnergy()">Собрать энергию</button>
+        <div id="status-msg" style="margin: 15px; font-size: 13px; opacity: 0.6;">Connect Wallet</div>
+        <button class="btn-main" id="harvest-btn" style="display: none;" onclick="harvestEnergy()">Harvest Energy</button>
         <div id="ton-connect-btn"></div>
     </section>
 
@@ -142,39 +170,45 @@
 
         async function buildArtifact(index) {
             const nft = userNfts[index];
-            const id = nft.metadata.name.split('#')[1] || (index + 1);
-            document.getElementById('status-msg').innerText = `Сборка #${id}...`;
-
+            const idMatch = nft.metadata.name.match(/#(\d+)/);
+            const id = idMatch ? parseInt(idMatch[1]) : (index + 1);
+            
             try {
                 const response = await fetch(`${PATH_ASSETS}metadata/${id}.json`);
-                if (!response.ok) throw new Error("JSON missing");
                 const meta = await response.json();
 
-                let bgFile = "", frameFile = "", coreFile = "";
+                // Имя артефакта
+                document.getElementById('artifact-name').innerText = meta.name || `Artifact #${id}`;
+                
+                // Эффектная плашка GENESIS для первых 50
+                const originBadge = document.getElementById('origin-badge');
+                if (id <= 50) {
+                    originBadge.innerText = `👑 Genesis Edition ${id}/50 👑`;
+                    originBadge.style.display = 'block';
+                } else {
+                    originBadge.style.display = 'none';
+                }
 
+                let bgFile = "", frameFile = "", coreFile = "";
                 meta.attributes.forEach(attr => {
                     const type = attr.trait_type.toLowerCase();
                     const val = attr.value; 
-
                     if (type === 'background') bgFile = val + ".png";
                     if (type === 'frame') frameFile = val + ".png";
                     if (type === 'core') coreFile = val + ".png";
                 });
 
-                // Установка изображений в артефакт
                 const fullBgPath = `${PATH_ASSETS}backgrounds/${bgFile}`;
                 document.getElementById('img-bg').src = fullBgPath;
                 document.getElementById('img-frame').src = `${PATH_ASSETS}frames/${frameFile}`;
                 document.getElementById('img-core').src = `${PATH_ASSETS}cores/${coreFile}`;
-
-                // НОВОЕ: Меняем общий фон приложения
                 document.getElementById('app-bg').style.backgroundImage = `url('${fullBgPath}')`;
 
-                // Настройка цвета свечения
                 let rarityColor = "#4caf50";
-                if (frameFile.toLowerCase().includes('rare')) rarityColor = "#0070dd";
-                else if (frameFile.toLowerCase().includes('epic')) rarityColor = "#a335ee";
-                else if (frameFile.toLowerCase().includes('leg')) rarityColor = "#ffb100";
+                const lowFrame = frameFile.toLowerCase();
+                if (lowFrame.includes('rare')) rarityColor = "#0070dd";
+                else if (lowFrame.includes('epic')) rarityColor = "#a335ee";
+                else if (lowFrame.includes('leg')) rarityColor = "#ffb100";
 
                 document.documentElement.style.setProperty('--glow-color', rarityColor);
                 document.getElementById('canvas-container').style.display = 'flex';
@@ -186,7 +220,6 @@
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('status-msg').innerText = "Ошибка сборки";
             }
         }
 
