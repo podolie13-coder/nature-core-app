@@ -159,37 +159,48 @@
                 localStorage.setItem('ncore_v1_total', total);
                 document.getElementById('total-balance').innerText = total.toFixed(2);
                 document.getElementById('live-balance').innerText = "0.0000";
-            }
-        }
-
+            } 
+            
         function selectArtifact(index) {
             const nft = allNfts[index];
             const name = nft.metadata.name;
             const nftId = parseInt(name.split('#')[1]);
-
-            // Обновляем визуал
+            const attributes = nft.metadata.attributes || []; // Берем атрибуты из блокчейна
+        
+            // 1. Базовая настройка визуала
             document.getElementById('nft-img').src = nft.metadata.image;
             document.getElementById('badge').innerText = name;
             document.getElementById('badge').style.display = 'block';
-            
-            // Проверка Legacy
             document.getElementById('legacy-badge').style.display = (nftId <= 50) ? 'block' : 'none';
-
-            // Расчет силы
-            let power = 100;
-            if (nftId <= 50) power = 150;
-            if (name.includes('Rare')) power += 50;
-            if (name.includes('Epic')) power += 150;
-            if (name.includes('Legendary')) power += 400;
-
+        
+            // 2. УМНЫЙ РАСЧЕТ СИЛЫ
+            let power = 100; // База
+            let rarityName = "Common";
+        
+            // Ищем редкость в атрибутах (те самые core, frame и т.д.)
+            attributes.forEach(attr => {
+                const val = attr.value.toLowerCase();
+                if (val.includes('rare')) { power += 100; rarityName = "Rare"; }
+                if (val.includes('epic')) { power += 300; rarityName = "Epic"; }
+                if (val.includes('legendary')) { power += 800; rarityName = "Legendary"; }
+            });
+        
+            // Бонус за "Первые 50" (Founding Bonus)
+            if (nftId <= 50) power += 50;
+        
+            // 3. Применяем результаты
             currentRate = power * 0.1;
             
-            // Обновляем активную миниатюру
+            // Подкрасим имя в зависимости от редкости
+            const badge = document.getElementById('badge');
+            badge.style.color = rarityName === 'Legendary' ? '#ffd700' : 
+                                rarityName === 'Epic' ? '#a335ee' : 
+                                rarityName === 'Rare' ? '#0070dd' : '#4caf50';
+        
             document.querySelectorAll('.thumb').forEach((t, i) => {
                 t.classList.toggle('active', i === index);
             });
-
-            // Перезапуск счетчика
+        
             if (timer) clearInterval(timer);
             const perTick = (currentRate / 86400) / 10;
             timer = setInterval(() => {
