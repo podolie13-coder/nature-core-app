@@ -3,178 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nature Core Engine v4.2</title>
+    <title>Nature Core Game v4.5</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         :root {
             --primary-green: #4caf50;
-            --rarity-common: #4caf50;
-            --rarity-rare: #0070dd;
-            --rarity-epic: #a335ee;
-            --rarity-leg: #ffb100;
-            --dark-bg: #050a05;
-            --glow-color: #4caf50;
+            --rarity-common: #4caf50; --rarity-rare: #0070dd; --rarity-epic: #a335ee; --rarity-leg: #ffb100;
+            --dark-bg: #050a05; --glow-color: #4caf50;
             --gold-gradient: linear-gradient(90deg, #ffd700, #fff5b1, #ffb100, #ffd700);
         }
+        body { background: var(--dark-bg); color: #e0f2e0; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+        
+        /* Фон и виньетка */
+        #app-bg { position: fixed; inset: 0; z-index: -2; background-size: cover; background-position: center; filter: brightness(0.3); transition: 1s; transform: scale(1.05); }
+        .bg-overlay { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 20%, var(--dark-bg) 100%); }
 
-        body {
-            background: var(--dark-bg);
-            color: #e0f2e0;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            margin: 0; padding: 0; height: 100vh;
-            display: flex; flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-
-        #app-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -2; 
-            background-size: cover;
-            background-position: center;
-            filter: brightness(0.4);
-            transition: background-image 1s ease-in-out;
-            transform: scale(1.05);
-        }
-
-        .bg-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
-            background: radial-gradient(circle at center, transparent 20%, var(--dark-bg) 100%);
-        }
-
-        section { 
-            display: none; flex-direction: column; align-items: center; 
-            padding: 15px; height: calc(100vh - 75px); box-sizing: border-box; 
-            overflow-y: auto; width: 100%; z-index: 1;
-        }
+        section { display: none; flex-direction: column; align-items: center; padding: 15px; height: calc(100vh - 75px); box-sizing: border-box; overflow-y: auto; width: 100%; z-index: 1; }
         section.active { display: flex !important; }
 
-        #artifact-name { font-size: 18px; font-weight: 900; margin: 10px 0 5px; text-transform: uppercase; letter-spacing: 2px; text-align: center; }
-
-        #origin-badge { 
-            font-size: 10px; font-weight: 900; color: #000;
-            background: var(--gold-gradient); background-size: 300% 100%;
-            padding: 4px 15px; border-radius: 20px; margin-bottom: 15px; 
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
-            animation: gold-flow 3s linear infinite; display: none;
-        }
-
-        @keyframes gold-flow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-
-        .artifact-canvas {
-            width: 180px; height: 180px; position: relative; margin: 15px 0;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 35px; overflow: hidden;
-            box-shadow: 0 0 30px rgba(0,0,0,0.9); background: rgba(0,0,0,0.7);
-        }
-
-        .layer { position: absolute; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-        .layer-core { width: 82%; height: 82%; animation: core-float 3s infinite ease-in-out; }
+        /* Элементы Артефакта */
+        .artifact-canvas { width: 180px; height: 180px; position: relative; margin: 10px 0; border-radius: 35px; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.9); background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; }
+        .layer { position: absolute; inset: 0; object-fit: cover; pointer-events: none; }
+        .layer-core { width: 82%; height: 82%; inset: 9%; animation: core-float 3s infinite ease-in-out; }
         @keyframes core-float { 0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--glow-color)); } 50% { transform: translateY(-8px); filter: drop-shadow(0 0 25px var(--glow-color)); } }
 
-        .artifact-selector { 
-            display: flex; gap: 12px; overflow-x: auto; width: 100%; 
-            padding: 10px 0; min-height: 75px; scroll-behavior: smooth;
-            scrollbar-width: none;
-        }
+        /* Селектор (скрытый ползунок) */
+        .artifact-selector { display: flex; gap: 12px; overflow-x: auto; width: 100%; padding: 10px 0; scrollbar-width: none; }
         .artifact-selector::-webkit-scrollbar { display: none; }
-
         .thumb { width: 55px; height: 55px; border-radius: 12px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; transition: 0.3s; cursor: pointer; }
         .thumb.active { opacity: 1; border-color: white; transform: scale(1.1); }
 
-        .attr-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; max-width: 340px; margin: 10px 0; }
-        .attr-item {
-            background: rgba(255,255,255,0.06); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1); padding: 8px 15px;
-            border-radius: 15px; text-align: center; min-width: 90px;
-        }
-        .attr-label { font-size: 8px; opacity: 0.5; text-transform: uppercase; margin-bottom: 3px; color: #fff; }
-        .attr-value { font-size: 11px; font-weight: 800; }
+        /* Атрибуты */
+        .attr-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 10px 0; }
+        .attr-item { background: rgba(255,255,255,0.06); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 12px; text-align: center; min-width: 85px; }
+        .attr-label { font-size: 7px; opacity: 0.5; text-transform: uppercase; }
+        .attr-value { font-size: 10px; font-weight: 800; }
 
-        .nav-bar { 
-            height: 75px; background: rgba(5, 10, 5, 0.95); 
-            border-top: 1px solid rgba(255,255,255,0.1); 
-            display: flex; justify-content: space-around; align-items: center; 
-            position: fixed; bottom: 0; width: 100%; z-index: 1000;
-        }
+        /* Игровая сцена Сада */
+        .game-scene { position: relative; width: 100%; height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; margin: 15px 0; }
+        .mini-artifact { width: 80px; height: 80px; border-radius: 20px; background: rgba(0,0,0,0.6); border: 2px solid var(--glow-color); box-shadow: 0 0 20px var(--glow-color); z-index: 10; }
+        .energy-beam { position: absolute; top: 85px; width: 4px; background: linear-gradient(to bottom, var(--glow-color), var(--primary-green)); box-shadow: 0 0 15px var(--glow-color); z-index: 5; animation: beam-flicker 0.2s infinite alternate; }
+        @keyframes beam-flicker { from { opacity: 0.5; } to { opacity: 1; } }
+        .tree-unit { font-size: 80px; filter: drop-shadow(0 0 10px var(--primary-green)); z-index: 10; }
+
+        /* Кнопки и Навигация */
+        .btn-game { background: var(--gold-gradient); background-size: 200% 100%; color: #000; border: none; padding: 12px 25px; border-radius: 15px; font-weight: 900; cursor: pointer; margin: 10px 0; }
+        .btn-game:disabled { opacity: 0.3; cursor: not-allowed; }
+        .nav-bar { height: 75px; background: rgba(5, 10, 5, 0.95); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; z-index: 1000; }
         .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; font-size: 11px; cursor: pointer; }
         .nav-item.active { opacity: 1; color: var(--primary-green); }
-
-        #ton-connect-btn { margin-top: auto; margin-bottom: 20px; }
+        footer { font-size: 10px; opacity: 0.4; text-align: center; padding: 10px; width: 90%; }
     </style>
 </head>
 <body>
-
     <div id="app-bg"></div>
     <div class="bg-overlay"></div>
 
     <section id="screen-core" class="active">
-        <div id="artifact-name">Nature Artifact</div>
-        <div id="origin-badge">👑 Genesis Edition 👑</div>
+        <div id="artifact-name" style="font-weight:900; letter-spacing:2px;">Nature Artifact</div>
         <div class="artifact-selector" id="nft-list"></div>
-        <div id="canvas-container" class="artifact-canvas" style="display: none;">
+        <div id="canvas-container" class="artifact-canvas" style="display:none;">
             <img src="" id="img-bg" class="layer">
-            <img src="" id="img-frame" class="layer" style="z-index: 2;">
-            <img src="" id="img-core" class="layer layer-core" style="z-index: 3;">
+            <img src="" id="img-frame" class="layer" style="z-index:2;">
+            <img src="" id="img-core" class="layer layer-core" style="z-index:3;">
         </div>
         <div class="attr-container" id="nft-attrs"></div>
+        <button id="btn-use-main" class="btn-game" style="display:none; background:var(--primary-green);" onclick="activateGarden()">Установить в Сад</button>
         <div id="ton-connect-btn"></div>
-        
-        <!-- НОВОЕ: Твоя защита подлинности -->
-        <footer style="margin-top: 20px; font-size: 10px; opacity: 0.4; text-align: center; padding-bottom: 10px; width: 90%;">
-            &copy; 2026 Nature Core Project. All intellectual property, including artifact layers and designs, belongs to the creator. Unauthorized commercial use is prohibited.
-        </footer>
+        <footer>&copy; 2026 Nature Core Project. All intellectual property belongs to the creator.</footer>
     </section>
 
-    <section id="screen-token">
-        <h1>Nature Token</h1>
-        <div style="font-size: 60px; margin: 40px 0;">🪙</div>
-        <p>Система $NCORE в разработке.</p>
-        <footer style="margin-top: auto; font-size: 10px; opacity: 0.4; text-align: center; padding-bottom: 10px;">
-            &copy; 2026 Nature Core Project.
-        </footer>
-    </section>
-
-    <section id="screen-quests">
-        <h1>Задания</h1>
-        <p style="opacity: 0.5; margin-top: 50px;">Скоро...</p>
-        <footer style="margin-top: auto; font-size: 10px; opacity: 0.4; text-align: center; padding-bottom: 10px;">
-            &copy; 2026 Nature Core Project.
-        </footer>
+    <section id="screen-garden">
+        <div style="font-size: 24px; font-weight: 900;" id="coin-balance">0.00 $NCORE</div>
+        <div class="game-scene">
+            <div id="garden-mini-art" class="mini-artifact"><img src="" id="mini-core-img" style="width:100%; height:100%; object-fit:contain;"></div>
+            <div id="beam" class="energy-beam" style="height:0;"></div>
+            <div id="tree-unit" class="tree-unit">🌱</div>
+        </div>
+        <div id="upgrade-info" style="font-size:12px; opacity:0.8;">Уровень древа: 1</div>
+        <button id="btn-upgrade-tree" class="btn-game" onclick="upgradeTree()" disabled>Улучшить за 10 $NCORE</button>
+        <footer>&copy; 2026 Nature Core Project.</footer>
     </section>
 
     <nav class="nav-bar">
-        <div class="nav-item active" onclick="switchTab('screen-core', this)"><span>🌿</span><span>Артефакт</span></div>
-        <div class="nav-item" onclick="switchTab('screen-token', this)"><span>🪙</span><span>Токен</span></div>
-        <div class="nav-item" onclick="switchTab('screen-quests', this)"><span>📜</span><span>Задания</span></div>
+        <div class="nav-item active" onclick="switchTab('screen-core', this)"><span>🌿</span><span>Склад</span></div>
+        <div class="nav-item" onclick="switchTab('screen-garden', this)"><span>🌳</span><span>Сад</span></div>
     </nav>
 
     <script>
         const PATH_ASSETS = 'assets/';
         const COLLECTION = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
-        let userNfts = [];
-        const metadataCache = new Map();
+        let userNfts = [], activeArtifact = null, selectedArtifact = null, metadataCache = new Map();
+        let balance = parseFloat(localStorage.getItem('ncore_balance')) || 0;
+        let treeLevel = parseInt(localStorage.getItem('ncore_tree_lvl')) || 1;
+        const treeStages = ["🌱", "🌿", "🌳", "🌳✨"];
 
-        const CORE_NAMES = {
-            "Common 1": "Wood Core", "Common 2": "Stone Core", "Common 3": "Metal Core",
-            "Rare 1": "Frost Core", "Rare 2": "Storm Core", "Rare 3": "Ember Core", "Rare 4": "Terra Core",
-            "Epic 1": "Void Core", "Epic 2": "Plasma Core", "Epic 3": "Solar Core",
-            "Legendary 1": "Nature Core", "Legendary 2": "Ancient Core", "Legendary 3": "Eternal Core"
-        };
+        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({ manifestUrl: 'https://podolie13-coder.github.io/nature-core-app/tonconnect-manifest.json', buttonRootId: 'ton-connect-btn' });
 
-        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: 'https://podolie13-coder.github.io/nature-core-app/tonconnect-manifest.json',
-            buttonRootId: 'ton-connect-btn'
-        });
-
-        function switchTab(screenId, el) {
+        function switchTab(sId, el) {
             document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
+            document.getElementById(sId).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             el.classList.add('active');
+            if(sId === 'screen-garden') refreshGarden();
         }
 
         function getRarityColor(text) {
@@ -185,119 +116,64 @@
             return 'var(--rarity-common)';
         }
 
-        function formatVal(val) {
-            if (!val) return "";
-            if (val.startsWith('bg_')) return val.replace('bg_', '').replace(/_/g, ' ');
-            if (val.startsWith('Y_')) {
-                const p = val.split('_');
-                const r = p[1].charAt(0).toUpperCase() + p[1].slice(1);
-                return CORE_NAMES[`${r} ${p[2]}`] || `${r} ${p[2]} Type`;
-            }
-            if (val.startsWith('frame_')) {
-                const p = val.split('_');
-                const r = p[1].charAt(0).toUpperCase() + p[1].slice(1);
-                return `${r} ${p[2]} Frame`;
-            }
-            return val;
-        }
-
         async function buildArtifact(index) {
-            const nft = userNfts[index];
-            const idMatch = nft.metadata.name.match(/#(\d+)/);
-            const id = idMatch ? parseInt(idMatch[1]) : (index + 1);
-            
+            selectedArtifact = userNfts[index];
+            const id = selectedArtifact.metadata.name.match(/#(\d+)/)[1];
             try {
                 let meta;
-                if (metadataCache.has(id)) {
-                    meta = metadataCache.get(id);
-                } else {
-                    const response = await fetch(`${PATH_ASSETS}metadata/${id}.json`);
-                    meta = await response.json();
-                    metadataCache.set(id, meta);
-                }
-
-                document.getElementById('artifact-name').innerText = meta.name || `Artifact #${id}`;
-                const badge = document.getElementById('origin-badge');
-                badge.style.display = (id <= 50) ? 'block' : 'none';
-
-                const attrBox = document.getElementById('nft-attrs');
-                attrBox.innerHTML = '';
-                let bgF = "", frameF = "", coreF = "";
-
-                meta.attributes.forEach(attr => {
-                    const type = attr.trait_type;
-                    const val = attr.value;
-                    const niceVal = formatVal(val);
-                    const color = getRarityColor(val);
-
-                    const div = document.createElement('div');
-                    div.className = 'attr-item';
-                    div.style.borderColor = color;
-                    div.innerHTML = `<div class="attr-label">${type}</div><div class="attr-value" style="color:${color}">${niceVal}</div>`;
-                    attrBox.appendChild(div);
-
-                    if (type.toLowerCase() === 'background') bgF = val + ".png";
-                    if (type.toLowerCase() === 'frame') frameF = val + ".png";
-                    if (type.toLowerCase() === 'core') coreF = val + ".png";
+                if(metadataCache.has(id)) meta = metadataCache.get(id);
+                else { const res = await fetch(`${PATH_ASSETS}metadata/${id}.json`); meta = await res.json(); metadataCache.set(id, meta); }
+                
+                document.getElementById('nft-attrs').innerHTML = '';
+                let coreF = "", bgF = "", frameF = "";
+                meta.attributes.forEach(a => {
+                    const color = getRarityColor(a.value);
+                    const div = document.createElement('div'); div.className = 'attr-item'; div.style.borderColor = color;
+                    div.innerHTML = `<div class="attr-label">${a.trait_type}</div><div class="attr-value" style="color:${color}">${a.value}</div>`;
+                    document.getElementById('nft-attrs').appendChild(div);
+                    if(a.trait_type.toLowerCase() === 'core') coreF = a.value + ".png";
+                    if(a.trait_type.toLowerCase() === 'background') bgF = a.value + ".png";
+                    if(a.trait_type.toLowerCase() === 'frame') frameF = a.value + ".png";
                 });
-
+                
+                document.getElementById('img-core').src = `${PATH_ASSETS}cores/${coreF}`;
+                selectedArtifact.corePath = `${PATH_ASSETS}cores/${coreF}`;
                 document.getElementById('img-bg').src = `${PATH_ASSETS}backgrounds/${bgF}`;
                 document.getElementById('img-frame').src = `${PATH_ASSETS}frames/${frameF}`;
-                document.getElementById('img-core').src = `${PATH_ASSETS}cores/${coreF}`;
                 document.getElementById('app-bg').style.backgroundImage = `url('${PATH_ASSETS}backgrounds/${bgF}')`;
-
-                let rColor = getRarityColor(frameF);
-                document.documentElement.style.setProperty('--glow-color', rColor);
+                document.documentElement.style.setProperty('--glow-color', getRarityColor(frameF));
+                
                 document.getElementById('canvas-container').style.display = 'flex';
-
+                document.getElementById('btn-use-main').style.display = 'block';
                 document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
-                preloadNext(index + 1);
-            } catch (err) { console.error(err); }
+            } catch(e) {}
         }
 
-        function preloadNext(nextIndex) {
-            if (nextIndex >= userNfts.length) return;
-            const nextNft = userNfts[nextIndex];
-            const idMatch = nextNft.metadata.name.match(/#(\d+)/);
-            const id = idMatch ? parseInt(idMatch[1]) : (nextIndex + 1);
+        function activateGarden() { activeArtifact = selectedArtifact; localStorage.setItem('ncore_active_art', JSON.stringify(activeArtifact)); switchTab('screen-garden', document.querySelectorAll('.nav-item')[1]); }
+        function refreshGarden() { if(!activeArtifact) return; document.getElementById('mini-core-img').src = activeArtifact.corePath; document.getElementById('beam').style.height = "100px"; document.getElementById('tree-unit').innerText = treeStages[Math.min(treeLevel-1, 3)]; }
 
-            if (!metadataCache.has(id)) {
-                fetch(`${PATH_ASSETS}metadata/${id}.json`)
-                    .then(res => res.json())
-                    .then(meta => {
-                        metadataCache.set(id, meta);
-                        meta.attributes.forEach(attr => {
-                            const val = attr.value;
-                            const type = attr.trait_type.toLowerCase();
-                            let f = "";
-                            if (type === 'background') f = "backgrounds";
-                            if (type === 'frame') f = "frames";
-                            if (type === 'core') f = "cores";
-                            if (f) new Image().src = `${PATH_ASSETS}${f}/${val}.png`;
-                        });
-                    });
-            }
+        setInterval(() => { if(activeArtifact) { balance += 0.01 * treeLevel; updateUI(); } }, 1000);
+        function updateUI() { 
+            document.getElementById('coin-balance').innerText = `${balance.toFixed(2)} $NCORE`;
+            document.getElementById('upgrade-info').innerText = `Уровень древа: ${treeLevel}`;
+            document.getElementById('btn-upgrade-tree').disabled = !(balance >= 10 && treeLevel < 4);
+            localStorage.setItem('ncore_balance', balance); localStorage.setItem('ncore_tree_lvl', treeLevel);
         }
+        function upgradeTree() { if(balance >= 10) { balance -= 10; treeLevel++; updateUI(); refreshGarden(); } }
 
-        tonConnectUI.onStatusChange(async (wallet) => {
-            if (wallet) {
-                const response = await fetch(`https://tonapi.io/v2/accounts/${wallet.account.address}/nfts?collection=${COLLECTION}`);
-                const data = await response.json();
-                if (data.nft_items) {
-                    userNfts = data.nft_items;
-                    const list = document.getElementById('nft-list');
-                    list.innerHTML = '';
-                    userNfts.forEach((nft, i) => {
-                        const img = document.createElement('img');
-                        img.src = nft.metadata.image;
-                        img.className = 'thumb';
-                        img.onclick = () => buildArtifact(i);
-                        list.appendChild(img);
-                    });
-                    buildArtifact(0);
-                }
+        tonConnectUI.onStatusChange(async (w) => { if(w) { 
+            const res = await fetch(`https://tonapi.io/v2/accounts/${w.account.address}/nfts?collection=${COLLECTION}`);
+            const d = await res.json();
+            if(d.nft_items) {
+                userNfts = d.nft_items;
+                document.getElementById('nft-list').innerHTML = '';
+                userNfts.forEach((n, i) => {
+                    const img = document.createElement('img'); img.src = n.metadata.image; img.className = 'thumb';
+                    img.onclick = () => buildArtifact(i); document.getElementById('nft-list').appendChild(img);
+                });
+                buildArtifact(0);
             }
-        });
+        }});
     </script>
 </body>
 </html>
