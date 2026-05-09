@@ -6,15 +6,53 @@
     <title>Nature Core Engine v3.8</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
+        /* Обновленный блок переменных для гибкого дизайна */
         :root {
             --primary-green: #4caf50;
-            --rarity-common: #4caf50;
             --rarity-rare: #0070dd;
             --rarity-epic: #a335ee;
             --rarity-leg: #ffb100;
-            --dark-bg: #050a05;
-            --glow-color: #4caf50;
-            --gold-gradient: linear-gradient(90deg, #ffd700, #fff5b1, #ffb100, #ffd700);
+            
+            /* Новые переменные для дизайна */
+            --glass-bg: rgba(255, 255, 255, 0.07);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+            --main-font: 'Exo 2', sans-serif; /* Пример игрового шрифта */
+        }
+        
+        /* Улучшенная карточка атрибута с эффектом стекла */
+        .attr-item {
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--card-shadow);
+            padding: 8px 14px;
+            border-radius: 14px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        /* Анимация при наведении/нажатии на элемент коллекции */
+        .thumb {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .thumb:active {
+            transform: scale(0.9);
+            filter: brightness(1.2);
+        }
+        
+        /* Красивая кнопка с градиентом и свечением */
+        .btn-main {
+            background: linear-gradient(135deg, var(--primary-green) 0%, #2e7d32 100%);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            border: none;
+            transition: 0.3s;
+        }
+        
+        .btn-main:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
         }
 
         body {
