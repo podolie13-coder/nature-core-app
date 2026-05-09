@@ -27,33 +27,28 @@
             box-sizing: border-box;
         }
 
-        .header { text-align: center; margin-bottom: 20px; }
+        .header { text-align: center; margin-bottom: 15px; }
         h1 { font-size: 24px; margin-bottom: 10px; color: var(--primary-green); text-shadow: 0 0 20px var(--glow-green); text-transform: uppercase; letter-spacing: 3px; }
         
-        .badge-container { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+        .badge-container { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; }
         .rarity-badge {
             background: rgba(0, 0, 0, 0.6);
             padding: 4px 12px;
             border-radius: 12px;
             font-size: 11px;
             border: 1px solid var(--primary-green);
-            display: none;
             backdrop-filter: blur(5px);
+            display: none;
         }
 
-        .legacy-status {
-            color: var(--legacy-gold);
-            border-color: var(--legacy-gold);
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-        }
+        .legacy-status { color: var(--legacy-gold); border-color: var(--legacy-gold); }
 
-        /* Контейнер артефакта с анимацией свечения */
         .artifact-display {
-            width: 260px;
-            height: 260px;
+            width: 240px;
+            height: 240px;
             border-radius: 30px;
             position: relative;
-            margin: 10px 0 30px 0;
+            margin-bottom: 25px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -62,54 +57,50 @@
         .artifact-display::before {
             content: '';
             position: absolute;
-            width: 110%;
-            height: 110%;
+            width: 120%;
+            height: 120%;
             background: radial-gradient(circle, var(--glow-green) 0%, transparent 70%);
             animation: pulse-glow 4s infinite ease-in-out;
             z-index: -1;
         }
 
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 0.3; transform: scale(0.9); }
-            50% { opacity: 0.7; transform: scale(1.1); }
-        }
+        @keyframes pulse-glow { 0%, 100% { opacity: 0.2; transform: scale(0.9); } 50% { opacity: 0.6; transform: scale(1.1); } }
 
-        .artifact-image { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            border-radius: 30px;
-            display: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+        .artifact-image { width: 100%; height: 100%; object-fit: cover; border-radius: 30px; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            width: 100%;
-            max-width: 340px;
-        }
-
-        .stat-card {
-            background: rgba(255,255,255,0.03);
-            padding: 15px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
+        .balance-container {
             text-align: center;
-            transition: all 0.3s;
+            margin-bottom: 20px;
         }
 
-        .stat-card.active {
-            border-color: var(--primary-green);
-            box-shadow: inset 0 0 15px rgba(76, 175, 80, 0.1);
+        .balance-label { font-size: 10px; opacity: 0.6; text-transform: uppercase; letter-spacing: 2px; }
+        .balance-value { font-size: 32px; font-weight: 800; color: #fff; text-shadow: 0 0 10px var(--glow-green); }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 340px; margin-bottom: 20px; }
+        .stat-card { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }
+        .stat-value { font-size: 18px; font-weight: bold; color: var(--primary-green); }
+        .stat-label { font-size: 9px; opacity: 0.5; text-transform: uppercase; }
+
+        .btn-collect {
+            background: var(--primary-green);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 16px;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 0 20px var(--glow-green);
+            transition: transform 0.2s;
+            width: 100%;
+            max-width: 250px;
+            display: none;
         }
 
-        .stat-value { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
-        .stat-label { font-size: 9px; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-collect:active { transform: scale(0.95); }
 
-        .ui-panel { width: 100%; max-width: 340px; margin-top: auto; padding-bottom: 10px; }
+        .ui-panel { width: 100%; max-width: 340px; text-align: center; margin-top: auto; }
     </style>
 </head>
 <body>
@@ -124,43 +115,44 @@
 
     <div class="artifact-display">
         <img src="" alt="Artifact" class="artifact-image" id="nft-img">
-        <div id="loader" style="opacity: 0.5;">Сканирование...</div>
+        <div id="loader">Ожидание...</div>
+    </div>
+
+    <div class="balance-container" id="balance-ui" style="display: none;">
+        <div class="balance-label">Uncollected $NCORE</div>
+        <div class="balance-value" id="live-balance">0.0000</div>
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card" id="card-p">
+        <div class="stat-card">
             <div class="stat-value" id="power-val">0</div>
-            <div class="stat-label">Power Index</div>
+            <div class="stat-label">Power</div>
         </div>
-        <div class="stat-card" id="card-r">
-            <div class="stat-value" id="rate-val">0.0</div>
-            <div class="stat-label">$NCORE / DAY</div>
+        <div class="stat-card">
+            <div class="stat-value" id="daily-rate">0.0</div>
+            <div class="stat-label">$NCORE/Day</div>
         </div>
     </div>
 
     <div class="ui-panel">
-        <div id="ton-connect-button"></div>
+        <button class="btn-collect" id="collect-btn" onclick="collectReward()">Harvest Energy</button>
+        <div id="ton-connect-button" style="margin-top: 20px;"></div>
     </div>
 
     <script>
         const COLLECTION_ADDRESS = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
+        let currentBalance = 0;
+        let dailyRate = 0;
+
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: 'https://podolie13-coder.github.io/nature-core-app/tonconnect-manifest.json',
             buttonRootId: 'ton-connect-button'
         });
 
-        // Анимация набора цифр
-        function animateValue(id, start, end, duration) {
-            const obj = document.getElementById(id);
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                const current = (progress * (end - start) + start);
-                obj.innerHTML = id === 'rate-val' ? current.toFixed(1) : Math.floor(current);
-                if (progress < 1) window.requestAnimationFrame(step);
-            };
-            window.requestAnimationFrame(step);
+        function collectReward() {
+            alert(`Collected: ${currentBalance.toFixed(4)} $NCORE!`);
+            currentBalance = 0;
+            document.getElementById('live-balance').innerText = "0.0000";
         }
 
         tonConnectUI.onStatusChange(async (wallet) => {
@@ -177,6 +169,8 @@
                         document.getElementById('nft-img').src = nft.metadata.image;
                         document.getElementById('nft-img').style.display = 'block';
                         document.getElementById('loader').style.display = 'none';
+                        document.getElementById('balance-ui').style.display = 'block';
+                        document.getElementById('collect-btn').style.display = 'inline-block';
                         document.getElementById('badge').style.display = 'block';
                         document.getElementById('badge').innerText = name;
 
@@ -185,16 +179,17 @@
                             document.getElementById('legacy-badge').style.display = 'block';
                             power = 150;
                         }
+                        
+                        dailyRate = power * 0.1;
+                        document.getElementById('power-val').innerText = power;
+                        document.getElementById('daily-rate').innerText = dailyRate.toFixed(1);
 
-                        if (name.includes('Rare')) power += 50;
-                        if (name.includes('Epic')) power += 150;
-                        if (name.includes('Legendary')) power += 400;
-
-                        // Запуск анимаций
-                        animateValue("power-val", 0, power, 1500);
-                        animateValue("rate-val", 0, power * 0.1, 1500);
-                        document.getElementById('card-p').classList.add('active');
-                        document.getElementById('card-r').classList.add('active');
+                        // Запуск живого счетчика
+                        const perSecond = dailyRate / 86400; 
+                        setInterval(() => {
+                            currentBalance += perSecond / 10;
+                            document.getElementById('live-balance').innerText = currentBalance.toFixed(4);
+                        }, 100);
                     }
                 } catch (e) { console.error(e); }
             }
