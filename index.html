@@ -9,6 +9,7 @@
         :root {
             --primary-green: #4caf50;
             --glow-green: rgba(76, 175, 80, 0.4);
+            --legacy-gold: #ffd700;
             --dark-bg: #050a05;
         }
 
@@ -20,62 +21,71 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
-            overflow: hidden;
         }
 
-        .header { text-align: center; margin-top: 20px; }
-        h1 { font-size: 28px; margin-bottom: 5px; letter-spacing: 2px; text-transform: uppercase; color: var(--primary-green); text-shadow: 0 0 15px var(--glow-green); }
-        .subtitle { font-size: 14px; opacity: 0.7; }
-
-        .artifact-container {
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-        }
-
+        .header { text-align: center; margin-top: 10px; }
+        h1 { font-size: 24px; margin-bottom: 5px; color: var(--primary-green); text-shadow: 0 0 15px var(--glow-green); text-transform: uppercase; }
+        
         .artifact-display {
-            width: 280px;
-            height: 280px;
-            border-radius: 20px;
-            background: radial-gradient(circle, var(--glow-green) 0%, transparent 70%);
+            width: 260px;
+            height: 260px;
+            border-radius: 25px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(76, 175, 80, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
+            margin: 20px 0;
             overflow: hidden;
-            box-shadow: 0 0 30px rgba(76, 175, 80, 0.2);
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
         }
 
-        .artifact-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none; /* Скрыта пока не найдена NFT */
-        }
+        .artifact-image { width: 100%; height: 100%; object-fit: cover; display: none; }
 
-        .loader {
-            font-size: 12px;
-            opacity: 0.5;
-            text-align: center;
-        }
-
-        .ui-panel {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        /* Плашка редкости */
+        .rarity-badge {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 15px;
             border-radius: 20px;
-            padding: 20px;
+            font-size: 12px;
+            border: 1px solid var(--primary-green);
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .legacy-status {
+            color: var(--legacy-gold);
+            border-color: var(--legacy-gold);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            display: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
             width: 100%;
-            max-width: 350px;
+            max-width: 320px;
             margin-bottom: 20px;
         }
 
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .stat-value { font-size: 20px; font-weight: bold; color: var(--primary-green); }
+        .stat-label { font-size: 10px; opacity: 0.6; text-transform: uppercase; }
+
+        .ui-panel { width: 100%; max-width: 320px; }
         #ton-connect-button { display: flex; justify-content: center; }
     </style>
 </head>
@@ -83,13 +93,23 @@
 
     <div class="header">
         <h1>Nature Core</h1>
-        <div class="subtitle" id="status-text">Ожидание подключения...</div>
+        <div id="badge" class="rarity-badge">Common Artifact</div>
+        <div id="legacy-badge" class="rarity-badge legacy-status">FOUNDING 50 LEGACY</div>
     </div>
 
-    <div class="artifact-container">
-        <div class="artifact-display" id="artifact-box">
-            <img src="" alt="Artifact" class="artifact-image" id="nft-img">
-            <div class="loader" id="loader-text">Место для<br>Артефакта</div>
+    <div class="artifact-display">
+        <img src="" alt="Artifact" class="artifact-image" id="nft-img">
+        <div id="loader">Ожидание...</div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="power-val">0</div>
+            <div class="stat-label">Power Index</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="rate-val">0</div>
+            <div class="stat-label">$NCORE / DAY</div>
         </div>
     </div>
 
@@ -106,43 +126,42 @@
         });
 
         tonConnectUI.onStatusChange(async (wallet) => {
-            const statusText = document.getElementById('status-text');
-            const loaderText = document.getElementById('loader-text');
-            const nftImg = document.getElementById('nft-img');
-
             if (wallet) {
-                statusText.innerText = 'Сканирование кошелька...';
                 const address = wallet.account.address;
-                
                 try {
-                    // Используем публичный API TON для поиска NFT
                     const response = await fetch(`https://tonapi.io/v2/accounts/${address}/nfts?collection=${COLLECTION_ADDRESS}`);
                     const data = await response.json();
 
                     if (data.nft_items && data.nft_items.length > 0) {
-                        const nft = data.nft_items[0]; // Берем первый найденный артефакт
-                        const imageUrl = nft.metadata.image;
+                        const nft = data.nft_items[0];
+                        const name = nft.metadata.name;
                         
-                        // Показываем картинку
-                        nftImg.src = imageUrl;
-                        nftImg.style.display = 'block';
-                        loaderText.style.display = 'none';
-                        statusText.innerText = `Артефакт: ${nft.metadata.name}`;
-                        statusText.style.color = '#4caf50';
-                    } else {
-                        statusText.innerText = 'Артефакты не найдены';
-                        statusText.style.color = '#ff5252';
-                        loaderText.innerText = 'У вас нет NFT\nэтой коллекции';
+                        // ЛОГИКА ОПРЕДЕЛЕНИЯ ID
+                        const nftId = parseInt(name.split('#')[1]);
+                        
+                        document.getElementById('nft-img').src = nft.metadata.image;
+                        document.getElementById('nft-img').style.display = 'block';
+                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('badge').style.display = 'inline-block';
+                        document.getElementById('badge').innerText = name;
+
+                        // ЛОГИКА LEGACY (Первые 50)
+                        let power = 100;
+                        if (nftId <= 50) {
+                            document.getElementById('legacy-badge').style.display = 'inline-block';
+                            power = 150; // Бонус за Legacy статус
+                        }
+
+                        // ЛОГИКА РЕДКОСТИ ИЗ ИМЕНИ
+                        if (name.includes('Rare')) power += 50;
+                        if (name.includes('Epic')) power += 150;
+                        if (name.includes('Legendary')) power += 400;
+
+                        document.getElementById('power-val').innerText = power;
+                        document.getElementById('rate-val').innerText = (power * 0.1).toFixed(1);
+                        
                     }
-                } catch (e) {
-                    console.error(e);
-                    statusText.innerText = 'Ошибка связи с блокчейном';
-                }
-            } else {
-                statusText.innerText = 'Подключите кошелек для доступа';
-                nftImg.style.display = 'none';
-                loaderText.style.display = 'block';
-                loaderText.innerText = 'Место для\nАртефакта';
+                } catch (e) { console.error(e); }
             }
         });
     </script>
