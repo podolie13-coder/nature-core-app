@@ -36,20 +36,19 @@
     <div id="ton-connect-button"></div>
 
     <script>
-    const tonConnectUI = new TONConnectUI.TonConnectUI({
+    // Используем правильное имя объекта библиотеки
+    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
         manifestUrl: 'https://podolie13-coder.github.io/nature-core-app/tonconnect-manifest.json',
         buttonRootId: 'ton-connect-button'
     });
 
-    // Эта функция принудительно проверяет соединение
-    async function checkConnection() {
-        const currentWallet = tonConnectUI.wallet;
-        if (currentWallet) {
-            console.log('Кошелек подключен:', currentWallet.account.address);
+    // Слушатель статуса кошелька (для отладки)
+    tonConnectUI.onStatusChange(wallet => {
+        if (wallet) {
+            console.log('Кошелек подключен:', wallet);
+            document.querySelector('p').innerText = 'Кошелек успешно подключен!';
         }
-    }
-    
-    checkConnection();
+    });
 </script>
     
     </script>
