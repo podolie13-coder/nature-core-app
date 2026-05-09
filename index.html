@@ -27,22 +27,27 @@
         section { display: none; flex-direction: column; align-items: center; padding: 15px; height: calc(100vh - 70px); }
         section.active { display: flex; }
 
+        h1 { font-size: 20px; margin: 0 0 10px 0; color: var(--primary-green); text-transform: uppercase; letter-spacing: 2px; }
+
         /* Контейнер сборки артефакта */
         .artifact-canvas {
-            width: 250px; height: 250px;
+            width: 260px; height: 260px;
             position: relative;
-            margin: 20px 0;
+            margin: 10px 0;
             display: flex; align-items: center; justify-content: center;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
 
         .layer {
             position: absolute;
             width: 100%; height: 100%;
-            object-fit: contain;
+            object-fit: cover;
             pointer-events: none;
         }
 
-        .layer-bg { z-index: 1; border-radius: 30px; }
+        .layer-bg { z-index: 1; }
         
         .layer-frame { 
             z-index: 2; 
@@ -51,36 +56,40 @@
 
         .layer-core { 
             z-index: 3; 
-            width: 80%; height: 80%;
+            width: 85%; height: 85%;
             animation: float-core 4s infinite ease-in-out;
         }
 
         @keyframes float-core {
-            0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
-            50% { transform: translateY(-10px) scale(1.05); filter: drop-shadow(0 0 25px var(--glow-color, #fff)); }
+            0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 15px var(--glow-color, #fff)); }
+            50% { transform: translateY(-12px) scale(1.05); filter: drop-shadow(0 0 30px var(--glow-color, #fff)); }
         }
 
         @keyframes pulse-frame {
             0%, 100% { transform: scale(1); opacity: 0.9; }
-            50% { transform: scale(1.02); opacity: 1; }
+            50% { transform: scale(1.03); opacity: 1; }
         }
 
-        /* Остальной UI */
-        .artifact-selector { display: flex; gap: 10px; overflow-x: auto; width: 100%; padding: 10px 0; margin-bottom: 5px; }
-        .thumb { width: 50px; height: 50px; border-radius: 10px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; }
+        .artifact-selector { display: flex; gap: 10px; overflow-x: auto; width: 100%; padding: 5px; margin-bottom: 5px; scrollbar-width: none; }
+        .artifact-selector::-webkit-scrollbar { display: none; }
+        .thumb { width: 50px; height: 50px; border-radius: 10px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; object-fit: cover; }
         .thumb.active { opacity: 1; border-color: #fff !important; }
 
         .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 340px; margin-bottom: 10px; }
         .balance-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
         .bal-val { font-size: 18px; font-weight: 800; }
 
-        .rarity-badge { font-size: 11px; font-weight: 900; padding: 4px 15px; border-radius: 20px; border: 1px solid; margin-bottom: 5px; text-transform: uppercase; }
+        .rarity-badge { font-size: 11px; font-weight: 900; padding: 4px 15px; border-radius: 20px; border: 1px solid; margin-bottom: 10px; text-transform: uppercase; }
+
+        .btn-harvest { 
+            background: var(--primary-green); color: #000; border: none; padding: 12px; 
+            border-radius: 15px; font-weight: 900; width: 100%; max-width: 280px; 
+            margin-top: auto; box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+        }
 
         .nav-bar { height: 70px; background: rgba(0,0,0,0.9); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.4; font-size: 10px; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.4; font-size: 10px; cursor: pointer; }
         .nav-item.active { opacity: 1; color: var(--primary-green); }
-
-        .btn-harvest { background: var(--primary-green); color: #000; border: none; padding: 12px; border-radius: 15px; font-weight: 900; width: 100%; max-width: 280px; margin-top: auto; }
     </style>
 </head>
 <body>
@@ -105,7 +114,8 @@
             <img src="" id="layer-frame" class="layer layer-frame">
             <img src="" id="layer-core" class="layer layer-core">
         </div>
-        <div id="loader" style="margin: 50px; opacity: 0.5;">Loading artifacts...</div>
+        
+        <div id="loader" style="margin: 40px; opacity: 0.5;">Scanning artifacts...</div>
 
         <div id="rarity-badge" class="rarity-badge" style="display:none;"></div>
 
@@ -143,100 +153,61 @@
             navElement.classList.add('active');
         }
 
-        // Логика подбора файлов из метаданных
-           function getAssetPath(attributes) {
-        let info = { 
-            rarity: 'common', 
-            color: '#4caf50', 
-            bg: 'bg_MysticForest.png',
-            frameNum: 1,
-            coreNum: 1,
-            prefix: 'common' // по умолчанию
-        };
-    
-        attributes.forEach(attr => {
-            const type = attr.trait_type.toLowerCase();
-            const val = attr.value;
-    
-            // Поиск фона
-            if (type.includes('background')) {
-                if (val.includes('Void')) info.bg = 'bg_Abyssal_Void.png';
-                else if (val.includes('Ruins')) info.bg = 'bg_AncientRuins.png';
-                else if (val.includes('Forge')) info.bg = 'bg_EtherealForge.png';
-                else if (val.includes('Frozen')) info.bg = 'bg_Frozen.png';
-                else info.bg = 'bg_MysticForest.png';
-            }
-    
-            // Поиск редкости и номера рамки
-            if (type.includes('frame')) {
-                const numMatch = val.match(/\d+/);
-                if (numMatch) info.frameNum = numMatch[0];
-                
-                const lowerVal = val.toLowerCase();
-                if (lowerVal.includes('rare')) { info.rarity = 'rare'; info.prefix = 'rare'; info.color = '#0070dd'; }
-                else if (lowerVal.includes('epic')) { info.rarity = 'epic'; info.prefix = 'epic'; info.color = '#a335ee'; }
-                else if (lowerVal.includes('leg')) { info.rarity = 'legendary'; info.prefix = 'leg'; info.color = '#ffb100'; }
-                else { info.rarity = 'common'; info.prefix = 'common'; info.color = '#4caf50'; }
-            }
-    
-            // Поиск номера ядра
-            if (type.includes('core')) {
-                const numMatch = val.match(/\d+/);
-                if (numMatch) info.coreNum = numMatch[0];
-            }
-        });
-    
-        return info;
-    }
+        function parseMetadata(attributes) {
+            let res = { rarity: 'common', prefix: 'common', frame: 1, core: 1, bg: 'bg_MysticForest.png', color: '#4caf50' };
 
-// Внутри selectArtifact обнови этот блок:
-function selectArtifact(index) {
-    const nft = allNfts[index];
-    const assets = getAssetPath(nft.metadata.attributes || []);
-    
-    // ПРОВЕРЬ ЭТИ ПУТИ! Они должны точно совпадать с твоими папками в GitHub
-    const bgPath = `Background/${assets.bg}`;
-    const framePath = `frames/frame_${assets.prefix}_${assets.frameNum}.png`;
-    const corePath = `cores/Y_${assets.prefix}_${assets.coreNum}.png`;
+            attributes.forEach(a => {
+                const t = a.trait_type.toLowerCase();
+                const v = a.value;
 
-    console.log("Загрузка слоев:", {bgPath, framePath, corePath}); // Для отладки
+                if (t.includes('background')) {
+                    if (v.includes('Void')) res.bg = 'bg_Abyssal_Void.png';
+                    else if (v.includes('Ruins')) res.bg = 'bg_AncientRuins.png';
+                    else if (v.includes('Forge')) res.bg = 'bg_EtherealForge.png';
+                    else if (v.includes('Frozen')) res.bg = 'bg_Frozen.png';
+                }
 
-    document.getElementById('layer-bg').src = bgPath;
-    document.getElementById('layer-frame').src = framePath;
-    document.getElementById('layer-core').src = corePath;
-    
-    // ... остальной код (badge, power, и т.д.)
-}
+                if (t.includes('frame')) {
+                    const n = v.match(/\d+/);
+                    if (n) res.frame = n[0];
+                    if (v.toLowerCase().includes('rare')) { res.rarity = 'rare'; res.prefix = 'rare'; res.color = '#0070dd'; }
+                    else if (v.toLowerCase().includes('epic')) { res.rarity = 'epic'; res.prefix = 'epic'; res.color = '#a335ee'; }
+                    else if (v.toLowerCase().includes('leg')) { res.rarity = 'legendary'; res.prefix = 'leg'; res.color = '#ffb100'; }
+                }
+
+                if (t.includes('core')) {
+                    const n = v.match(/\d+/);
+                    if (n) res.core = n[0];
+                }
+            });
+            return res;
+        }
 
         function selectArtifact(index) {
             const nft = allNfts[index];
-            const assets = getAssetPath(nft.metadata.attributes || []);
-            const nftId = parseInt(nft.metadata.name.split('#')[1]);
+            const data = parseMetadata(nft.metadata.attributes || []);
+            const id = parseInt(nft.metadata.name.split('#')[1]);
 
-            // Сборка путей к файлам
-            document.getElementById('layer-bg').src = `Background/${assets.bg}`;
-            document.getElementById('layer-frame').src = `frames/frame_${assets.prefix}_${assets.frameNum}.png`;
-            document.getElementById('layer-core').src = `cores/Y_${assets.prefix}_${assets.coreNum}.png`;
+            // ПУТИ К ТВОИМ ПАПКАМ (с проверкой регистра)
+            document.getElementById('layer-bg').src = `Background/${data.bg}`;
+            document.getElementById('layer-frame').src = `frames/frame_${data.prefix}_${data.frame}.png`;
+            document.getElementById('layer-core').src = `cores/Y_${data.prefix}_${data.core}.png`;
 
             document.getElementById('canvas').style.display = 'flex';
             document.getElementById('loader').style.display = 'none';
+            document.documentElement.style.setProperty('--glow-color', data.color);
 
-            // Обновление свечения
-            document.documentElement.style.setProperty('--glow-color', assets.color);
-
-            // Бейдж
             const badge = document.getElementById('rarity-badge');
-            badge.innerText = `${assets.rarity} #${nftId}`;
-            badge.style.color = assets.color;
-            badge.style.borderColor = assets.color;
+            badge.innerText = `${data.rarity} #${id}`;
+            badge.style.color = data.color;
+            badge.style.borderColor = data.color;
             badge.style.display = 'block';
 
-            // Экономика
             let power = 100;
-            if (assets.rarity === 'rare') power = 250;
-            if (assets.rarity === 'epic') power = 550;
-            if (assets.rarity === 'legendary') power = 1200;
-            if (nftId <= 50) power += 100;
+            if (data.rarity === 'rare') power = 250;
+            if (data.rarity === 'epic') power = 550;
+            if (data.rarity === 'legendary') power = 1200;
+            if (id <= 50) power += 150;
 
             let rate = power * 0.1;
             document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
@@ -252,9 +223,9 @@ function selectArtifact(index) {
         tonConnectUI.onStatusChange(async (wallet) => {
             if (wallet) {
                 const response = await fetch(`https://tonapi.io/v2/accounts/${wallet.account.address}/nfts?collection=${COLLECTION}`);
-                const data = await response.json();
-                if (data.nft_items) {
-                    allNfts = data.nft_items;
+                const resData = await response.json();
+                if (resData.nft_items) {
+                    allNfts = resData.nft_items;
                     document.getElementById('main-ui').style.display = 'grid';
                     document.getElementById('harvest-btn').style.display = 'block';
                     const selector = document.getElementById('selector');
