@@ -3,37 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nature Core Engine v3.5</title>
+    <title>Nature Core Engine v3.6</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
-        /* Стиль остается прежним (v3.4), включая компактный размер 180px и живой фон */
         :root {
             --primary-green: #4caf50;
             --dark-bg: #050a05;
             --glow-color: #4caf50;
             --gold-gradient: linear-gradient(90deg, #ffd700, #fff5b1, #ffb100, #ffd700);
         }
-        body { background: var(--dark-bg); color: #e0f2e0; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        #app-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background-size: cover; background-position: center; filter: blur(15px) brightness(0.3); transition: background-image 1s ease-in-out; transform: scale(1.1); }
-        .bg-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(circle at center, transparent 0%, var(--dark-bg) 100%); }
-        section { display: none; flex-direction: column; align-items: center; padding: 10px; height: calc(100vh - 70px); box-sizing: border-box; z-index: 1; overflow-y: auto; }
-        section.active { display: flex; }
+
+        body {
+            background: var(--dark-bg);
+            color: #e0f2e0;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0; padding: 0; height: 100vh;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Исправлено: Z-index фона теперь точно сзади */
+        #app-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -2; 
+            background-size: cover;
+            background-position: center;
+            filter: blur(15px) brightness(0.3);
+            transition: background-image 1s ease-in-out;
+            transform: scale(1.1);
+        }
+
+        .bg-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at center, transparent 0%, var(--dark-bg) 100%);
+        }
+
+        /* Исправлено: Гарантированная видимость активной секции */
+        section { 
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 10px; 
+            height: calc(100vh - 70px); 
+            box-sizing: border-box; 
+            overflow-y: auto;
+            width: 100%;
+        }
+        section.active { display: flex !important; }
+
         #artifact-name { font-size: 16px; font-weight: 900; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 2px; }
-        #origin-badge { font-size: 10px; font-weight: 900; color: #000; background: var(--gold-gradient); background-size: 300% 100%; padding: 4px 12px; border-radius: 20px; margin-bottom: 8px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); animation: gold-flow 3s linear infinite; display: none; }
+
+        #origin-badge { 
+            font-size: 10px; font-weight: 900; color: #000;
+            background: var(--gold-gradient); background-size: 300% 100%;
+            padding: 4px 12px; border-radius: 20px; margin-bottom: 8px; 
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+            animation: gold-flow 3s linear infinite; display: none;
+        }
+
         @keyframes gold-flow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-        .artifact-canvas { width: 180px; height: 180px; position: relative; margin: 5px 0; display: flex; align-items: center; justify-content: center; border-radius: 30px; overflow: hidden; box-shadow: 0 0 25px rgba(0,0,0,0.9); background: rgba(0,0,0,0.6); }
-        .attr-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: 100%; max-width: 320px; margin: 10px 0; }
-        .attr-item { background: rgba(255,255,255,0.05); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 12px; text-align: center; min-width: 80px; }
-        .attr-label { font-size: 7px; opacity: 0.5; text-transform: uppercase; margin-bottom: 2px; letter-spacing: 1px; }
+
+        .artifact-canvas {
+            width: 180px; height: 180px; position: relative; margin: 10px 0;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 30px; overflow: hidden;
+            box-shadow: 0 0 25px rgba(0,0,0,0.9); background: rgba(0,0,0,0.6);
+        }
+
+        .attr-container {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: 6px; width: 100%; max-width: 320px; margin: 10px 0;
+        }
+        .attr-item {
+            background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1); padding: 5px 12px;
+            border-radius: 12px; text-align: center; min-width: 80px;
+        }
+        .attr-label { font-size: 7px; opacity: 0.5; text-transform: uppercase; margin-bottom: 2px; }
         .attr-value { font-size: 10px; font-weight: bold; color: var(--primary-green); }
+
         .layer { position: absolute; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
         .layer-core { width: 82%; height: 82%; animation: core-float 3s infinite ease-in-out; }
-        @keyframes core-float { 0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--glow-color)); } 50% { transform: translateY(-7px); filter: drop-shadow(0 0 25px var(--glow-color)); } }
-        .artifact-selector { display: flex; gap: 8px; overflow-x: auto; width: 100%; padding: 5px 0; scrollbar-width: none; }
-        .thumb { width: 52px; height: 52px; border-radius: 10px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; transition: 0.3s; }
+
+        @keyframes core-float { 
+            0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--glow-color)); }
+            50% { transform: translateY(-7px); filter: drop-shadow(0 0 25px var(--glow-color)); }
+        }
+
+        .artifact-selector { display: flex; gap: 8px; overflow-x: auto; width: 100%; padding: 5px 0; min-height: 60px; }
+        .thumb { width: 52px; height: 52px; border-radius: 10px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; }
         .thumb.active { opacity: 1; border-color: white; transform: scale(1.1); }
-        .btn-main { background: var(--primary-green); color: black; border: none; padding: 12px 35px; border-radius: 15px; font-weight: 800; font-size: 15px; cursor: pointer; margin-top: auto; margin-bottom: 15px; }
-        .nav-bar { height: 70px; background: rgba(0,0,0,0.9); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; }
+
+        .nav-bar { 
+            height: 70px; background: rgba(0,0,0,0.9); border-top: 1px solid rgba(255,255,255,0.1); 
+            display: flex; justify-content: space-around; align-items: center; 
+            position: fixed; bottom: 0; width: 100%; z-index: 100;
+        }
         .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.6; font-size: 10px; cursor: pointer; }
         .nav-item.active { opacity: 1; color: var(--primary-green); }
     </style>
@@ -47,49 +116,47 @@
         <div id="artifact-name">Nature Artifact</div>
         <div id="origin-badge">👑 Genesis Edition 👑</div>
         <div class="artifact-selector" id="nft-list"></div>
+        
         <div id="canvas-container" class="artifact-canvas" style="display: none;">
             <img src="" id="img-bg" class="layer">
             <img src="" id="img-frame" class="layer" style="z-index: 2;">
             <img src="" id="img-core" class="layer layer-core" style="z-index: 3;">
         </div>
+
         <div class="attr-container" id="nft-attrs"></div>
-        <button class="btn-main" id="harvest-btn" style="display: none;" onclick="harvestEnergy()">Harvest Energy</button>
-        <div id="ton-connect-btn"></div>
+        <div id="ton-connect-btn" style="margin-top: 20px;"></div>
+    </section>
+
+    <!-- Секции Token и Quests -->
+    <section id="screen-token">
+        <h1>Nature Ecosystem</h1>
+        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px; margin-top: 50px;">
+            <h2 style="color: var(--primary-green);">$NCORE</h2>
+            <p>Токен в разработке</p>
+        </div>
+    </section>
+
+    <section id="screen-quests">
+        <h1>Задания</h1>
+        <div style="opacity: 0.3; margin-top: 50px;">Скоро...</div>
     </section>
 
     <nav class="nav-bar">
         <div class="nav-item active" onclick="switchTab('screen-core', this)"><span>🌿</span><span>Артефакт</span></div>
-        <div class="nav-item"><span>🪙</span><span>Токен</span></div>
-        <div class="nav-item"><span>📜</span><span>Задания</span></div>
+        <div class="nav-item" onclick="switchTab('screen-token', this)"><span>🪙</span><span>Токен</span></div>
+        <div class="nav-item" onclick="switchTab('screen-quests', this)"><span>📜</span><span>Задания</span></div>
     </nav>
 
     <script>
         const PATH_ASSETS = 'assets/';
-        const COLLECTION = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKB (Ваш адрес)';
+        const COLLECTION = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
         let userNfts = [];
-        let totalBalance = parseFloat(localStorage.getItem('ncore_total')) || 0;
-        let sessionAccrual = 0;
-        let miningTimer = null;
 
-        // --- РАСШИРЕННЫЙ СЛОВАРЬ ЯДЕР (13 ТИПОВ) ---
         const CORE_NAMES = {
-            // Обычные (Common)
-            "Common 1": "Wood Core",
-            "Common 2": "Stone Core",
-            "Common 3": "Metal Core",
-            // Редкие (Rare)
-            "Rare 1": "Frost Core",
-            "Rare 2": "Storm Core",
-            "Rare 3": "Ember Core",
-            "Rare 4": "Terra Core",
-            // Эпические (Epic)
-            "Epic 1": "Void Core",
-            "Epic 2": "Plasma Core",
-            "Epic 3": "Solar Core",
-            // Легендарные (Legendary)
-            "Legendary 1": "Nature Core",
-            "Legendary 2": "Ancient Core",
-            "Legendary 3": "Eternal Core"
+            "Common 1": "Wood Core", "Common 2": "Stone Core", "Common 3": "Metal Core",
+            "Rare 1": "Frost Core", "Rare 2": "Storm Core", "Rare 3": "Ember Core", "Rare 4": "Terra Core",
+            "Epic 1": "Void Core", "Epic 2": "Plasma Core", "Epic 3": "Solar Core",
+            "Legendary 1": "Nature Core", "Legendary 2": "Ancient Core", "Legendary 3": "Eternal Core"
         };
 
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
@@ -99,7 +166,9 @@
 
         function switchTab(screenId, el) {
             document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
+            const target = document.getElementById(screenId);
+            if(target) target.classList.add('active');
+            
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             el.classList.add('active');
         }
@@ -107,16 +176,13 @@
         function formatAttributeValue(val) {
             if (!val) return "";
             if (val.startsWith('bg_')) return val.replace('bg_', '').replace(/_/g, ' ');
-            
             if (val.startsWith('Y_')) {
                 const parts = val.split('_');
                 if (parts.length >= 3) {
                     const rarity = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
-                    const technicalName = `${rarity} ${parts[2]}`;
-                    return CORE_NAMES[technicalName] || `${technicalName} Type`;
+                    return CORE_NAMES[`${rarity} ${parts[2]}`] || `${rarity} ${parts[2]} Type`;
                 }
             }
-            
             if (val.startsWith('frame_')) {
                 const parts = val.split('_');
                 if (parts.length >= 3) {
@@ -136,9 +202,9 @@
                 const response = await fetch(`${PATH_ASSETS}metadata/${id}.json`);
                 const meta = await response.json();
                 document.getElementById('artifact-name').innerText = meta.name || `Artifact #${id}`;
+                
                 const originBadge = document.getElementById('origin-badge');
                 originBadge.style.display = (id <= 50) ? 'block' : 'none';
-                if(id <= 50) originBadge.innerText = `👑 Genesis Edition ${id}/50 👑`;
 
                 const attrContainer = document.getElementById('nft-attrs');
                 attrContainer.innerHTML = '';
@@ -159,37 +225,14 @@
                     if (typeLow === 'core') coreFile = rawVal + ".png";
                 });
 
-                const fullBgPath = `${PATH_ASSETS}backgrounds/${bgFile}`;
-                document.getElementById('img-bg').src = fullBgPath;
+                document.getElementById('img-bg').src = `${PATH_ASSETS}backgrounds/${bgFile}`;
                 document.getElementById('img-frame').src = `${PATH_ASSETS}frames/${frameFile}`;
                 document.getElementById('img-core').src = `${PATH_ASSETS}cores/${coreFile}`;
-                document.getElementById('app-bg').style.backgroundImage = `url('${fullBgPath}')`;
+                document.getElementById('app-bg').style.backgroundImage = `url('${PATH_ASSETS}backgrounds/${bgFile}')`;
 
-                let rarityColor = "#4caf50";
-                const lowFrame = frameFile.toLowerCase();
-                if (lowFrame.includes('rare')) rarityColor = "#0070dd";
-                else if (lowFrame.includes('epic')) rarityColor = "#a335ee";
-                else if (lowFrame.includes('leg')) rarityColor = "#ffb100";
-                document.documentElement.style.setProperty('--glow-color', rarityColor);
                 document.getElementById('canvas-container').style.display = 'flex';
-                document.getElementById('harvest-btn').style.display = 'block';
-                startMining(frameFile, id);
-            } catch (err) { console.error(err); }
-        }
-
-        function startMining(frameFile, id) {
-            if (miningTimer) clearInterval(miningTimer);
-            let power = 100;
-            if (frameFile.toLowerCase().includes('rare')) power = 250;
-            if (parseInt(id) <= 50) power += 150;
-            const rate = power * 0.00001;
-            miningTimer = setInterval(() => { sessionAccrual += rate; }, 1000);
-        }
-
-        function harvestEnergy() {
-            totalBalance += sessionAccrual;
-            sessionAccrual = 0;
-            localStorage.setItem('ncore_total', totalBalance);
+                document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
+            } catch (err) { console.error("Error loading NFT data:", err); }
         }
 
         tonConnectUI.onStatusChange(async (wallet) => {
