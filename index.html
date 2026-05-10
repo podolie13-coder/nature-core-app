@@ -356,11 +356,11 @@
         const loadingInterval = setInterval(() => {
             if (!isLoaded) {
                 // Пока файлы реально качаются, медленно ползем до 90% (шаг 1-4%)
-                progress += Math.floor(Math.random() * 4) + 1;
+                progress += Math.floor(Math.random() * 2) + 1;
                 if (progress > 90) progress = 90;
             } else {
                 // Когда файлы скачались, плавно, но уверенно добегаем до 100%
-                progress += 8; 
+                progress += 2; 
                 if (progress >= 100) {
                     progress = 100;
                     clearInterval(loadingInterval); // Останавливаем бегунок
@@ -381,7 +381,7 @@
         window.addEventListener('load', () => {
             // Даже если это произошло за 0.01 сек, мы просто даем "зеленый свет",
             // а бегунок сам красиво дойдет до 100% в своем темпе.
-            setTimeout(() => { isLoaded = true; }, 500); // Искусственная минимальная задержка
+            setTimeout(() => { isLoaded = true; }, 1500); // Искусственная минимальная задержка
         });
     </script>
 </body>
