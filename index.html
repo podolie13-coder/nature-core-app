@@ -222,14 +222,12 @@
             return 'var(--rarity-common)';
         }
 
-        // Вспомогательная функция: заставляет браузер скачать картинку в фоне
         const preloadImage = (src) => new Promise(res => { const img = new Image(); img.onload = res; img.onerror = res; img.src = src; });
 
         async function buildArtifact(index) {
             selectedArtifact = userNfts[index];
             const id = selectedArtifact.metadata.name.match(/#(\d+)/)[1];
             
-            // 1. Анимация: делаем холст полупрозрачным и размытым на время загрузки
             const canvas = document.getElementById('canvas-container');
             canvas.style.transition = 'opacity 0.3s ease, filter 0.3s ease';
             if (canvas.style.display !== 'none') {
@@ -259,19 +257,31 @@
                 selectedArtifact.bgPath = `${PATH_ASSETS}backgrounds/${bgF}`;
                 selectedArtifact.framePath = `${PATH_ASSETS}frames/${frameF}`;
 
-                // 2. Ждем, пока браузер скачает все 3 новые картинки "в фоне"
-                await Promise.all([
-                    preloadImage(selectedArtifact.bgPath),
-                    preloadImage(selectedArtifact.framePath),
-                    preloadArtifact(selectedArtifact.corePath) // Здесь используем тот же путь, просто переменная 
-                ].map(p => preloadImage(p.src || p))); // Универсальная загрузка для путей
-
-                // Исправленный блок Promise.all (используем только пути)
                 await Promise.all([
                     preloadImage(selectedArtifact.bgPath),
                     preloadImage(selectedArtifact.framePath),
                     preloadImage(selectedArtifact.corePath)
                 ]);
+
+                document.getElementById('img-core').src = selectedArtifact.corePath;
+                document.getElementById('img-bg').src = selectedArtifact.bgPath;
+                document.getElementById('img-frame').src = selectedArtifact.framePath;
+                
+                document.getElementById('app-bg').style.backgroundImage = `url('${selectedArtifact.bgPath}')`;
+                document.documentElement.style.setProperty('--glow-color', getRarityColor(frameF));
+                
+                canvas.style.display = 'flex';
+                document.getElementById('btn-enter-game').style.display = 'block';
+                document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
+
+                canvas.style.opacity = '1';
+                canvas.style.filter = 'blur(0px)';
+
+            } catch(e) {
+                canvas.style.opacity = '1';
+                canvas.style.filter = 'blur(0px)';
+            }
+        }
 
                 // 3. Только ТЕПЕРЬ подставляем картинки (моргания не будет!)
                 document.getElementById('img-core').src = selectedArtifact.corePath;
