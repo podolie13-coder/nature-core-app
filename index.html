@@ -428,31 +428,38 @@
             async function updateTokenBalance(userAddress) {
     const balanceValueElement = document.getElementById('balance-value');
     const pageBalance = document.getElementById('token-page-balance');
-    
     if (!balanceValueElement) return;
 
     try {
+        // Делаем запрос к блокчейну
         const response = await fetch(`https://tonapi.io/v2/accounts/${userAddress}/jettons`);
         const data = await response.json();
-        const myToken = data.balances.find(item => item.jetton.address === JETTON_MASTER_ADDRESS);
+        
+        // ВАЖНО: Выведи это в консоль, чтобы мы видели, что пришло!
+        console.log("Данные из TON:", data);
+
+        // Ищем наш токен (сделаем поиск более гибким)
+        const myToken = data.balances.find(item => {
+            const addr = item.jetton.address.toLowerCase();
+            const target = JETTON_MASTER_ADDRESS.toLowerCase();
+            return addr === target || addr.includes(target.slice(4, 20));
+        });
         
         if (myToken) {
             const decimals = myToken.jetton.decimals || 9;
             const balance = parseFloat(myToken.balance) / Math.pow(10, decimals);
-            const formatted = balance.toFixed(2); // Создаем готовую строку один раз
+            const formatted = balance.toLocaleString('ru-RU', { minimumFractionDigits: 2 });
 
-            // Обновляем оба места
             balanceValueElement.innerText = formatted;
             if (pageBalance) pageBalance.innerText = formatted;
         } else {
-            // Если токена нет на кошельке
+            console.log("Токен NCORE не найден в этом кошельке");
             balanceValueElement.innerText = '0';
             if (pageBalance) pageBalance.innerText = '0.00';
         }
     } catch (error) {
-        console.error("Ошибка баланса:", error);
+        console.error("Ошибка сети:", error);
         balanceValueElement.innerText = "!";
-        if (pageBalance) pageBalance.innerText = "!";
     }
 }
     </script>
