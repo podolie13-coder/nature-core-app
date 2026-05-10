@@ -149,9 +149,20 @@
 
         <!-- Остальные секции (Token, Quests) -->
         <section id="screen-token">
-            <h2>Токен $NCORE</h2>
-            <div style="font-size: 50px; margin: 30px;">🪙</div>
-            <p id="total-earned">Баланс: 0.00</p>
+            <div id="token-tab" style="text-align: center; padding-top: 50px;">
+    <h2 style="color: white; text-shadow: 0 0 10px rgba(255,255,255,0.5);">$NCORE</h2>
+
+    <div style="position: relative; display: inline-block; margin: 20px 0;">
+        <img src="assets/img/Tokken.png" alt="NCORE" 
+             style="width: 120px; height: 120px; border-radius: 50%; border: 2px solid #ff33cc; 
+                    box-shadow: 0 0 30px #ff33cc, inset 0 0 15px #ff33cc; 
+                    background: rgba(255, 51, 204, 0.1);">
+    </div>
+
+    <div style="color: #fff; font-size: 20px; margin-top: 15px;">
+        Баланс: <span id="token-page-balance" style="color: #ff33cc; font-weight: bold; text-shadow: 0 0 10px #ff33cc;">0.00</span>
+    </div>
+</div>
         </section>
         <section id="screen-quests"><h2>Задания</h2><p style="opacity: 0.5;">Скоро...</p></section>
 
@@ -415,30 +426,35 @@
         const JETTON_MASTER_ADDRESS = "EQB7WnaQKR7nrHZMUmqu3WednOdOIabbu3G0P13TicxTEdVv"; // Вставь сюда адрес своего токена
         
             async function updateTokenBalance(userAddress) {
-        const balanceValueElement = document.getElementById('balance-value');
-        if (!balanceValueElement) return;
+    const balanceValueElement = document.getElementById('balance-value');
+    const pageBalance = document.getElementById('token-page-balance');
     
-        try {
-            const response = await fetch(`https://tonapi.io/v2/accounts/${userAddress}/jettons`);
-            const data = await response.json();
-            
-            // Ищем наш токен
-            const myToken = data.balances.find(item => item.jetton.address === JETTON_MASTER_ADDRESS);
-            
-            if (myToken) {
-                const decimals = myToken.jetton.decimals || 9;
-                const balance = parseFloat(myToken.balance) / Math.pow(10, decimals);
-                
-                // Обновляем только цифру
-                balanceValueElement.innerText = balance.toFixed(2);
-            } else {
-                balanceValueElement.innerText = '0';
-            }
-        } catch (error) {
-            console.error("Ошибка баланса:", error);
-            balanceValueElement.innerText = "!";
-}
+    if (!balanceValueElement) return;
+
+    try {
+        const response = await fetch(`https://tonapi.io/v2/accounts/${userAddress}/jettons`);
+        const data = await response.json();
+        const myToken = data.balances.find(item => item.jetton.address === JETTON_MASTER_ADDRESS);
+        
+        if (myToken) {
+            const decimals = myToken.jetton.decimals || 9;
+            const balance = parseFloat(myToken.balance) / Math.pow(10, decimals);
+            const formatted = balance.toFixed(2); // Создаем готовую строку один раз
+
+            // Обновляем оба места
+            balanceValueElement.innerText = formatted;
+            if (pageBalance) pageBalance.innerText = formatted;
+        } else {
+            // Если токена нет на кошельке
+            balanceValueElement.innerText = '0';
+            if (pageBalance) pageBalance.innerText = '0.00';
         }
+    } catch (error) {
+        console.error("Ошибка баланса:", error);
+        balanceValueElement.innerText = "!";
+        if (pageBalance) pageBalance.innerText = "!";
+    }
+}
     </script>
 </body>
 </html>
