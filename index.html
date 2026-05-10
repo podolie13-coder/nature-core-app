@@ -283,48 +283,6 @@
             }
         }
 
-                // 3. Только ТЕПЕРЬ подставляем картинки (моргания не будет!)
-                document.getElementById('img-core').src = selectedArtifact.corePath;
-                document.getElementById('img-bg').src = selectedArtifact.bgPath;
-                document.getElementById('img-frame').src = selectedArtifact.framePath;
-                
-                document.getElementById('app-bg').style.backgroundImage = `url('${selectedArtifact.bgPath}')`;
-                document.documentElement.style.setProperty('--glow-color', getRarityColor(frameF));
-                
-                canvas.style.display = 'flex';
-                document.getElementById('btn-enter-game').style.display = 'block';
-                document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
-
-                // 4. Возвращаем холсту яркость и четкость
-                canvas.style.opacity = '1';
-                canvas.style.filter = 'blur(0px)';
-
-            } catch(e) {
-                // В случае ошибки (например, нет интернета) возвращаем нормальный вид
-                canvas.style.opacity = '1';
-                canvas.style.filter = 'blur(0px)';
-                console.error("Ошибка загрузки артефакта:", e);
-            }
-        }
-                
-                // СОХРАНЯЕМ ПУТИ К СЛОЯМ
-                selectedArtifact.corePath = `${PATH_ASSETS}cores/${coreF}`;
-                selectedArtifact.bgPath = `${PATH_ASSETS}backgrounds/${bgF}`;
-                selectedArtifact.framePath = `${PATH_ASSETS}frames/${frameF}`;
-
-                document.getElementById('img-core').src = selectedArtifact.corePath;
-                document.getElementById('img-bg').src = selectedArtifact.bgPath;
-                document.getElementById('img-frame').src = selectedArtifact.framePath;
-                
-                document.getElementById('app-bg').style.backgroundImage = `url('${selectedArtifact.bgPath}')`;
-                document.documentElement.style.setProperty('--glow-color', getRarityColor(frameF));
-                
-                document.getElementById('canvas-container').style.display = 'flex';
-                document.getElementById('btn-enter-game').style.display = 'block';
-                document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
-            } catch(e) {}
-        }
-
         function refreshGarden() {
             if(!selectedArtifact) return;
             // ОБНОВЛЯЕМ ВСЕ СЛОИ В САДУ
