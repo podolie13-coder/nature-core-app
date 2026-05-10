@@ -121,7 +121,9 @@
         
         <!-- Вот сюда автоматически отрисуется кнопка кошелька -->
         <div id="ton-connect-btn"></div>
-        
+        <div id="token-balance" style="font-size: 16px; font-weight: bold; color: #ff33cc; margin-bottom: 15px; text-shadow: 0 0 5px #ff33cc;">
+        Баланс: 0 $NCORE
+    </div>
         <button onclick="toggleProfile()" style="margin-top: 15px; width: 100%; background: none; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px; border-radius: 8px; cursor: pointer; font-size: 12px;">Закрыть</button>
     </div>
     <!-- НОВЫЙ БЛОК ПРОФИЛЯ КОНЕЦ -->
@@ -342,6 +344,13 @@
                     img.onclick = () => buildArtifact(i); document.getElementById('nft-list').appendChild(img);
                 });
                 buildArtifact(0);
+             if (w) {
+             const address = wallet.account.address;
+             // ... твой код отображения адреса ...
+        
+             // Обновляем баланс нашего токена
+             updateTokenBalance(address);
+             
             }
         }});
         // Логика управления окном профиля
@@ -402,6 +411,34 @@
             // а бегунок сам красиво дойдет до 100% в своем темпе.
             setTimeout(() => { isLoaded = true; }, 1500); // Искусственная минимальная задержка
         });
+        // Конфигурация твоего токена
+        const JETTON_MASTER_ADDRESS = "АДРЕС_ТВОЕГО_ТОКЕН_МАСТЕРА"; // Вставь сюда адрес своего токена
+        
+        async function updateTokenBalance(userAddress) {
+            const balanceElement = document.getElementById('token-balance');
+            
+            try {
+                // Делаем запрос к API, чтобы получить балансы Jettons пользователя
+                const response = await fetch(`https://tonapi.io/v2/accounts/${userAddress}/jettons`);
+                const data = await response.json();
+                
+                // Ищем среди всех токенов на кошельке именно наш по адресу мастера
+                const myToken = data.balances.find(item => item.jetton.address === JETTON_MASTER_ADDRESS);
+                
+                if (myToken) {
+                    // Баланс в блокчейне хранится в "нано-единицах" (обычно 9 знаков после запятой)
+                    const decimals = myToken.jetton.decimals || 9;
+                    const balance = parseFloat(myToken.balance) / Math.pow(10, decimals);
+                    
+                    balanceElement.innerText = `Баланс: ${balance.toFixed(2)} $NCORE`;
+                } else {
+                    balanceElement.innerText = `Баланс: 0 $NCORE`;
+                }
+            } catch (error) {
+                console.error("Ошибка при получении баланса токена:", error);
+                balanceElement.innerText = "Баланс: ошибка";
+            }
+        }
     </script>
 </body>
 </html>
