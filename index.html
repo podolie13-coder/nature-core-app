@@ -318,9 +318,33 @@
                 menu.style.display = 'none';
             }
         });
-        // Скрытие загрузочного экрана после полной загрузки страницы
+        // Логика прогресс-бара и загрузочного экрана
+        let progress = 0;
+        const progressBar = document.getElementById('progress-bar');
+        const loadingText = document.getElementById('loading-text');
+        const loader = document.getElementById('loading-screen');
+
+        // Функция обновления визуала
+        function updateProgress(val) {
+            if (progressBar) progressBar.style.width = val + '%';
+            if (loadingText) loadingText.innerText = val + '%';
+        }
+
+        // Имитация загрузки до 90% (пока браузер грузит файлы)
+        const loadingInterval = setInterval(() => {
+            if (progress < 90) {
+                progress += Math.floor(Math.random() * 15) + 5; // прыгаем на 5-20%
+                if (progress > 90) progress = 90;
+                updateProgress(progress);
+            }
+        }, 200);
+
+        // Когда страница загружена ПОЛНОСТЬЮ
         window.addEventListener('load', () => {
-            const loader = document.getElementById('loading-screen');
+            clearInterval(loadingInterval); // Останавливаем имитацию
+            updateProgress(100); // Ставим ровно 100%
+            
+            // Ждем полсекунды, чтобы игрок увидел 100%, и скрываем экран
             setTimeout(() => {
                 if (loader) {
                     loader.style.opacity = '0';
