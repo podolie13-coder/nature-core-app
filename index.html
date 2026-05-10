@@ -80,6 +80,23 @@
     </style>
 </head>
 <body>
+    <body>
+    <!-- НОВЫЙ БЛОК ПРОФИЛЯ НАЧАЛО -->
+    <div id="profile-icon" onclick="toggleProfile()" style="position: fixed; top: 15px; right: 15px; z-index: 1001; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); padding: 8px; border-radius: 50%; border: 1px solid var(--glow-color);">
+        👤
+    </div>
+
+    <div id="profile-menu" style="display: none; position: fixed; top: 65px; right: 15px; width: 220px; background: rgba(5, 10, 5, 0.98); border: 1px solid var(--glow-color); border-radius: 15px; padding: 15px; z-index: 1001; box-shadow: 0 0 20px rgba(0,0,0,0.5); backdrop-filter: blur(10px);">
+        <h4 style="margin: 0 0 10px 0; color: var(--primary-green);">Профиль</h4>
+        
+        <!-- Вот сюда автоматически отрисуется кнопка кошелька -->
+        <div id="ton-connect-btn"></div>
+        
+        <button onclick="toggleProfile()" style="margin-top: 15px; width: 100%; background: none; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px; border-radius: 8px; cursor: pointer; font-size: 12px;">Закрыть</button>
+    </div>
+    <!-- НОВЫЙ БЛОК ПРОФИЛЯ КОНЕЦ -->
+
+    <div id="app-bg"></div>
     <div id="app-bg"></div>
     <div class="bg-overlay"></div>
     <div id="portal-overlay"></div>
@@ -95,7 +112,6 @@
             </div>
             <div class="attr-container" id="nft-attrs"></div>
             <button class="btn-main" id="btn-enter-game" style="display:none; background:var(--primary-green);" onclick="enterGame()">Использовать Артефакт</button>
-            <div id="ton-connect-btn"></div>
             <footer>&copy; 2026 Nature Core Project. All intellectual property belongs to the creator.</footer>
         </section>
 
@@ -276,6 +292,21 @@
                 buildArtifact(0);
             }
         }});
+        // Логика управления окном профиля
+        function toggleProfile() {
+            const menu = document.getElementById('profile-menu');
+            const isHidden = menu.style.display === 'none';
+            menu.style.display = isHidden ? 'block' : 'none';
+        }
+
+        // Закрытие меню при клике в любое другое место экрана
+        window.addEventListener('click', (e) => {
+            const menu = document.getElementById('profile-menu');
+            const icon = document.getElementById('profile-icon');
+            if (menu && icon && !menu.contains(e.target) && !icon.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
