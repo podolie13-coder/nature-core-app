@@ -340,40 +340,48 @@
                 menu.style.display = 'none';
             }
         });
-        // Логика прогресс-бара и загрузочного экрана
+        // Логика прогресс-бара (гарантированная плавная анимация)
         let progress = 0;
+        let isLoaded = false; // Флаг: скачались ли файлы?
         const progressBar = document.getElementById('progress-bar');
         const loadingText = document.getElementById('loading-text');
         const loader = document.getElementById('loading-screen');
 
-        // Функция обновления визуала
         function updateProgress(val) {
             if (progressBar) progressBar.style.width = val + '%';
             if (loadingText) loadingText.innerText = val + '%';
         }
 
-        // Имитация загрузки до 90% (теперь более плавная и медленная)
+        // Запускаем плавную анимацию
         const loadingInterval = setInterval(() => {
-            if (progress < 90) {
-                // Прыгаем всего на 2-8% за один раз
-                progress += Math.floor(Math.random() * 7) + 2; 
+            if (!isLoaded) {
+                // Пока файлы реально качаются, медленно ползем до 90% (шаг 1-4%)
+                progress += Math.floor(Math.random() * 4) + 1;
                 if (progress > 90) progress = 90;
-                updateProgress(progress);
-            }
-        }, 400); // Пауза увеличена до 400 миллисекунд (было 200)
-
-        // Когда страница загружена ПОЛНОСТЬЮ
-        window.addEventListener('load', () => {
-            clearInterval(loadingInterval); // Останавливаем имитацию
-            updateProgress(100); // Ставим ровно 100%
-            
-            // Ждем полсекунды, чтобы игрок увидел 100%, и скрываем экран
-            setTimeout(() => {
-                if (loader) {
-                    loader.style.opacity = '0';
-                    setTimeout(() => loader.style.display = 'none', 800);
+            } else {
+                // Когда файлы скачались, плавно, но уверенно добегаем до 100%
+                progress += 8; 
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(loadingInterval); // Останавливаем бегунок
+                    
+                    // Ждем полсекунды на 100% и красиво растворяем экран
+                    setTimeout(() => {
+                        if (loader) {
+                            loader.style.opacity = '0';
+                            setTimeout(() => loader.style.display = 'none', 800);
+                        }
+                    }, 500);
                 }
-            }, 500);
+            }
+            updateProgress(progress);
+        }, 150); // Обновляем экран часто (каждые 150мс) для плавности
+
+        // Браузер говорит, что все файлы скачаны
+        window.addEventListener('load', () => {
+            // Даже если это произошло за 0.01 сек, мы просто даем "зеленый свет",
+            // а бегунок сам красиво дойдет до 100% в своем темпе.
+            setTimeout(() => { isLoaded = true; }, 500); // Искусственная минимальная задержка
         });
     </script>
 </body>
