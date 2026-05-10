@@ -77,10 +77,17 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; font-size: 11px; cursor: pointer; }
         .nav-item.active { opacity: 1; color: var(--primary-green); }
         footer { font-size: 9px; opacity: 0.3; text-align: center; padding: 10px; width: 90%; margin-top: auto; }
+        /* Загрузочный экран */
+        #loading-screen { position: fixed; inset: 0; background: var(--dark-bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease; }
+        .spinner { width: 50px; height: 50px; border: 5px solid rgba(76, 175, 80, 0.2); border-top-color: var(--primary-green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <body>
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <h2 style="color: var(--primary-green); letter-spacing: 2px; margin: 0;">Загрузка Природы...</h2>
+    </div>
     <!-- НОВЫЙ БЛОК ПРОФИЛЯ НАЧАЛО -->
     <div id="profile-icon" onclick="toggleProfile()" style="position: fixed; top: 15px; right: 15px; z-index: 1001; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); padding: 8px; border-radius: 50%; border: 1px solid var(--glow-color);">
         👤
@@ -306,6 +313,16 @@
             if (menu && icon && !menu.contains(e.target) && !icon.contains(e.target)) {
                 menu.style.display = 'none';
             }
+        });
+        // Скрытие загрузочного экрана после полной загрузки страницы
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loading-screen');
+            setTimeout(() => {
+                if (loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.style.display = 'none', 800);
+                }
+            }, 500);
         });
     </script>
 </body>
