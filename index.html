@@ -352,14 +352,15 @@
             if (loadingText) loadingText.innerText = val + '%';
         }
 
-        // Имитация загрузки до 90% (пока браузер грузит файлы)
+        // Имитация загрузки до 90% (теперь более плавная и медленная)
         const loadingInterval = setInterval(() => {
             if (progress < 90) {
-                progress += Math.floor(Math.random() * 15) + 5; // прыгаем на 5-20%
+                // Прыгаем всего на 2-8% за один раз
+                progress += Math.floor(Math.random() * 7) + 2; 
                 if (progress > 90) progress = 90;
                 updateProgress(progress);
             }
-        }, 200);
+        }, 400); // Пауза увеличена до 400 миллисекунд (было 200)
 
         // Когда страница загружена ПОЛНОСТЬЮ
         window.addEventListener('load', () => {
