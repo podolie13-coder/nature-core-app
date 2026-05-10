@@ -77,8 +77,13 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; font-size: 11px; cursor: pointer; }
         .nav-item.active { opacity: 1; color: var(--primary-green); }
         footer { font-size: 9px; opacity: 0.3; text-align: center; padding: 10px; width: 90%; margin-top: auto; }
-        /* Загрузочный экран */
-        #loading-screen { position: fixed; inset: 0; background: var(--dark-bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease; }
+        /* Загрузочный экран с фоновой картинкой */
+        #loading-screen { 
+            position: fixed; inset: 0; 
+            /* Заменяем ссылку в url('') на твою картинку */
+            background: linear-gradient(rgba(5, 10, 5, 0.7), rgba(5, 10, 5, 0.9)), url('ТВОЯ_ССЫЛКА_НА_КАРТИНКУ.jpg') center/cover no-repeat;
+            z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease; 
+        }
         .progress-container { width: 70%; max-width: 300px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; border: 1px solid var(--glow-color); margin-top: 15px; }
         .progress-bar { width: 0%; height: 100%; background: var(--primary-green); transition: width 0.2s ease; box-shadow: 0 0 10px var(--primary-green); }
         #loading-text { margin-top: 10px; font-size: 12px; color: var(--primary-green); font-weight: 900; }
