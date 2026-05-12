@@ -244,10 +244,16 @@
     <script>
         const PATH_ASSETS = 'assets/';
         const COLLECTION = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
+        // Найди старый массив TREE_FILES и замени его на этот блок:
+        const TREE_CONFIG = {
+            files: ["stage_1.png", "stage_2.png", "stage_3.png", "stage_4.png", "stage_5.png", "stage_6.png", "stage_7.png", "stage_8.png", "stage_9.png"],
+            baseCost: 10, 
+            multiplier: 1.6, 
+            baseIncome: 0.01
+        };
         let userNfts = [], selectedArtifact = null, metadataCache = new Map();
         let balance = parseFloat(localStorage.getItem('ncore_balance')) || 0;
         let treeLevel = parseInt(localStorage.getItem('ncore_tree_lvl')) || 1;
-        const treeStages = ["🌱", "🌿", "🌳", "🌳✨"];
         const CORE_NAMES = { "Common 1": "Wood Core", "Common 2": "Stone Core", "Common 3": "Metal Core", "Rare 1": "Frost Core", "Rare 2": "Storm Core", "Rare 3": "Ember Core", "Rare 4": "Terra Core", "Epic 1": "Void Core", "Epic 2": "Plasma Core", "Epic 3": "Solar Core", "Legendary 1": "Nature Core", "Legendary 2": "Ancient Core", "Legendary 3": "Eternal Core" };
 
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({ manifestUrl: 'https://podolie13-coder.github.io/nature-core-app/tonconnect-manifest.json', buttonRootId: 'ton-connect-btn' });
@@ -382,16 +388,53 @@
             }
         }, 1000);
 
-        function updateUI() { 
-            document.getElementById('coin-balance').innerText = `${balance.toFixed(2)} $NCORE`;
-            document.getElementById('upgrade-info').innerText = `Уровень древа: ${treeLevel}`;
-            document.getElementById('btn-upgrade-tree').disabled = !(balance >= 10 && treeLevel < 4);
-            localStorage.setItem('ncore_balance', balance); localStorage.setItem('ncore_tree_lvl', treeLevel);
-        }
+        function updateUI() {
+    // 1. Считаем цену для текущего уровня
+    const cost = Math.floor(TREE_CONFIG.baseCost * Math.pow(TREE_CONFIG.multiplier, treeLevel - 1));
+    
+    // 2. Обновляем баланс и уровень на экране
+    document.getElementById('coin-balance').innerText = `${balance.toFixed(2)} $NCORE`;
+    document.getElementById('upgrade-info').innerText = `Уровень древа: ${treeLevel} / 9`;
+    
+    const upBtn = document.getElementById('btn-upgrade-tree');
+    
+    // 3. Проверяем: если уровень 9, то улучшать больше нельзя
+    if (treeLevel >= 9) {
+        upBtn.innerText = "МАКСИМАЛЬНЫЙ УРОВЕНЬ";
+        upBtn.disabled = true;
+    } else {
+        // Если уровень меньше 9, пишем цену и проверяем, хватает ли денег
+        upBtn.innerText = `Улучшить за ${cost} $NCORE`;
+        upBtn.disabled = (balance < cost);
+    }
+
+    // 4. Сохраняем прогресс в браузере
+    localStorage.setItem('ncore_balance', balance);
+    localStorage.setItem('ncore_tree_lvl', treeLevel);
+}
 
         function upgradeTree() {
-            if(balance >= 10) { balance -= 10; treeLevel++; updateUI(); refreshGarden(); }
-        }
+    const cost = Math.floor(TREE_CONFIG.baseCost * Math.pow(TREE_CONFIG.multiplier, treeLevel - 1));
+    
+    // Проверяем баланс и ограничение в 9 уровней
+    if(balance >= cost && treeLevel < 9) {
+        balance -= cost; 
+        treeLevel++;
+        
+        // Визуальный эффект роста
+        const img = document.getElementById('tree-img');
+        img.style.filter = "brightness(3)"; 
+        
+        setTimeout(() => { 
+            refreshGarden(); // Обновляем картинку из 9 стадий
+            img.style.filter = "brightness(1)"; 
+        }, 400);
+    } else if (treeLevel >= 9) {
+        alert("Достигнут максимальный уровень!");
+    } else {
+        alert("Недостаточно $NCORE!");
+    }
+}
 
         tonConnectUI.onStatusChange(async (w) => { if(w) { 
             const res = await fetch(`https://tonapi.io/v2/accounts/${w.account.address}/nfts?collection=${COLLECTION}`);
