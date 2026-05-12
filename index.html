@@ -18,27 +18,35 @@
         #app-bg { position: fixed; inset: 0; z-index: -2; background-size: cover; background-position: center; filter: brightness(0.3); transition: 1s; transform: scale(1.05); }
         .bg-overlay { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 20%, var(--dark-bg) 100%); }
 
-                /* Настройка контейнера и самой картинки дерева */
+                /* Контейнер дерева теперь становится фоном всего игрового экрана */
         .tree-container {
-            width: 220px; 
-            height: 220px;
-            display: flex; 
-            align-items: flex-end; 
+            position: absolute;
+            inset: 0; /* Растягивает на весь экран */
+            display: flex;
+            align-items: center;
             justify-content: center;
-            z-index: 10;
+            z-index: -1; /* Уходит под интерфейс */
+            overflow: hidden;
         }
         
         #tree-img {
-            max-width: 100%; 
-            max-height: 100%;
-            filter: drop-shadow(0 0 15px var(--primary-green));
-            transition: all 0.5s ease-out; /* Плавность при смене стадий */
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Картинка заполняет экран без искажений */
+            filter: brightness(0.6); /* Немного приглушаем, чтобы кнопки были видны */
+            transition: all 0.8s ease-in-out;
         }
         
-        /* Эффект вспышки при росте */
-        .growth-flash {
-            filter: brightness(3) contrast(1.5) !important;
-            transform: scale(1.1);
+        /* Луч из "ниоткуда" (с верха экрана) */
+        .energy-beam {
+            position: absolute;
+            top: 0; /* Начинается от самого верха */
+            width: 6px;
+            height: 50vh; /* Длина луча до середины */
+            background: linear-gradient(to bottom, transparent, var(--glow-color), var(--primary-green));
+            box-shadow: 0 0 25px var(--glow-color);
+            z-index: 5;
+            animation: beam-flicker 0.2s infinite alternate;
         }
 
         /* Портал */
@@ -246,10 +254,29 @@
     </div>
 
     <div id="game-view" class="view-container">
-        <button onclick="exitGame()" style="position:absolute; top:20px; left:20px; z-index:100; background:none; border:1px solid white; color:white; padding:5px 10px; border-radius:10px;">⬅ Меню</button>
-        <div style="font-size: 24px; font-weight: 900; text-align: center; margin-top:20px;" id="coin-balance">0.00 $NCORE</div>
+    <!-- Кнопка возврата и баланс -->
+    <button onclick="exitGame()" class="btn-back">⬅ Меню</button>
+    <div class="coin-display" id="coin-balance">0.00 $NCORE</div>
+    
+    <div class="game-scene">
+        <!-- Мини-артефакт УДАЛЕН -->
         
-        <div class="game-scene">
+        <!-- Луч теперь просто падает сверху -->
+        <div id="beam" class="energy-beam"></div>
+        
+        <!-- Дерево на весь экран -->
+        <div class="tree-container">
+            <img src="assets/tree/stage_1.png" id="tree-img" alt="Background Tree">
+        </div>
+    </div>
+
+    <!-- Интерфейс управления поверх фона -->
+    <div class="game-ui">
+        <button id="btn-upgrade-tree" class="btn-main" onclick="upgradeTree()" disabled>Улучшить</button>
+        <p id="upgrade-info">Уровень древа: 1 / 9</p>
+    </div>
+</div>
+        
             <!-- МНОГОСЛОЙНЫЙ МИНИ-АРТЕФАКТ -->
             <div id="garden-mini-art" class="mini-artifact">
                 <img src="" id="mini-bg-img" class="mini-layer" style="z-index:1;">
@@ -451,28 +478,21 @@
              * ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТРИСОВКИ САДА
              * Убираем ошибку ReferenceError: treeStages is not defined
              */
-        function refreshGarden() {
-            // Если артефакт не выбран, ничего не делаем
-            if (!selectedArtifact) return;
+            function refreshGarden() {
+        if(!selectedArtifact) return;
         
-            // 1. Устанавливаем фон артефакта на весь экран приложения
-            document.getElementById('app-bg').style.backgroundImage = `url('${selectedArtifact.bgPath}')`;
-            
-            // 2. Обновляем миниатюру артефакта (Оправа и Ядро)
-            document.getElementById('mini-frame-img').src = selectedArtifact.framePath;
-            document.getElementById('mini-core-img').src = selectedArtifact.corePath;
-            
-            // 3. ОБНОВЛЯЕМ КАРТИНКУ ДЕРЕВА (Вместо старых treeStages)
-            const tree = document.getElementById('tree-img');
-            if (tree) {
-                // Берем имя файла из нашего конфига на основе текущего уровня (от 1 до 9)
-                const stageFile = TREE_CONFIG.files[Math.min(treeLevel - 1, 8)];
-                tree.src = `${PATH_ASSETS}tree/${stageFile}`;
-            }
-        
-            // Обновляем текст и кнопки на экране
-            updateUI();
+        // Обновляем картинку дерева на фоне
+        const tree = document.getElementById('tree-img');
+        if (tree) {
+            const stageFile = TREE_CONFIG.files[Math.min(treeLevel - 1, 8)]; // Логика для 9 стадий
+            tree.src = `${PATH_ASSETS}tree/${stageFile}`;
         }
+        
+        // Устанавливаем цвет луча под цвет артефакта
+        document.documentElement.style.setProperty('--glow-color', getRarityColor(selectedArtifact.framePath));
+    
+        updateUI();
+    }
 
         setInterval(() => {
             if(document.getElementById('game-view').classList.contains('active') && selectedArtifact) {
