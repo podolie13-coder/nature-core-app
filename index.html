@@ -18,6 +18,29 @@
         #app-bg { position: fixed; inset: 0; z-index: -2; background-size: cover; background-position: center; filter: brightness(0.3); transition: 1s; transform: scale(1.05); }
         .bg-overlay { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 20%, var(--dark-bg) 100%); }
 
+                /* Настройка контейнера и самой картинки дерева */
+        .tree-container {
+            width: 220px; 
+            height: 220px;
+            display: flex; 
+            align-items: flex-end; 
+            justify-content: center;
+            z-index: 10;
+        }
+        
+        #tree-img {
+            max-width: 100%; 
+            max-height: 100%;
+            filter: drop-shadow(0 0 15px var(--primary-green));
+            transition: all 0.5s ease-out; /* Плавность при смене стадий */
+        }
+        
+        /* Эффект вспышки при росте */
+        .growth-flash {
+            filter: brightness(3) contrast(1.5) !important;
+            transform: scale(1.1);
+        }
+
         /* Портал */
         #portal-overlay { position: fixed; inset: 0; background: white; opacity: 0; z-index: 2000; pointer-events: none; transition: opacity 0.8s ease-in-out; }
 
@@ -234,7 +257,10 @@
                 <img src="" id="mini-core-img" class="mini-layer mini-core" style="z-index:3;">
             </div>
             <div id="beam" class="energy-beam" style="height:0;"></div>
-            <div id="tree-unit" class="tree-unit">🌱</div>
+            <!-- Находим старый блок дерева и заменяем его на этот -->
+            <div class="tree-container">
+                <img src="assets/tree/stage_1.png" id="tree-img" alt="Tree">
+            </div>
         </div>
 
         <button id="btn-upgrade-tree" class="btn-main" onclick="upgradeTree()" disabled>Улучшить за 10 $NCORE</button>
@@ -287,18 +313,23 @@
             document.getElementById('main-menu').classList.add('active');
         }
 
+        /**
+         * Функция форматирования значения атрибута.
+         * @param {string} val - Исходное значение из метаданных.
+         * @returns {string} - Форматированное значение для UI.
+         */
         function formatVal(val) {
             if (!val) return "";
+            
+            // Удаляем префиксы 'bg_', 'frame_'
             if (val.startsWith('bg_')) return val.replace('bg_', '').replace(/_/g, ' ');
-            if (val.startsWith('Y_')) {
-                const p = val.split('_'), r = p[1].charAt(0).toUpperCase() + p[1].slice(1);
-                return CORE_NAMES[`${r} ${p[2]}`] || `${r} ${p[2]} Type`;
-            }
-            if (val.startsWith('frame_')) {
-                const p = val.split('_'), r = p[1].charAt(0).toUpperCase() + p[1].slice(1);
-                return `${r} ${p[2]} Frame`;
-            }
-            return val;
+            if (val.startsWith('frame_')) return val.replace('frame_', '').replace(/_/g, ' ');
+            
+            // Удаляем 'Y_', заменяем на 'Core'
+            if (val.startsWith('Y_')) return val.replace('Y_', '').replace(/_/g, ' ') + ' Core';
+            
+            // Если других префиксов нет, просто заменяем нижние подчеркивания
+            return val.replace(/_/g, ' ');
         }
 
         function getRarityColor(text) {
@@ -311,62 +342,108 @@
 
         const preloadImage = (src) => new Promise(res => { const img = new Image(); img.onload = res; img.onerror = res; img.src = src; });
 
+        /**
+         * Функция безопасного построения артефакта.
+         * Добавляет проверки метаданных и фолбэки для предотвращения ошибки "GET undefined".
+         * @param {number} index - Индекс выбранного NFT в массиве userNfts.
+         */
         async function buildArtifact(index) {
+            // Защита от несуществующего индекса
+            if (!userNfts[index]) return;
+        
             selectedArtifact = userNfts[index];
-            const id = selectedArtifact.metadata.name.match(/#(\d+)/)[1];
             
-            const canvas = document.getElementById('canvas-container');
-            canvas.style.transition = 'opacity 0.3s ease, filter 0.3s ease';
-            if (canvas.style.display !== 'none') {
-                canvas.style.opacity = '0.5';
-                canvas.style.filter = 'blur(5px)';
-            }
-
+            // Извлекаем ID артефакта из имени (например, Nature Core #123)
+            const artifactName = selectedArtifact.metadata.name;
+            const matchId = artifactName.match(/#(\d+)/);
+            const id = matchId ? matchId[1] : '0'; // Если ID не найден, используем фолбэк '0'
+        
             try {
                 let meta;
-                if(metadataCache.has(id)) meta = metadataCache.get(id);
-                else { const res = await fetch(`${PATH_ASSETS}metadata/${id}.json`); meta = await res.json(); metadataCache.set(id, meta); }
+                // Проверяем кэш метаданных
+                if (metadataCache.has(id)) {
+                    meta = metadataCache.get(id);
+                } else {
+                    // Если ID нет, используем ID из метаданных (или 0 как фолбэк),
+                    // чтобы загрузить файл metadata/0.json или metadata/123.json
+                    const fetchId = (id !== '0') ? id : (selectedArtifact.index || 0);
+                    const response = await fetch(`${PATH_ASSETS}metadata/${fetchId}.json`);
+                    if (!response.ok) throw new Error('Метаданные не найдены');
+                    meta = await response.json();
+                    metadataCache.set(id, meta); // Кэшируем
+                }
+        
+                // --- УЛУЧШЕННАЯ ЛОГИКА ПРОВЕРОК И ФОЛБЭКОВ ---
                 
-                document.getElementById('nft-attrs').innerHTML = '';
-                let coreF = "", bgF = "", frameF = "";
-                meta.attributes.forEach(a => {
-                    const color = getRarityColor(a.value), div = document.createElement('div');
-                    div.className = 'attr-item'; div.style.borderColor = color;
-                    div.innerHTML = `<div class="attr-label">${a.trait_type}</div><div class="attr-value" style="color:${color}">${formatVal(a.value)}</div>`;
-                    document.getElementById('nft-attrs').appendChild(div);
-                    const t = a.trait_type.toLowerCase();
-                    if(t === 'core') coreF = a.value + ".png";
-                    if(t === 'background') bgF = a.value + ".png";
-                    if(t === 'frame') frameF = a.value + ".png";
-                });
-                
-                selectedArtifact.corePath = `${PATH_ASSETS}cores/${coreF}`;
-                selectedArtifact.bgPath = `${PATH_ASSETS}backgrounds/${bgF}`;
-                selectedArtifact.framePath = `${PATH_ASSETS}frames/${frameF}`;
-
-                await Promise.all([
-                    preloadImage(selectedArtifact.bgPath),
-                    preloadImage(selectedArtifact.framePath),
-                    preloadImage(selectedArtifact.corePath)
-                ]);
-
-                document.getElementById('img-core').src = selectedArtifact.corePath;
+                // Переменные для хранения имен файлов из атрибутов
+                let coreVal = "", bgVal = "", frameVal = "";
+        
+                // Итерация по атрибутам для поиска Background, Frame, Core
+                if (meta.attributes) {
+                    meta.attributes.forEach(attr => {
+                        const type = attr.trait_type.toLowerCase();
+                        if (type === 'core') coreVal = attr.value;
+                        if (type === 'background') bgVal = attr.value;
+                        if (type === 'frame') frameVal = attr.value;
+                    });
+                }
+        
+                // ФОЛБЭКИ: Изображения по умолчанию, если атрибут пропущен
+                // *** ЗАМЕНИТЕ ЭТИ ИМЕНА НА РЕАЛЬНЫЕ ИМЕНА ВАШИХ БАЗОВЫХ ФАЙЛОВ ***
+                if (!bgVal) bgVal = "bg_basic";      
+                if (!frameVal) frameVal = "frame_basic"; 
+                if (!coreVal) coreVal = "Y_basic_1";    
+        
+                // Конструкция полных путей к изображениям (cores/, backgrounds/, frames/)
+                selectedArtifact.bgPath = `${PATH_ASSETS}backgrounds/${bgVal}.png`;
+                selectedArtifact.framePath = `${PATH_ASSETS}frames/${frameVal}.png`;
+                selectedArtifact.corePath = `${PATH_ASSETS}cores/${coreVal}.png`;
+        
+                // Установка изображений в HTML (Menu view)
                 document.getElementById('img-bg').src = selectedArtifact.bgPath;
                 document.getElementById('img-frame').src = selectedArtifact.framePath;
+                document.getElementById('img-core').src = selectedArtifact.corePath;
+        
+                // --- УЛУЧШЕНА ЛОГИКА АТРИБУТОВ И ЦВЕТА СВЕЧЕНИЯ ---
+        
+                // Очистка списка старых атрибутов
+                const attrsList = document.getElementById('nft-attrs');
+                attrsList.innerHTML = '';
                 
+                if (meta.attributes) {
+                    meta.attributes.forEach(attr => {
+                        // Извлекаем цвет редкости
+                        const color = getRarityColor(attr.value); 
+                        
+                        const div = document.createElement('div');
+                        div.className = 'attr-item';
+                        div.style.borderColor = color; // Рамка в цвет редкости
+                        
+                        div.innerHTML = `
+                            <div class="attr-label">${attr.trait_type}</div>
+                            <div class="attr-value" style="color: ${color};">${formatVal(attr.value)}</div>
+                        `;
+                        attrsList.appendChild(div);
+                    });
+                }
+        
+                // Обновляем цвет свечения ядра и фона в зависимости от редкости оправы
+                const primaryGlowColor = getRarityColor(frameVal);
+                document.documentElement.style.setProperty('--glow-color', primaryGlowColor);
                 document.getElementById('app-bg').style.backgroundImage = `url('${selectedArtifact.bgPath}')`;
-                document.documentElement.style.setProperty('--glow-color', getRarityColor(frameF));
                 
-                canvas.style.display = 'flex';
+                // Визуальное управление UI
+                document.getElementById('canvas-container').style.display = 'flex';
                 document.getElementById('btn-enter-game').style.display = 'block';
-                document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
-
-                canvas.style.opacity = '1';
-                canvas.style.filter = 'blur(0px)';
-
-            } catch(e) {
-                canvas.style.opacity = '1';
-                canvas.style.filter = 'blur(0px)';
+                
+                // Обновляем подсветку выбранного thumbnail
+                document.querySelectorAll('.thumb').forEach((thumb, i) => {
+                    thumb.classList.toggle('active', i === index);
+                });
+        
+            } catch (e) {
+                console.error("Ошибка построения артефакта:", e);
+                // Добавьте UI фолбэк, если хотите (например, текст "Артефакт не загружен")
             }
         }
 
