@@ -370,15 +370,30 @@
             }
         }
 
+                /**
+             * ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТРИСОВКИ САДА
+             * Убираем ошибку ReferenceError: treeStages is not defined
+             */
         function refreshGarden() {
-            if(!selectedArtifact) return;
-            // ОБНОВЛЯЕМ ВСЕ СЛОИ В САДУ
-            document.getElementById('mini-bg-img').src = selectedArtifact.bgPath;
+            // Если артефакт не выбран, ничего не делаем
+            if (!selectedArtifact) return;
+        
+            // 1. Устанавливаем фон артефакта на весь экран приложения
+            document.getElementById('app-bg').style.backgroundImage = `url('${selectedArtifact.bgPath}')`;
+            
+            // 2. Обновляем миниатюру артефакта (Оправа и Ядро)
             document.getElementById('mini-frame-img').src = selectedArtifact.framePath;
             document.getElementById('mini-core-img').src = selectedArtifact.corePath;
             
-            document.getElementById('beam').style.height = "160px";
-            document.getElementById('tree-unit').innerText = treeStages[Math.min(treeLevel-1, 3)];
+            // 3. ОБНОВЛЯЕМ КАРТИНКУ ДЕРЕВА (Вместо старых treeStages)
+            const tree = document.getElementById('tree-img');
+            if (tree) {
+                // Берем имя файла из нашего конфига на основе текущего уровня (от 1 до 9)
+                const stageFile = TREE_CONFIG.files[Math.min(treeLevel - 1, 8)];
+                tree.src = `${PATH_ASSETS}tree/${stageFile}`;
+            }
+        
+            // Обновляем текст и кнопки на экране
             updateUI();
         }
 
