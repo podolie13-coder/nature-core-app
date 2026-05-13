@@ -37,7 +37,8 @@
             background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center;
             transition: transform 1.2s ease-in;
         }
-        .layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; 
+               transition: opacity 0.4s ease-in-out;}
         .layer-core { width: 82%; height: 82%; inset: 9%; z-index: 3; animation: core-float 3s infinite ease-in-out; }
         @keyframes core-float { 0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--glow-color)); } 50% { transform: translateY(-8px); filter: drop-shadow(0 0 25px var(--glow-color)); } }
 
@@ -182,62 +183,56 @@
         }
 
         async function buildArtifact(index) {
-            if (!userNfts[index]) return;
-            selectedArtifact = userNfts[index];
-            const id = selectedArtifact.metadata.name.match(/#(\d+)/)?.[1] || selectedArtifact.index || 0;
+        if (!userNfts[index]) return;
+        
+        const canvas = document.getElementById('canvas-container');
+        // Делаем легкое затухание перед сменой
+        canvas.style.opacity = "0.7"; 
 
-            try {
-                let meta;
-                if (metadataCache.has(id)) { meta = metadataCache.get(id); } 
-                else {
-                    const res = await fetch(`${PATH_ASSETS}metadata/${id}.json`);
-                    meta = await res.json();
-                    metadataCache.set(id, meta);
-                }
+        selectedArtifact = userNfts[index];
+        const id = selectedArtifact.metadata.name.match(/#(\d+)/)?.[1] || selectedArtifact.index || 0;
 
-                let coreVal = "Y_basic_1", bgVal = "bg_basic", frameVal = "frame_basic";
-                meta.attributes.forEach(attr => {
-                    const type = attr.trait_type.toLowerCase();
-                    if (type === 'core') coreVal = attr.value;
-                    if (type === 'background') bgVal = attr.value;
-                    if (type === 'frame') frameVal = attr.value;
-                });
+        try {
+            let meta;
+            // Проверка кэша метаданных
+            if (metadataCache.has(id)) { 
+                meta = metadataCache.get(id); 
+            } else {
+                const res = await fetch(`${PATH_ASSETS}metadata/${id}.json`);
+                meta = await res.json();
+                metadataCache.set(id, meta);
+            }
 
-                selectedArtifact.bgPath = `${PATH_ASSETS}backgrounds/${bgVal}.png`;
-                selectedArtifact.framePath = `${PATH_ASSETS}frames/${frameVal}.png`;
-                selectedArtifact.corePath = `${PATH_ASSETS}cores/${coreVal}.png`;
+            // Логика определения путей (Core, BG, Frame)
+            let coreVal = "Y_basic_1", bgVal = "bg_basic", frameVal = "frame_basic";
+            meta.attributes.forEach(attr => {
+                const type = attr.trait_type.toLowerCase();
+                if (type === 'core') coreVal = attr.value;
+                if (type === 'background') bgVal = attr.value;
+                if (type === 'frame') frameVal = attr.value;
+            });
 
-                // Применяем фон и изображения слоев
-                document.getElementById('app-bg').style.backgroundImage = `url('${selectedArtifact.bgPath}')`;
-                document.getElementById('img-bg').src = selectedArtifact.bgPath;
-                document.getElementById('img-frame').src = selectedArtifact.framePath;
-                document.getElementById('img-core').src = selectedArtifact.corePath;
+            const bgPath = `${PATH_ASSETS}backgrounds/${bgVal}.png`;
+            const framePath = `${PATH_ASSETS}frames/${frameVal}.png`;
+            const corePath = `${PATH_ASSETS}cores/${coreVal}.png`;
 
-                // ОБНОВЛЕНИЕ АТРИБУТОВ (Подписи + Цвета редкости)
-                const attrsList = document.getElementById('nft-attrs');
-                attrsList.innerHTML = '';
-                meta.attributes.forEach(attr => {
-                    const color = getRarityColor(attr.value);
-                    const div = document.createElement('div');
-                    div.className = 'attr-item';
-                    div.style.borderColor = color;
-                    div.innerHTML = `
-                        <div class="attr-label" style="color:${color}">${attr.trait_type}</div>
-                        <div class="attr-value" style="color:white">${formatVal(attr.value)}</div>
-                    `;
-                    attrsList.appendChild(div);
-                });
+            // ПРЕДЗАГРУЗКА: Готовим картинки в памяти
+            preloadImages([bgPath, framePath, corePath]);
 
-                document.getElementById('canvas-container').style.display = 'flex';
-                document.getElementById('btn-enter-game').style.display = 'block';
-                document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
-                
-                // Устанавливаем цвет свечения под цвет рамки
-                document.documentElement.style.setProperty('--glow-color', getRarityColor(frameVal));
+            // Применяем пути к элементам
+            document.getElementById('app-bg').style.backgroundImage = `url('${bgPath}')`;
+            document.getElementById('img-bg').src = bgPath;
+            document.getElementById('img-frame').src = framePath;
+            document.getElementById('img-core').src = corePath;
 
-            } catch (e) { console.error("Ошибка метаданных:", e); }
-        }
+            // Возвращаем яркость
+            canvas.style.opacity = "1";
 
+            // Вызываем отрисовку атрибутов (из твоего прошлого кода)
+            updateAttributesUI(meta.attributes, frameVal);
+
+        } catch (e) { console.error("Ошибка смены артефакта:", e); }
+    }
         function enterGame() {
             document.getElementById('portal-overlay').style.opacity = "1";
             setTimeout(() => {
