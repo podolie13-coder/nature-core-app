@@ -30,7 +30,7 @@ section { display: none; flex-direction: column; align-items: center; padding: 1
 section.active { display: flex !important; }
 
 /* Артефакты и Атрибуты */
-.artifact-canvas { width: 180px; height: 180px; position: relative; margin: 16px 0; border-radius: 35px; overflow: visible; box-shadow: none; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; transition: transform 1.2s ease-in; }
+.artifact-canvas { width: 180px; height: 180px; position: relative; margin: 16px 0; border-radius: 35px; overflow: visible; box-shadow: 0 0 30px rgba(0,0,0,0.9); background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; transition: transform 1.2s ease-in; }
 .artifact-canvas-inner { position: absolute; inset: 0; border-radius: 35px; overflow: hidden; width: 100%; height: 100%; }
 .canvas-portal { transform: scale(10); filter: brightness(5); }
 .layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
@@ -39,11 +39,41 @@ section.active { display: flex !important; }
 .artifact-selector { display: flex; gap: 12px; overflow-x: auto; width: 100%; padding: 10px 0; scrollbar-width: none; }
 .artifact-selector::-webkit-scrollbar { display: none; }
 .thumb { width: 55px; height: 55px; border-radius: 12px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; transition: 0.3s; cursor: pointer; }
-.thumb.active { opacity: 1; border-color: white; transform: scale(1.1); }
+.thumb.active { opacity: 1; border-color: transparent; transform: scale(1.1); }
 .attr-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 10px 0; }
 .attr-item { background: rgba(255,255,255,0.06); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 12px; text-align: center; min-width: 85px; }
 .attr-label { font-size: 7px; opacity: 0.5; text-transform: uppercase; }
 .attr-value { font-size: 10px; font-weight: 800; }
+
+/* Bloom переход артефакта */
+.artifact-canvas-inner {
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+.artifact-canvas-inner.loading {
+  filter: blur(12px) brightness(2);
+  opacity: 0.5;
+}
+.artifact-canvas-inner.loaded {
+  filter: blur(0px) brightness(1);
+  opacity: 1;
+}
+
+/* Skeleton плейсхолдер */
+#artifact-skeleton {
+  position: absolute;
+  inset: 0;
+  border-radius: 35px;
+  background: linear-gradient(110deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shine 1.2s infinite;
+  z-index: 10;
+  display: none;
+}
+#artifact-skeleton.show { display: block; }
+@keyframes skeleton-shine {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 
 /* UI Элементы */
 .btn-main { background: var(--gold-gradient); background-size: 200% 100%; color: #000; border: none; padding: 15px 30px; border-radius: 15px; font-weight: 900; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
@@ -230,7 +260,8 @@ section.active { display: flex !important; }
     <h2 style="letter-spacing: 2px;">Nature Core</h2>
     <div class="artifact-selector" id="nft-list"></div>
     <div id="canvas-container" class="artifact-canvas" style="display:none;">
-      <div class="artifact-canvas-inner">
+      <div id="artifact-skeleton"></div>
+      <div class="artifact-canvas-inner loaded" id="artifact-inner">
         <img src="" id="img-bg" class="layer">
         <img src="" id="img-frame" class="layer">
         <img src="" id="img-core" class="layer layer-core">
@@ -485,7 +516,7 @@ function getRarityColor(text) {
 async function buildArtifact(index) {
   if (!userNfts[index]) return;
 
-  // Сразу помечаем активный thumb по data-index (не по порядку DOM)
+  // Активный thumb
   document.querySelectorAll('.thumb').forEach(t => {
     t.classList.toggle('active', parseInt(t.dataset.index) === index);
   });
@@ -493,9 +524,17 @@ async function buildArtifact(index) {
   selectedArtifact = userNfts[index];
   const id = selectedArtifact.metadata.name.match(/#(\d+)/)?.[1] || '0';
 
-  // Показываем канвас сразу с текущими изображениями (не ждём загрузки)
+  // Показываем канвас
   document.getElementById('canvas-container').style.display = 'flex';
   document.getElementById('btn-enter-game').style.display  = 'block';
+
+  const inner    = document.getElementById('artifact-inner');
+  const skeleton = document.getElementById('artifact-skeleton');
+
+  // Bloom: уходим в blur
+  inner.classList.remove('loaded');
+  inner.classList.add('loading');
+  skeleton.classList.add('show');
 
   try {
     let meta;
@@ -517,9 +556,21 @@ async function buildArtifact(index) {
     selectedArtifact.framePath = `${PATH_ASSETS}frames/${traits.frame}.png`;
     selectedArtifact.corePath  = `${PATH_ASSETS}cores/${traits.core}.png`;
 
+    // Предзагружаем картинки перед показом
+    await Promise.all([
+      preloadImage(selectedArtifact.bgPath),
+      preloadImage(selectedArtifact.framePath),
+      preloadImage(selectedArtifact.corePath),
+    ]);
+
     document.getElementById('img-bg').src    = selectedArtifact.bgPath;
     document.getElementById('img-frame').src = selectedArtifact.framePath;
     document.getElementById('img-core').src  = selectedArtifact.corePath;
+
+    // Bloom: появляемся чисто
+    skeleton.classList.remove('show');
+    inner.classList.remove('loading');
+    inner.classList.add('loaded');
 
     const attrsList = document.getElementById('nft-attrs');
     attrsList.innerHTML = '';
@@ -535,7 +586,21 @@ async function buildArtifact(index) {
     document.documentElement.style.setProperty('--glow-color', getRarityColor(traits.frame));
     document.getElementById('app-bg').style.backgroundImage = `url('${selectedArtifact.bgPath}')`;
 
-  } catch (e) { console.error("NFT Error:", e); }
+  } catch (e) {
+    skeleton.classList.remove('show');
+    inner.classList.remove('loading');
+    inner.classList.add('loaded');
+    console.error("NFT Error:", e);
+  }
+}
+
+function preloadImage(src) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload  = resolve;
+    img.onerror = resolve; // не блокируем если картинка не найдена
+    img.src = src;
+  });
 }
 
 // ─── ПЕРЕХОДЫ В ВИД ИГРЫ ─────────────────────────────────────────────────────
