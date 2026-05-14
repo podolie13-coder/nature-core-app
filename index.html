@@ -147,7 +147,7 @@ section.active { display: flex !important; }
 <div class="bg-overlay"></div>
 <div id="portal-overlay"></div>
 
-<div id="main-menu" class="view-container active">
+<div id="main-menu" class="view-container">
   <section id="screen-core" class="active">
     <div class="screen-core-header">
       <div class="screen-core-subtitle">Artifacts</div>
@@ -819,6 +819,7 @@ const loadingInterval = setInterval(() => {
         document.getElementById('loading-screen').style.opacity = '0';
         setTimeout(() => {
           document.getElementById('loading-screen').style.display = 'none';
+          document.getElementById('main-menu').classList.add('active');
           checkOfflineFarming();
         }, 800);
       }, 500);
