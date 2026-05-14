@@ -19,7 +19,7 @@ body { background: var(--dark-bg); color: #e0f2e0; font-family: 'Segoe UI', sans
 #portal-overlay { position: fixed; inset: 0; background: white; opacity: 0; z-index: 2000; pointer-events: none; transition: opacity 0.8s ease-in-out; }
 
 .tree-container { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: -1; overflow: hidden; }
-#tree-img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.15); filter: brightness(1); transition: all 0.8s ease-in-out; }
+#tree-img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.05); filter: brightness(1); transition: all 0.8s ease-in-out; }
 
 .view-container { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; }
 .view-container.active { display: flex; }
@@ -225,8 +225,8 @@ section.active { display: flex !important; }
 <div id="main-menu" class="view-container active">
   <section id="screen-core" class="active">
     <div class="screen-core-header">
-      <div class="screen-core-subtitle">Artifacts</div>
-      <div class="screen-core-title">⬡ Nature Core</div>
+      <div class="screen-core-title">⬡ Артефакты</div>
+      <div class="screen-core-subtitle">Твоя коллекция Nature Core</div>
     </div>
     <div class="artifact-selector" id="nft-list"></div>
     <div id="canvas-container" class="artifact-canvas" style="display:none;">
@@ -274,9 +274,9 @@ section.active { display: flex !important; }
   </section>
 
   <nav class="nav-bar">
-    <div class="nav-item active" onclick="switchTab('screen-core', this)"><span>🌿</span><span>Artifacts</span></div>
-    <div class="nav-item" onclick="switchTab('screen-token', this)"><img src="assets/img/Tokken.png" style="width:24px;height:24px;border-radius:50%;object-fit:cover;"><span>Token</span></div>
-    <div class="nav-item" onclick="switchTab('screen-quests', this)"><span>📜</span><span>Quests</span></div>
+    <div class="nav-item active" onclick="switchTab('screen-core', this)"><span>🌿</span><span>Склад</span></div>
+    <div class="nav-item" onclick="switchTab('screen-token', this)"><span>🪙</span><span>Токен</span></div>
+    <div class="nav-item" onclick="switchTab('screen-quests', this)"><span>📜</span><span>Задания</span></div>
   </nav>
 </div>
 
@@ -304,11 +304,47 @@ const COLLECTION          = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
 const MAX_OFFLINE_SECONDS = 6 * 60 * 60;
 const FARM_SESSION_SEC    = 6 * 60 * 60;
 const TREE_CONFIG = {
-  files:      ["stage_1.png","stage_2.png","stage_3.png","stage_4.png","stage_5.png","stage_6.png","stage_7.png","stage_8.png","stage_9.png"],
-  baseCost:   10, multiplier: 1.6, baseIncome: 0.01
+  files:           ["stage_1.png","stage_2.png","stage_3.png","stage_4.png","stage_5.png","stage_6.png","stage_7.png","stage_8.png","stage_9.png"],
+  baseCost:        10,
+  multiplier:      1.6,
+  baseIncome:      0.00002,  // базовая скорость на 1 уровне
+  treeMultiplier:  1.5       // геопрогрессия между уровнями
 };
 
-// ─── SUPABASE ────────────────────────────────────────────────────────────────
+// Редкость → коэффициент
+const RARITY_MULTIPLIER = {
+  common:    1.0,
+  rare:      1.5,
+  epic:      2.5,
+  legendary: 4.0
+};
+
+// Определяем редкость по значению трейта
+function getRarityTier(val) {
+  if (!val) return 'common';
+  const v = val.toLowerCase();
+  if (v.includes('leg'))  return 'legendary';
+  if (v.includes('epic')) return 'epic';
+  if (v.includes('rare')) return 'rare';
+  return 'common';
+}
+
+// Коэффициент текущего артефакта (среднее трёх трейтов)
+function getArtifactMultiplier() {
+  if (!selectedArtifact || !selectedArtifact.traits) return 1.0;
+  const t = selectedArtifact.traits;
+  const bg    = RARITY_MULTIPLIER[getRarityTier(t.background)] || 1.0;
+  const core  = RARITY_MULTIPLIER[getRarityTier(t.core)]       || 1.0;
+  const frame = RARITY_MULTIPLIER[getRarityTier(t.frame)]      || 1.0;
+  return parseFloat(((bg + core + frame) / 3).toFixed(3));
+}
+
+// Скорость фарминга с геопрогрессией и коэффициентом артефакта
+function getFarmRate() {
+  const treeRate     = TREE_CONFIG.baseIncome * Math.pow(TREE_CONFIG.treeMultiplier, treeLevel - 1);
+  const artifactMult = getArtifactMultiplier();
+  return parseFloat((treeRate * artifactMult).toFixed(8));
+}
 const SUPABASE_URL = 'https://zdiphqyqoxpqdszoklzd.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkaXBocXlxb3hwcWRzem9rbHpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NDY1MTUsImV4cCI6MjA5NDMyMjUxNX0.0P7pFGe_ZZtv_lKbJEn2g4wjpN2LaKcnBPLHqx-o4oQ';
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -392,7 +428,7 @@ function checkOfflineFarming() {
   }
 }
 
-function getFarmRate() { return TREE_CONFIG.baseIncome * treeLevel; }
+// getFarmRate определена выше вместе с TREE_CONFIG
 
 function showOfflineModal(earned, cappedSec, realSec) {
   document.getElementById('offline-earned-amount').innerHTML = `${earned.toFixed(4)} <span>$NCORE</span>`;
@@ -432,33 +468,9 @@ function switchTab(sId, el) {
 }
 
 // ─── NFT ─────────────────────────────────────────────────────────────────────
-const TRAIT_NAMES = {
-  // Ядра
-  'Y_common_1':  'Iron Cage',
-  'Y_common_2':  'Stone Cradle',
-  'Y_common_3':  'Root Weave',
-  'Y_rare_1':    'Crystal Nest',
-  'Y_rare_2':    'Magma Core',
-  'Y_rare_3':    'Tide Flame',
-  'Y_rare_4':    'Storm Surge',
-  'Y_epic_1':    'Void Prism',
-  'Y_epic_2':    'Astral Ring',
-  'Y_epic_3':    'Dark Spiral',
-  'Y_leg_1':     'Frost Vortex',
-  'Y_leg_2':     'Primal Surge',
-  'Y_leg_3':     'Ethereal Sphere',
-  // Фоны
-  'bg_Abyssal_Void':  'Abyssal Void',
-  'bg_AncientRuins':  'Ancient Ruins',
-  'bg_EtherealForge': 'Ethereal Forge',
-  'bg_Frozen':        'Frozen',
-  'bg_MysticForest':  'Mystic Forest',
-};
-
 function formatVal(val) {
   if (!val) return "";
-  if (TRAIT_NAMES[val]) return TRAIT_NAMES[val];
-  return val.replace('bg_','').replace('frame_','').replace('Y_','').replace(/_/g,' ');
+  return val.replace('bg_','').replace('frame_','').replace('Y_','').replace(/_/g,' ') + (val.startsWith('Y_') ? ' Core' : '');
 }
 
 function getRarityColor(text) {
@@ -507,6 +519,7 @@ async function buildArtifact(index) {
     selectedArtifact.bgPath    = `${PATH_ASSETS}backgrounds/${traits.background}.png`;
     selectedArtifact.framePath = `${PATH_ASSETS}frames/${traits.frame}.png`;
     selectedArtifact.corePath  = `${PATH_ASSETS}cores/${traits.core}.png`;
+    selectedArtifact.traits    = traits; // сохраняем для расчёта коэффициента
     await Promise.all([preloadImage(selectedArtifact.bgPath), preloadImage(selectedArtifact.framePath), preloadImage(selectedArtifact.corePath)]);
     document.getElementById('img-bg').src    = selectedArtifact.bgPath;
     document.getElementById('img-frame').src = selectedArtifact.framePath;
@@ -585,7 +598,8 @@ function updateUI() {
   document.getElementById('token-page-balance').innerText = formattedBal;
   document.getElementById('balance-value').innerText      = formattedBal;
   document.getElementById('upgrade-info').innerText       = `Уровень древа: ${treeLevel} / 9`;
-  document.getElementById('farm-rate-info').innerText     = `⚡ ${ratePerSec.toFixed(4)} $NCORE/сек · ${ratePerMin} /мин`;
+  const artifactMult = getArtifactMultiplier();
+  document.getElementById('farm-rate-info').innerText = `⚡ ${ratePerSec.toFixed(6)} $NCORE/сек · Артефакт x${artifactMult}`;
 
   const upBtn = document.getElementById('btn-upgrade-tree');
   if (treeLevel >= 9) {
