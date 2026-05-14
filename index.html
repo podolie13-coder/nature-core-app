@@ -304,12 +304,42 @@ async function claimQuest(id, reward, isDaily) {
 
 async function goQuest(id, reward, url) {
   if (url) window.open(url, '_blank');
-  // Засчитываем через 3 сек (дали время зайти на страницу)
+
+  if (id === 'subscribe_tg') {
+    // Показываем кнопку Check через 3 сек
+    setTimeout(() => renderQuests(), 3000);
+    return;
+  }
+  // Остальные квесты засчитываем через 3 сек
   setTimeout(async () => {
-    if (!isOneTimeClaimed(id)) {
-      await claimQuest(id, reward, false);
-    }
+    if (!isOneTimeClaimed(id)) await claimQuest(id, reward, false);
   }, 3000);
+}
+
+async function checkTgSubscription(reward) {
+  if (!tgUserId) {
+    alert('Open the app via Telegram to verify subscription!');
+    return;
+  }
+  try {
+    const res = await fetch(
+      'https://zdiphqyqoxpqdszoklzd.supabase.co/functions/v1/check-subscription',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: tgUserId, chat_id: '@Aethel_Gardens' })
+      }
+    );
+    const data = await res.json();
+    if (data.is_member) {
+      await claimQuest('subscribe_tg', reward, false);
+    } else {
+      alert('You are not subscribed yet! Please subscribe and try again.');
+    }
+  } catch (e) {
+    console.error('Check error:', e);
+    alert('Error checking subscription. Try again.');
+  }
 }
 
 function renderQuests() {
@@ -355,10 +385,14 @@ function renderQuests() {
         </div>
         ${claimed
           ? '<span class="quest-badge claimed">✓ Done</span>'
-          : q.action
-            ? `<button class="quest-badge go" onclick="goQuest('${q.id}', ${q.reward}, '${q.action}')">Go →</button>`
-            : `<button class="quest-badge available" onclick="claimQuest('${q.id}', ${q.reward}, false)">Claim</button>`
-        }
+          : q.id === 'subscribe_tg'
+  ? `<div style="display:flex;gap:6px;">
+      <button class="quest-badge go" onclick="goQuest('${q.id}', ${q.reward}, '${q.action}')">Go →</button>
+      <button class="quest-badge available" onclick="checkTgSubscription(${q.reward})">Check ✓</button>
+    </div>`
+  : q.action
+    ? `<button class="quest-badge go" onclick="goQuest('${q.id}', ${q.reward}, '${q.action}')">Go →</button>`
+    : `<button class="quest-badge available" onclick="claimQuest('${q.id}', ${q.reward}, false)">Claim</button>`
       </div>`;
   });
 
@@ -436,6 +470,9 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentWallet = null;
 let saveTimeout   = null;
+  // Telegram user_id
+const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+const tgUserId = tgUser?.id || null;
 
 // ─── СОСТОЯНИЕ ───────────────────────────────────────────────────────────────
 let userNfts = [], selectedArtifact = null, metadataCache = new Map();
