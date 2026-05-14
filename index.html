@@ -87,7 +87,50 @@ section.active { display: flex !important; }
 .offline-cap-bar-wrap { background: rgba(255,255,255,0.07); border-radius: 8px; height: 6px; width: 100%; margin-bottom: 20px; overflow: hidden; }
 .offline-cap-bar { height: 100%; background: var(--primary-green); border-radius: 8px; transition: width 1s ease; }
 
-/* Кнопки внизу игрового вида */
+/* Верхняя плашка игрового вида */
+#game-topbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 54px;
+  background: rgba(5, 10, 5, 0.75);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  z-index: 10;
+  box-sizing: border-box;
+}
+#btn-back {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #e0f2e0;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+#coin-balance {
+  color: #ff33cc;
+  font-weight: 900;
+  font-size: 15px;
+  text-shadow: 0 0 10px rgba(255,51,204,0.6);
+  background: rgba(255,51,204,0.1);
+  border: 1px solid rgba(255,51,204,0.25);
+  border-radius: 20px;
+  padding: 5px 14px;
+}
+#profile-icon-game {
+  font-size: 20px;
+  cursor: pointer;
+  background: rgba(76,175,80,0.15);
+  border: 1px solid rgba(76,175,80,0.3);
+  padding: 6px 10px;
+  border-radius: 50%;
+}
+
+
 #game-bottom {
   position: absolute;
   bottom: 30px;
@@ -165,7 +208,7 @@ section.active { display: flex !important; }
   </div>
 </div>
 
-<!-- ПРОФИЛЬ -->
+<!-- ПРОФИЛЬ (только для главного меню) -->
 <div id="profile-icon" onclick="toggleProfile()" style="position: fixed; top: 15px; right: 15px; z-index: 1001; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); padding: 8px; border-radius: 50%; border: 1px solid var(--glow-color);">👤</div>
 <div id="profile-menu" style="display: none; position: fixed; top: 65px; right: 15px; width: 220px; background: rgba(5, 10, 5, 0.98); border: 1px solid var(--glow-color); border-radius: 15px; padding: 15px; z-index: 1001; backdrop-filter: blur(10px);">
   <h4 style="margin: 0 0 10px 0; color: var(--primary-green);">Профиль</h4>
@@ -233,8 +276,14 @@ section.active { display: flex !important; }
 
 <!-- ИГРОВОЙ ВИД -->
 <div id="game-view" class="view-container">
-  <button onclick="exitGame()" style="position: absolute; top: 15px; left: 15px; z-index: 10;">⬅ Меню</button>
-  <div id="coin-balance" style="position: absolute; top: 15px; right: 15px; color: #ff33cc; font-weight: 900; z-index: 10;">0.00 $NCORE</div>
+
+  <!-- Верхняя плашка -->
+  <div id="game-topbar">
+    <button onclick="exitGame()" id="btn-back">⬅ Меню</button>
+    <div id="coin-balance">💰 0.00 $NCORE</div>
+    <div id="profile-icon-game" onclick="toggleProfile()">👤</div>
+  </div>
+
   <div class="tree-container"><img src="assets/tree/stage_1.png" id="tree-img" alt="Tree"></div>
 
   <div id="game-bottom">
@@ -415,6 +464,7 @@ function enterGame() {
   setTimeout(() => {
     document.getElementById('main-menu').classList.remove('active');
     document.getElementById('game-view').classList.add('active');
+    document.getElementById('profile-icon').style.display = 'none';
     refreshGarden();
     restoreFarmSession();
     setTimeout(() => {
@@ -425,8 +475,10 @@ function enterGame() {
 }
 
 function exitGame() {
+  stopFarmTimerDisplay();
   document.getElementById('game-view').classList.remove('active');
   document.getElementById('main-menu').classList.add('active');
+  document.getElementById('profile-icon').style.display = 'block';
 }
 
 // ─── САД / ДЕРЕВО ────────────────────────────────────────────────────────────
@@ -442,7 +494,7 @@ function updateUI() {
   const ratePerSec     = getFarmRate();
   const ratePerMin     = (ratePerSec * 60).toFixed(4);
 
-  document.getElementById('coin-balance').innerText      = `${formattedBal} $NCORE`;
+  document.getElementById('coin-balance').innerText      = `💰 ${formattedBal} $NCORE`;
   document.getElementById('token-page-balance').innerText = formattedBal;
   document.getElementById('balance-value').innerText     = formattedBal;
   document.getElementById('upgrade-info').innerText      = `Уровень древа: ${treeLevel} / 9`;
@@ -535,7 +587,14 @@ function formatTimer(sec) {
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
-// Восстанавливаем сессию если она была активна (переоткрытие приложения)
+function stopFarmTimerDisplay() {
+  // При выходе из игры просто останавливаем визуальный таймер,
+  // farmingInterval продолжает считать в фоне
+  clearInterval(farmTimerInterval);
+  farmTimerInterval = null;
+}
+
+
 function restoreFarmSession() {
   const saved = parseInt(localStorage.getItem('ncore_farm_end')) || 0;
   if (!saved) return;
