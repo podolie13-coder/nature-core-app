@@ -19,7 +19,7 @@ body { background: var(--dark-bg); color: #e0f2e0; font-family: 'Segoe UI', sans
 #portal-overlay { position: fixed; inset: 0; background: white; opacity: 0; z-index: 2000; pointer-events: none; transition: opacity 0.8s ease-in-out; }
 
 .tree-container { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: -1; overflow: hidden; }
-#tree-img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.05); filter: brightness(1); transition: all 0.8s ease-in-out; }
+#tree-img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.15); filter: brightness(1); transition: all 0.8s ease-in-out; }
 
 .view-container { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; }
 .view-container.active { display: flex; }
@@ -44,15 +44,17 @@ section.active { display: flex !important; }
 .thumb { width: 55px; height: 55px; border-radius: 12px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; transition: 0.3s; cursor: pointer; }
 .thumb.active { opacity: 1; border-color: transparent; transform: scale(1.1); }
 .attr-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 10px 0; }
-.attr-item { background: rgba(255,255,255,0.06); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 12px; text-align: center; min-width: 85px; }
-.attr-label { font-size: 7px; opacity: 0.5; text-transform: uppercase; }
-.attr-value { font-size: 10px; font-weight: 800; }
+.attr-item { background: rgba(255,255,255,0.04); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08); padding: 7px 14px; border-radius: 14px; text-align: center; min-width: 90px; position: relative; overflow: hidden; }
+.attr-label { font-size: 7px; opacity: 0.4; text-transform: uppercase; letter-spacing: 1px; }
+.attr-value { font-size: 11px; font-weight: 900; margin-top: 2px; }
 
 .btn-main { background: var(--gold-gradient); background-size: 200% 100%; color: #000; border: none; padding: 15px 30px; border-radius: 15px; font-weight: 900; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
 .btn-main:disabled { filter: grayscale(1); cursor: not-allowed; }
+
 .nav-bar { height: 75px; background: rgba(5, 10, 5, 0.95); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; z-index: 1000; }
-.nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; font-size: 11px; cursor: pointer; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.5; font-size: 11px; cursor: pointer; }
 .nav-item.active { opacity: 1; color: var(--primary-green); }
+.nav-item img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
 
 #offline-reward-modal { display: none; position: fixed; inset: 0; z-index: 3000; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); }
 #offline-reward-modal.show { display: flex; }
@@ -79,110 +81,19 @@ section.active { display: flex !important; }
 #btn-upgrade-tree { flex: 1; }
 #farm-rate-info { font-size: 11px; color: rgba(255,255,255,0.45); white-space: nowrap; }
 
-/* ── Экран Артефактов ───────────────────────────────────────────────────── */
-.screen-core-header {
-  text-align: center;
-  padding: 10px 0 4px;
-}
-.screen-core-title {
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  background: linear-gradient(90deg, #4caf50, #a8ff78, #4caf50);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: title-shine 3s linear infinite;
-}
-@keyframes title-shine {
-  0%   { background-position: 0% center; }
-  100% { background-position: 200% center; }
-}
-.screen-core-subtitle {
-  font-size: 11px;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 1px;
-  margin-top: 2px;
-}
+.screen-core-header { text-align: center; padding: 10px 0 4px; }
+.screen-core-title { font-size: 22px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; background: linear-gradient(90deg, #4caf50, #a8ff78, #4caf50); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: title-shine 3s linear infinite; }
+@keyframes title-shine { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+.screen-core-subtitle { font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 1px; margin-top: 2px; }
 
-/* Атрибуты — улучшенный вид */
-.attr-item {
-  background: rgba(255,255,255,0.04);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.08);
-  padding: 7px 14px;
-  border-radius: 14px;
-  text-align: center;
-  min-width: 90px;
-  position: relative;
-  overflow: hidden;
-}
-.attr-item::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: inherit;
-  opacity: 0.06;
-  border-radius: 14px;
-}
-.attr-label {
-  font-size: 7px;
-  opacity: 0.4;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-.attr-value {
-  font-size: 11px;
-  font-weight: 900;
-  margin-top: 2px;
-}
-
-/* Кнопка использовать артефакт */
-.btn-enter-game {
-  position: relative;
-  width: 90%;
-  padding: 16px;
-  border: none;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #1a472a, #2d7a3a, #4caf50);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  cursor: pointer;
-  box-shadow: 0 4px 24px rgba(76,175,80,0.4);
-  overflow: hidden;
-  transition: transform 0.15s, box-shadow 0.15s;
-  margin-top: 4px;
-}
-.btn-enter-game::after {
-  content: '';
-  position: absolute;
-  top: -50%; left: -60%;
-  width: 40%; height: 200%;
-  background: rgba(255,255,255,0.15);
-  transform: skewX(-20deg);
-  animation: btn-shine 3s infinite;
-}
-@keyframes btn-shine {
-  0%   { left: -60%; }
-  100% { left: 160%; }
-}
+.btn-enter-game { position: relative; width: 90%; padding: 16px; border: none; border-radius: 18px; background: linear-gradient(135deg, #1a472a, #2d7a3a, #4caf50); color: #fff; font-size: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 24px rgba(76,175,80,0.4); overflow: hidden; transition: transform 0.15s, box-shadow 0.15s; margin-top: 4px; }
+.btn-enter-game::after { content: ''; position: absolute; top: -50%; left: -60%; width: 40%; height: 200%; background: rgba(255,255,255,0.15); transform: skewX(-20deg); animation: btn-shine 3s infinite; }
+@keyframes btn-shine { 0% { left: -60%; } 100% { left: 160%; } }
 .btn-enter-game:active { transform: scale(0.97); box-shadow: 0 2px 12px rgba(76,175,80,0.3); }
 .btn-enter-icon { font-size: 18px; margin-right: 6px; }
+.screen-footer { font-size: 10px; color: rgba(255,255,255,0.2); margin-top: 8px; letter-spacing: 1px; }
 
-/* Футер */
-.screen-footer {
-  font-size: 10px;
-  color: rgba(255,255,255,0.2);
-  margin-top: 8px;
-  letter-spacing: 1px;
-}
-
- background: url('assets/img/viewwindow.png') center/cover no-repeat; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 15vh; transition: opacity 0.8s ease; }
+#loading-screen { position: fixed; inset: 0; background: url('assets/img/viewwindow.png') center/cover no-repeat; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 15vh; transition: opacity 0.8s ease; }
 .progress-container { width: 70%; max-width: 300px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; border: 1px solid var(--glow-color); margin-top: 15px; }
 .progress-bar { width: 0%; height: 100%; background: #ff33cc; transition: width 0.2s ease; box-shadow: 0 0 15px #ff33cc; }
 </style>
@@ -190,32 +101,32 @@ section.active { display: flex !important; }
 <body>
 
 <div id="loading-screen">
-  <h2 style="color: #ff33cc; letter-spacing: 2px; margin: 0; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff;">Чеканим NFT...</h2>
+  <h2 style="color:#ff33cc;letter-spacing:2px;margin:0;text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff;">Чеканим NFT...</h2>
   <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
-  <div id="loading-text" style="color: #ff33cc; font-weight: 900; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff;">0%</div>
+  <div id="loading-text" style="color:#ff33cc;font-weight:900;text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff;">0%</div>
 </div>
 
 <div id="offline-reward-modal">
   <div class="offline-modal-box">
     <div class="offline-icon">🌿</div>
-    <div class="offline-title">Добро пожаловать!</div>
-    <div class="offline-subtitle">Твоё дерево работало пока тебя не было</div>
+    <div class="offline-title">Welcome back!</div>
+    <div class="offline-subtitle">Your tree worked while you were away</div>
     <div class="offline-amount" id="offline-earned-amount">0 <span>$NCORE</span></div>
-    <div class="offline-time" id="offline-away-time">Отсутствовал: 0 ч 0 мин</div>
-    <div style="font-size:11px; color:rgba(255,255,255,0.35); margin-bottom:8px;">Накопитель (макс. 6 часов)</div>
+    <div class="offline-time" id="offline-away-time">Away: 0h 0m</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:8px;">Storage (max 6 hours)</div>
     <div class="offline-cap-bar-wrap"><div class="offline-cap-bar" id="offline-cap-bar" style="width:0%"></div></div>
-    <button class="btn-main" style="width:100%; padding:12px;" onclick="claimOfflineReward()">Забрать награду ✨</button>
+    <button class="btn-main" style="width:100%;padding:12px;" onclick="claimOfflineReward()">Claim reward ✨</button>
   </div>
 </div>
 
 <div id="profile-icon" onclick="toggleProfile()" style="position:fixed;top:15px;right:15px;z-index:1001;font-size:20px;cursor:pointer;background:rgba(0,0,0,0.6);padding:8px;border-radius:50%;border:1px solid var(--glow-color);">👤</div>
 <div id="profile-menu" style="display:none;position:fixed;top:65px;right:15px;width:220px;background:rgba(5,10,5,0.98);border:1px solid var(--glow-color);border-radius:15px;padding:15px;z-index:1001;backdrop-filter:blur(10px);">
-  <h4 style="margin:0 0 10px 0;color:var(--primary-green);">Профиль</h4>
+  <h4 style="margin:0 0 10px 0;color:var(--primary-green);">Profile</h4>
   <div id="ton-connect-btn"></div>
   <div id="token-balance" style="font-size:18px;font-weight:bold;color:#ff33cc;margin:10px 0;text-shadow:0 0 10px #ff33cc;">
     <span id="balance-value">0</span> <span style="font-size:12px;">$NCORE</span>
   </div>
-  <button onclick="toggleProfile()" style="width:100%;background:none;border:1px solid rgba(255,255,255,0.2);color:white;padding:5px;border-radius:8px;cursor:pointer;">Закрыть</button>
+  <button onclick="toggleProfile()" style="width:100%;background:none;border:1px solid rgba(255,255,255,0.2);color:white;padding:5px;border-radius:8px;cursor:pointer;">Close</button>
 </div>
 
 <div id="app-bg"></div>
@@ -225,8 +136,8 @@ section.active { display: flex !important; }
 <div id="main-menu" class="view-container active">
   <section id="screen-core" class="active">
     <div class="screen-core-header">
-      <div class="screen-core-title">⬡ Артефакты</div>
-      <div class="screen-core-subtitle">Твоя коллекция Nature Core</div>
+      <div class="screen-core-subtitle">Artifacts</div>
+      <div class="screen-core-title">⬡ Nature Core</div>
     </div>
     <div class="artifact-selector" id="nft-list"></div>
     <div id="canvas-container" class="artifact-canvas" style="display:none;">
@@ -239,7 +150,7 @@ section.active { display: flex !important; }
     </div>
     <div class="attr-container" id="nft-attrs"></div>
     <button class="btn-enter-game" id="btn-enter-game" style="display:none;" onclick="enterGame()">
-      <span class="btn-enter-icon">⚡</span> Использовать Артефакт
+      <span class="btn-enter-icon">⚡</span> Use Artifact
     </button>
     <footer class="screen-footer">&copy; 2026 Nature Core Project</footer>
   </section>
@@ -248,51 +159,57 @@ section.active { display: flex !important; }
     <div style="text-align:center;padding-top:50px;">
       <h2 style="color:white;">$NCORE</h2>
       <img src="assets/img/Tokken.png" style="width:120px;border-radius:50%;border:2px solid #ff33cc;box-shadow:0 0 30px #ff33cc;">
-      <div style="color:#fff;font-size:20px;margin-top:15px;">Баланс: <span id="token-page-balance" style="color:#ff33cc;font-weight:bold;">0.00</span></div>
+      <div style="color:#fff;font-size:20px;margin-top:15px;">Balance: <span id="token-page-balance" style="color:#ff33cc;font-weight:bold;">0.00</span></div>
       <div style="margin-top:30px;background:rgba(255,255,255,0.05);padding:15px;border-radius:15px;border:1px solid rgba(255,51,204,0.2);">
-        <h3 style="color:#ff33cc;font-size:16px;">Токеномика проекта</h3>
+        <h3 style="color:#ff33cc;font-size:16px;">Tokenomics</h3>
         <div style="text-align:left;font-size:14px;">
-          <div style="display:flex;justify-content:space-between;"><span>🎮 P2E Награды:</span><b>35%</b></div>
-          <div style="display:flex;justify-content:space-between;"><span>💧 Ликвидность DEX:</span><b>20%</b></div>
-          <div style="display:flex;justify-content:space-between;"><span>📢 Маркетинг:</span><b>15%</b></div>
-          <div style="display:flex;justify-content:space-between;"><span>🏛 Экосистема:</span><b>10%</b></div>
-          <div style="display:flex;justify-content:space-between;"><span>🌿 Эко-фонд:</span><b>10%</b></div>
-          <div style="display:flex;justify-content:space-between;"><span>💎 Команда:</span><b>10%</b></div>
+          <div style="display:flex;justify-content:space-between;"><span>🎮 P2E Rewards:</span><b>35%</b></div>
+          <div style="display:flex;justify-content:space-between;"><span>💧 DEX Liquidity:</span><b>20%</b></div>
+          <div style="display:flex;justify-content:space-between;"><span>📢 Marketing:</span><b>15%</b></div>
+          <div style="display:flex;justify-content:space-between;"><span>🏛 Ecosystem:</span><b>10%</b></div>
+          <div style="display:flex;justify-content:space-between;"><span>🌿 Eco Fund:</span><b>10%</b></div>
+          <div style="display:flex;justify-content:space-between;"><span>💎 Team:</span><b>10%</b></div>
         </div>
       </div>
     </div>
   </section>
 
   <section id="screen-quests" style="padding-bottom:100px;">
-    <h2 style="text-align:center;">Миссии $NCORE</h2>
+    <h2 style="text-align:center;">Quests</h2>
     <div id="quests-list">
       <div class="quest-item" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,51,204,0.3);border-radius:12px;padding:15px;margin-bottom:15px;display:flex;justify-content:space-between;">
-        <div><div style="font-weight:bold;">Подписка на канал</div><div style="color:#ff33cc;">+10 $NCORE</div></div>
-        <button class="btn-main" style="padding:8px 15px;font-size:12px;">Выполнить</button>
+        <div><div style="font-weight:bold;">Subscribe to channel</div><div style="color:#ff33cc;">+10 $NCORE</div></div>
+        <button class="btn-main" style="padding:8px 15px;font-size:12px;">Complete</button>
       </div>
     </div>
   </section>
 
   <nav class="nav-bar">
-    <div class="nav-item active" onclick="switchTab('screen-core', this)"><span>🌿</span><span>Склад</span></div>
-    <div class="nav-item" onclick="switchTab('screen-token', this)"><span>🪙</span><span>Токен</span></div>
-    <div class="nav-item" onclick="switchTab('screen-quests', this)"><span>📜</span><span>Задания</span></div>
+    <div class="nav-item active" onclick="switchTab('screen-core', this)">
+      <span>🌿</span><span>Artifacts</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('screen-token', this)">
+      <img src="assets/img/Tokken.png" alt="Token"><span>Token</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('screen-quests', this)">
+      <span>📜</span><span>Quests</span>
+    </div>
   </nav>
 </div>
 
 <div id="game-view" class="view-container">
   <div id="game-topbar">
-    <button onclick="exitGame()" id="btn-back">⬅ Меню</button>
+    <button onclick="exitGame()" id="btn-back">⬅ Menu</button>
     <div id="coin-balance">💰 0.00 $NCORE</div>
     <div id="profile-icon-game" onclick="toggleProfile()">👤</div>
   </div>
   <div class="tree-container"><img src="assets/tree/stage_1.png" id="tree-img" alt="Tree"></div>
   <div id="game-bottom">
-    <div id="farm-rate-info">⚡ 0.0000 $NCORE/сек</div>
-    <p id="upgrade-info" style="margin:0;font-size:12px;color:rgba(255,255,255,0.6);">Уровень древа: 1 / 9</p>
+    <div id="farm-rate-info">⚡ 0.000000 $NCORE/sec</div>
+    <p id="upgrade-info" style="margin:0;font-size:12px;color:rgba(255,255,255,0.6);">Tree level: 1 / 9</p>
     <div id="game-buttons-row">
-      <button id="btn-farm" onclick="startFarming()">🌿 Фармить</button>
-      <button id="btn-upgrade-tree" class="btn-main" onclick="upgradeTree()">Улучшить</button>
+      <button id="btn-farm" onclick="startFarming()">🌿 Farm</button>
+      <button id="btn-upgrade-tree" class="btn-main" onclick="upgradeTree()">Upgrade</button>
     </div>
   </div>
 </div>
@@ -303,23 +220,42 @@ const PATH_ASSETS         = 'assets/';
 const COLLECTION          = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
 const MAX_OFFLINE_SECONDS = 6 * 60 * 60;
 const FARM_SESSION_SEC    = 6 * 60 * 60;
+
 const TREE_CONFIG = {
-  files:           ["stage_1.png","stage_2.png","stage_3.png","stage_4.png","stage_5.png","stage_6.png","stage_7.png","stage_8.png","stage_9.png"],
-  baseCost:        10,
-  multiplier:      1.6,
-  baseIncome:      0.00002,  // базовая скорость на 1 уровне
-  treeMultiplier:  1.5       // геопрогрессия между уровнями
+  files:          ["stage_1.png","stage_2.png","stage_3.png","stage_4.png","stage_5.png","stage_6.png","stage_7.png","stage_8.png","stage_9.png"],
+  baseCost:       10,
+  multiplier:     1.6,
+  baseIncome:     0.00002,
+  treeMultiplier: 1.5
 };
 
-// Редкость → коэффициент
-const RARITY_MULTIPLIER = {
-  common:    1.0,
-  rare:      1.5,
-  epic:      2.5,
-  legendary: 4.0
+// ─── НАЗВАНИЯ ТРЕЙТОВ ────────────────────────────────────────────────────────
+const TRAIT_NAMES = {
+  // Ядра
+  'Y_common_1': 'Iron Cage',
+  'Y_common_2': 'Stone Cradle',
+  'Y_common_3': 'Root Weave',
+  'Y_rare_1':   'Crystal Nest',
+  'Y_rare_2':   'Magma Core',
+  'Y_rare_3':   'Tide Flame',
+  'Y_rare_4':   'Storm Surge',
+  'Y_epic_1':   'Void Prism',
+  'Y_epic_2':   'Astral Ring',
+  'Y_epic_3':   'Dark Spiral',
+  'Y_leg_1':    'Frost Vortex',
+  'Y_leg_2':    'Primal Surge',
+  'Y_leg_3':    'Ethereal Sphere',
+  // Фоны
+  'bg_Abyssal_Void':  'Abyssal Void',
+  'bg_AncientRuins':  'Ancient Ruins',
+  'bg_EtherealForge': 'Ethereal Forge',
+  'bg_Frozen':        'Frozen',
+  'bg_MysticForest':  'Mystic Forest',
 };
 
-// Определяем редкость по значению трейта
+// ─── РЕДКОСТЬ ────────────────────────────────────────────────────────────────
+const RARITY_MULTIPLIER = { common: 1.0, rare: 1.5, epic: 2.5, legendary: 4.0 };
+
 function getRarityTier(val) {
   if (!val) return 'common';
   const v = val.toLowerCase();
@@ -329,7 +265,6 @@ function getRarityTier(val) {
   return 'common';
 }
 
-// Коэффициент текущего артефакта (среднее трёх трейтов)
 function getArtifactMultiplier() {
   if (!selectedArtifact || !selectedArtifact.traits) return 1.0;
   const t = selectedArtifact.traits;
@@ -339,12 +274,13 @@ function getArtifactMultiplier() {
   return parseFloat(((bg + core + frame) / 3).toFixed(3));
 }
 
-// Скорость фарминга с геопрогрессией и коэффициентом артефакта
 function getFarmRate() {
   const treeRate     = TREE_CONFIG.baseIncome * Math.pow(TREE_CONFIG.treeMultiplier, treeLevel - 1);
   const artifactMult = getArtifactMultiplier();
   return parseFloat((treeRate * artifactMult).toFixed(8));
 }
+
+// ─── SUPABASE ────────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://zdiphqyqoxpqdszoklzd.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkaXBocXlxb3hwcWRzem9rbHpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NDY1MTUsImV4cCI6MjA5NDMyMjUxNX0.0P7pFGe_ZZtv_lKbJEn2g4wjpN2LaKcnBPLHqx-o4oQ';
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -374,11 +310,8 @@ async function loadPlayer(wallet) {
 async function savePlayerNow() {
   if (!currentWallet) return;
   const { error } = await db.from('players').upsert({
-    wallet:     currentWallet,
-    balance:    balance,
-    tree_level: treeLevel,
-    farm_end:   farmSessionEnd,
-    last_seen:  Math.floor(Date.now() / 1000),
+    wallet: currentWallet, balance, tree_level: treeLevel,
+    farm_end: farmSessionEnd, last_seen: Math.floor(Date.now()/1000),
     updated_at: new Date().toISOString()
   }, { onConflict: 'wallet' });
   if (error) console.error('Supabase save error:', error.message);
@@ -395,17 +328,11 @@ function applyPlayerData(data) {
   balance        = parseFloat(data.balance)  || 0;
   treeLevel      = parseInt(data.tree_level) || 1;
   farmSessionEnd = parseInt(data.farm_end)   || 0;
-
   const now     = Math.floor(Date.now() / 1000);
   const elapsed = now - (parseInt(data.last_seen) || now);
   const capped  = Math.min(elapsed, MAX_OFFLINE_SECONDS);
   const earned  = parseFloat((getFarmRate() * capped).toFixed(4));
-
-  if (capped >= 60 && earned > 0) {
-    pendingOfflineReward = earned;
-    showOfflineModal(earned, capped, elapsed);
-  }
-
+  if (capped >= 60 && earned > 0) { pendingOfflineReward = earned; showOfflineModal(earned, capped, elapsed); }
   localStorage.setItem('ncore_balance',  balance);
   localStorage.setItem('ncore_tree_lvl', treeLevel);
   if (farmSessionEnd) localStorage.setItem('ncore_farm_end', farmSessionEnd);
@@ -413,29 +340,23 @@ function applyPlayerData(data) {
 
 // ─── ОФЛАЙН-ФАРМИНГ ──────────────────────────────────────────────────────────
 function checkOfflineFarming() {
-  if (currentWallet) return; // если кошелёк подключён — данные уже из БД
+  if (currentWallet) return;
   const lastSeen = parseInt(localStorage.getItem('ncore_last_seen')) || 0;
   if (!lastSeen) { saveLastSeen(); return; }
-  const now    = Math.floor(Date.now() / 1000);
+  const now = Math.floor(Date.now() / 1000);
   const elapsed = now - lastSeen;
   const capped  = Math.min(elapsed, MAX_OFFLINE_SECONDS);
   const earned  = parseFloat((getFarmRate() * capped).toFixed(4));
-  if (capped >= 60 && earned > 0) {
-    pendingOfflineReward = earned;
-    showOfflineModal(earned, capped, elapsed);
-  } else {
-    saveLastSeen();
-  }
+  if (capped >= 60 && earned > 0) { pendingOfflineReward = earned; showOfflineModal(earned, capped, elapsed); }
+  else { saveLastSeen(); }
 }
-
-// getFarmRate определена выше вместе с TREE_CONFIG
 
 function showOfflineModal(earned, cappedSec, realSec) {
   document.getElementById('offline-earned-amount').innerHTML = `${earned.toFixed(4)} <span>$NCORE</span>`;
   const awayHours = Math.floor(realSec / 3600);
   const awayMins  = Math.floor((realSec % 3600) / 60);
-  let awayText = `Отсутствовал: ${awayHours} ч ${awayMins} мин`;
-  if (realSec > MAX_OFFLINE_SECONDS) awayText += ' (накопитель заполнен)';
+  let awayText = `Away: ${awayHours}h ${awayMins}m`;
+  if (realSec > MAX_OFFLINE_SECONDS) awayText += ' (storage full)';
   document.getElementById('offline-away-time').innerText = awayText;
   const pct = Math.min(100, Math.round((cappedSec / MAX_OFFLINE_SECONDS) * 100));
   setTimeout(() => { document.getElementById('offline-cap-bar').style.width = pct + '%'; }, 300);
@@ -470,7 +391,8 @@ function switchTab(sId, el) {
 // ─── NFT ─────────────────────────────────────────────────────────────────────
 function formatVal(val) {
   if (!val) return "";
-  return val.replace('bg_','').replace('frame_','').replace('Y_','').replace(/_/g,' ') + (val.startsWith('Y_') ? ' Core' : '');
+  if (TRAIT_NAMES[val]) return TRAIT_NAMES[val];
+  return val.replace('bg_','').replace('frame_','').replace('Y_','').replace(/_/g,' ');
 }
 
 function getRarityColor(text) {
@@ -500,8 +422,7 @@ async function buildArtifact(index) {
   document.getElementById('btn-enter-game').style.display   = 'block';
   const inner    = document.getElementById('artifact-inner');
   const skeleton = document.getElementById('artifact-skeleton');
-  inner.classList.remove('loaded');
-  inner.classList.add('loading');
+  inner.classList.remove('loaded'); inner.classList.add('loading');
   skeleton.classList.add('show');
   try {
     let meta;
@@ -519,14 +440,13 @@ async function buildArtifact(index) {
     selectedArtifact.bgPath    = `${PATH_ASSETS}backgrounds/${traits.background}.png`;
     selectedArtifact.framePath = `${PATH_ASSETS}frames/${traits.frame}.png`;
     selectedArtifact.corePath  = `${PATH_ASSETS}cores/${traits.core}.png`;
-    selectedArtifact.traits    = traits; // сохраняем для расчёта коэффициента
+    selectedArtifact.traits    = traits;
     await Promise.all([preloadImage(selectedArtifact.bgPath), preloadImage(selectedArtifact.framePath), preloadImage(selectedArtifact.corePath)]);
     document.getElementById('img-bg').src    = selectedArtifact.bgPath;
     document.getElementById('img-frame').src = selectedArtifact.framePath;
     document.getElementById('img-core').src  = selectedArtifact.corePath;
     skeleton.classList.remove('show');
-    inner.classList.remove('loading');
-    inner.classList.add('loaded');
+    inner.classList.remove('loading'); inner.classList.add('loaded');
     const attrsList = document.getElementById('nft-attrs');
     attrsList.innerHTML = '';
     meta.attributes?.forEach(attr => {
@@ -536,18 +456,14 @@ async function buildArtifact(index) {
       div.className = 'attr-item';
       div.style.borderColor = color;
       div.style.boxShadow = `0 0 10px ${color}22`;
-      div.innerHTML = `
-        <div class="attr-label">${attr.trait_type}</div>
-        <div class="attr-value" style="color:${color}">${icon} ${formatVal(attr.value)}</div>
-      `;
+      div.innerHTML = `<div class="attr-label">${attr.trait_type}</div><div class="attr-value" style="color:${color}">${icon} ${formatVal(attr.value)}</div>`;
       attrsList.appendChild(div);
     });
     document.documentElement.style.setProperty('--glow-color', getRarityColor(traits.frame));
     document.getElementById('app-bg').style.backgroundImage = `url('${selectedArtifact.bgPath}')`;
   } catch (e) {
     skeleton.classList.remove('show');
-    inner.classList.remove('loading');
-    inner.classList.add('loaded');
+    inner.classList.remove('loading'); inner.classList.add('loaded');
     console.error("NFT Error:", e);
   }
 }
@@ -590,22 +506,21 @@ function refreshGarden() {
 
 function updateUI() {
   const cost         = Math.floor(TREE_CONFIG.baseCost * Math.pow(TREE_CONFIG.multiplier, treeLevel - 1));
-  const formattedBal = balance.toFixed(2);
+  const formattedBal = balance.toFixed(4);
   const ratePerSec   = getFarmRate();
-  const ratePerMin   = (ratePerSec * 60).toFixed(4);
+  const artifactMult = getArtifactMultiplier();
 
   document.getElementById('coin-balance').innerText       = `💰 ${formattedBal} $NCORE`;
   document.getElementById('token-page-balance').innerText = formattedBal;
   document.getElementById('balance-value').innerText      = formattedBal;
-  document.getElementById('upgrade-info').innerText       = `Уровень древа: ${treeLevel} / 9`;
-  const artifactMult = getArtifactMultiplier();
-  document.getElementById('farm-rate-info').innerText = `⚡ ${ratePerSec.toFixed(6)} $NCORE/сек · Артефакт x${artifactMult}`;
+  document.getElementById('upgrade-info').innerText       = `Tree level: ${treeLevel} / 9`;
+  document.getElementById('farm-rate-info').innerText     = `⚡ ${ratePerSec.toFixed(6)} $NCORE/sec · x${artifactMult}`;
 
   const upBtn = document.getElementById('btn-upgrade-tree');
   if (treeLevel >= 9) {
-    upBtn.innerText = "МАКСИМАЛЬНЫЙ УРОВЕНЬ"; upBtn.disabled = true;
+    upBtn.innerText = "MAX LEVEL"; upBtn.disabled = true;
   } else {
-    upBtn.innerText = `Улучшить за ${cost} $NCORE`; upBtn.disabled = balance < cost;
+    upBtn.innerText = `Upgrade ${cost} $NCORE`; upBtn.disabled = balance < cost;
   }
 
   localStorage.setItem('ncore_balance',  balance);
@@ -616,12 +531,11 @@ function updateUI() {
 function upgradeTree() {
   const cost = Math.floor(TREE_CONFIG.baseCost * Math.pow(TREE_CONFIG.multiplier, treeLevel - 1));
   if (balance >= cost && treeLevel < 9) {
-    balance -= cost;
-    treeLevel++;
+    balance -= cost; treeLevel++;
     const img = document.getElementById('tree-img');
     img.style.filter = "brightness(3)";
     setTimeout(() => { refreshGarden(); img.style.filter = "brightness(1)"; }, 400);
-    savePlayerNow(); // немедленно
+    savePlayerNow();
   }
 }
 
@@ -645,7 +559,7 @@ function runFarmSession() {
   }, 1000);
   farmTimerInterval = setInterval(() => {
     const remaining = farmSessionEnd - Math.floor(Date.now() / 1000);
-    btn.innerText = remaining <= 0 ? '🌿 Фармить' : '⚡ ' + formatTimer(remaining);
+    btn.innerText = remaining <= 0 ? '🌿 Farm' : '⚡ ' + formatTimer(remaining);
   }, 1000);
   btn.innerText = '⚡ ' + formatTimer(Math.max(0, farmSessionEnd - Math.floor(Date.now() / 1000)));
 }
@@ -655,9 +569,8 @@ function endFarmSession() {
   farmingInterval = null; farmTimerInterval = null; farmSessionEnd = 0;
   localStorage.removeItem('ncore_farm_end');
   const btn = document.getElementById('btn-farm');
-  btn.classList.remove('farming'); btn.innerText = '🌿 Фармить';
-  savePlayerNow();
-  updateUI();
+  btn.classList.remove('farming'); btn.innerText = '🌿 Farm';
+  savePlayerNow(); updateUI();
 }
 
 function stopFarmTimerDisplay() {
@@ -720,7 +633,7 @@ async function updateTokenBalance(userAddress) {
     const token = data.balances.find(item => item.jetton.address.toLowerCase().includes(JETTON_MASTER.slice(4, 20)));
     if (token) {
       const val = parseFloat(token.balance) / Math.pow(10, token.jetton.decimals || 9);
-      document.getElementById('balance-value').innerText = val.toLocaleString('ru-RU', { minimumFractionDigits: 2 });
+      document.getElementById('balance-value').innerText = val.toLocaleString('en-US', { minimumFractionDigits: 4 });
     }
   } catch (e) { console.error("Balance Error:", e); }
 }
