@@ -21,7 +21,7 @@ body { background: var(--dark-bg); color: #e0f2e0; font-family: 'Segoe UI', sans
 
 /* Игровой экран и Дерево */
 .tree-container { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: -1; overflow: hidden; }
-#tree-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(1); transition: all 0.8s ease-in-out; }
+#tree-img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.15); filter: brightness(1); transition: all 0.8s ease-in-out; }
 
 /* Контейнеры видов */
 .view-container { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; }
@@ -669,6 +669,16 @@ function upgradeTree() {
     const img = document.getElementById('tree-img');
     img.style.filter = "brightness(3)";
     setTimeout(() => { refreshGarden(); img.style.filter = "brightness(1)"; }, 400);
+    // Сохраняем сразу без дебаунса
+    if (currentWallet) {
+      db.from('players').upsert({
+        wallet: currentWallet,
+        balance, tree_level: treeLevel,
+        farm_end: farmSessionEnd,
+        last_seen: Math.floor(Date.now() / 1000),
+        updated_at: new Date().toISOString()
+      });
+    }
   }
 }
 
