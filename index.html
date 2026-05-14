@@ -20,7 +20,7 @@ body { background: var(--dark-bg); color: #e0f2e0; font-family: 'Segoe UI', sans
 .bg-overlay { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 20%, var(--dark-bg) 100%); }
 #portal-overlay { position: fixed; inset: 0; background: white; opacity: 0; z-index: 2000; pointer-events: none; transition: opacity 0.8s ease-in-out; }
 
-.tree-container { position: absolute; inset: 0; bottom: 120px; display: flex; align-items: center; justify-content: center; z-index: -1; overflow: hidden; }
+.tree-container { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: -1; overflow: hidden; }
 #tree-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 
 .view-container { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; }
@@ -341,7 +341,7 @@ function buildTreeBranches(level, rng) {
   const depth = Math.min(3 + Math.floor(level * 0.7), 8);
   const baseLen = 30 + level * 4;
   const W = treeCanvas.width, H = treeCanvas.height;
-  const BX = W / 2, BY = H - 30;
+  const BX = W / 2, BY = H - 140;
   const list = [];
   function rec(x, y, ang, len, dep, w) {
     if (dep === 0 || len < 3) return;
@@ -465,14 +465,15 @@ function growTreeAnimation() {
   spawnGrowthParticles(getTreeVisual());
   const t0 = performance.now(), dur = 1600;
   function step(now) {
-    treeAnimT = Math.min((now-t0)/dur, 1);
-    if (treeAnimT < 1) { requestAnimationFrame(step); return; }
-    treeBranches = treeNextBranches;
-    treeGrowing = false; treeAnimT = 0;
-    spawnAmbient(getTreeVisual());
-  }
-  requestAnimationFrame(step);
+  treeAnimT = Math.min((now-t0)/dur, 1);
+  if (treeAnimT < 1) { requestAnimationFrame(step); return; }
+  treeBranches = treeNextBranches;
+  treeGrowing = false; treeAnimT = 0;
+  const s = treeSeed || walletToSeed(currentWallet||'guest');
+  treeBranches = buildTreeBranches(treeLevel, makeRng(s + treeLevel));
+  spawnAmbient(getTreeVisual());
 }
+requestAnimationFrame(step);
 
 // ─── КВЕСТЫ ──────────────────────────────────────────────────────────────────
 const QUESTS_ONE_TIME = [
