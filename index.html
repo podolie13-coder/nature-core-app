@@ -256,8 +256,17 @@ const TRAIT_NAMES = {
 // ─── РЕДКОСТЬ ────────────────────────────────────────────────────────────────
 const RARITY_MULTIPLIER = { common: 1.0, rare: 1.5, epic: 2.5, legendary: 4.0 };
 
+const BACKGROUND_RARITY = {
+  'bg_MysticForest':  'common',
+  'bg_AncientRuins':  'rare',
+  'bg_Abyssal_Void':  'epic',
+  'bg_Frozen':        'epic',
+  'bg_EtherealForge': 'legendary',
+};
+
 function getRarityTier(val) {
   if (!val) return 'common';
+  if (BACKGROUND_RARITY[val]) return BACKGROUND_RARITY[val];
   const v = val.toLowerCase();
   if (v.includes('leg'))  return 'legendary';
   if (v.includes('epic')) return 'epic';
