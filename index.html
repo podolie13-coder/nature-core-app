@@ -21,7 +21,7 @@ body { background: var(--dark-bg); color: #e0f2e0; font-family: 'Segoe UI', sans
 
 /* Игровой экран и Дерево */
 .tree-container { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: -1; overflow: hidden; }
-#tree-img { width: 100%; height: 100%; object-fit: cover; object-position: center; transform: scale(1.15); filter: brightness(1); transition: all 0.8s ease-in-out; }
+#tree-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(1); transition: all 0.8s ease-in-out; }
 
 /* Контейнеры видов */
 .view-container { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; }
@@ -30,7 +30,8 @@ section { display: none; flex-direction: column; align-items: center; padding: 1
 section.active { display: flex !important; }
 
 /* Артефакты и Атрибуты */
-.artifact-canvas { width: 180px; height: 180px; position: relative; margin: 10px 0; border-radius: 35px; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.9); background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; transition: transform 1.2s ease-in; }
+.artifact-canvas { width: 180px; height: 180px; position: relative; margin: 16px 0; border-radius: 35px; overflow: visible; box-shadow: 0 0 30px rgba(0,0,0,0.9); background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; transition: transform 1.2s ease-in; }
+.artifact-canvas-inner { position: absolute; inset: 0; border-radius: 35px; overflow: hidden; width: 100%; height: 100%; }
 .canvas-portal { transform: scale(10); filter: brightness(5); }
 .layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .layer-core { width: 82%; height: 82%; inset: 9%; z-index: 3; animation: core-float 3s infinite ease-in-out; }
@@ -229,9 +230,11 @@ section.active { display: flex !important; }
     <h2 style="letter-spacing: 2px;">Nature Core</h2>
     <div class="artifact-selector" id="nft-list"></div>
     <div id="canvas-container" class="artifact-canvas" style="display:none;">
-      <img src="" id="img-bg" class="layer">
-      <img src="" id="img-frame" class="layer">
-      <img src="" id="img-core" class="layer layer-core">
+      <div class="artifact-canvas-inner">
+        <img src="" id="img-bg" class="layer">
+        <img src="" id="img-frame" class="layer">
+        <img src="" id="img-core" class="layer layer-core">
+      </div>
     </div>
     <div class="attr-container" id="nft-attrs"></div>
     <button class="btn-main" id="btn-enter-game" style="display:none; background:var(--primary-green);" onclick="enterGame()">Использовать Артефакт</button>
@@ -481,8 +484,19 @@ function getRarityColor(text) {
 
 async function buildArtifact(index) {
   if (!userNfts[index]) return;
+
+  // Сразу помечаем активный thumb по data-index (не по порядку DOM)
+  document.querySelectorAll('.thumb').forEach(t => {
+    t.classList.toggle('active', parseInt(t.dataset.index) === index);
+  });
+
   selectedArtifact = userNfts[index];
   const id = selectedArtifact.metadata.name.match(/#(\d+)/)?.[1] || '0';
+
+  // Показываем канвас сразу с текущими изображениями (не ждём загрузки)
+  document.getElementById('canvas-container').style.display = 'flex';
+  document.getElementById('btn-enter-game').style.display  = 'block';
+
   try {
     let meta;
     if (metadataCache.has(id)) {
@@ -495,7 +509,7 @@ async function buildArtifact(index) {
 
     let traits = { core: 'Y_basic_1', background: 'bg_basic', frame: 'frame_basic' };
     meta.attributes?.forEach(attr => {
-      let type = attr.trait_type.toLowerCase();
+      const type = attr.trait_type.toLowerCase();
       if (traits[type] !== undefined) traits[type] = attr.value;
     });
 
@@ -520,9 +534,7 @@ async function buildArtifact(index) {
 
     document.documentElement.style.setProperty('--glow-color', getRarityColor(traits.frame));
     document.getElementById('app-bg').style.backgroundImage = `url('${selectedArtifact.bgPath}')`;
-    document.getElementById('canvas-container').style.display = 'flex';
-    document.getElementById('btn-enter-game').style.display  = 'block';
-    document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
+
   } catch (e) { console.error("NFT Error:", e); }
 }
 
@@ -704,6 +716,7 @@ tonConnectUI.onStatusChange(async (w) => {
         const img = document.createElement('img');
         img.src   = n.metadata.image;
         img.className = 'thumb';
+        img.dataset.index = i;
         img.onclick = () => buildArtifact(i);
         list.appendChild(img);
       });
