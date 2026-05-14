@@ -21,9 +21,7 @@ body { background: var(--dark-bg); color: #e0f2e0; font-family: 'Segoe UI', sans
 
 /* Игровой экран и Дерево */
 .tree-container { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: -1; overflow: hidden; }
-#tree-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); transition: all 0.8s ease-in-out; }
-.energy-beam { position: absolute; top: 0; width: 6px; height: 50vh; background: linear-gradient(to bottom, transparent, var(--glow-color), var(--primary-green)); box-shadow: 0 0 25px var(--glow-color); z-index: 5; animation: beam-flicker 0.2s infinite alternate; }
-@keyframes beam-flicker { from { opacity: 0.5; } to { opacity: 1; } }
+#tree-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(1); transition: all 0.8s ease-in-out; }
 
 /* Контейнеры видов */
 .view-container { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; }
@@ -89,16 +87,51 @@ section.active { display: flex !important; }
 .offline-cap-bar-wrap { background: rgba(255,255,255,0.07); border-radius: 8px; height: 6px; width: 100%; margin-bottom: 20px; overflow: hidden; }
 .offline-cap-bar { height: 100%; background: var(--primary-green); border-radius: 8px; transition: width 1s ease; }
 
-/* Индикатор офлайн-фарминга в игре */
-#farm-rate-info {
+/* Кнопки внизу игрового вида */
+#game-bottom {
   position: absolute;
-  top: 45px;
-  right: 15px;
-  font-size: 10px;
-  color: rgba(255,255,255,0.5);
-  text-align: right;
-  white-space: nowrap;
+  bottom: 30px;
+  left: 0; right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   z-index: 10;
+}
+#game-buttons-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+#btn-farm {
+  flex: 1;
+  background: linear-gradient(135deg, #1a472a, #2d7a3a);
+  border: 2px solid var(--primary-green);
+  color: #fff;
+  border-radius: 15px;
+  font-weight: 900;
+  font-size: 13px;
+  padding: 15px 10px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(76,175,80,0.3);
+  text-transform: uppercase;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: all 0.1s;
+}
+#btn-farm.farming {
+  background: linear-gradient(135deg, #2d7a3a, #4caf50);
+  box-shadow: 0 0 30px rgba(76,175,80,0.7);
+  transform: scale(0.97);
+}
+#btn-upgrade-tree { flex: 1; }
+#farm-rate-info {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  white-space: nowrap;
 }
 
 /* Загрузка */
@@ -203,11 +236,17 @@ section.active { display: flex !important; }
   <button onclick="exitGame()" style="position: absolute; top: 15px; left: 15px; z-index: 10;">⬅ Меню</button>
   <div id="coin-balance" style="position: absolute; top: 15px; right: 15px; color: #ff33cc; font-weight: 900; z-index: 10;">0.00 $NCORE</div>
   <div class="tree-container"><img src="assets/tree/stage_1.png" id="tree-img" alt="Tree"></div>
-  <div id="beam" class="energy-beam"></div>
-  <div id="farm-rate-info" style="position: absolute; top: 45px; right: 15px; z-index: 10; font-size: 10px; color: rgba(255,255,255,0.5); text-align: right;"></div>
-  <div style="position: absolute; bottom: 100px; text-align: center;">
-    <button id="btn-upgrade-tree" class="btn-main" onclick="upgradeTree()">Улучшить за 10 $NCORE</button>
-    <p id="upgrade-info" style="font-size:12px; margin-top: 10px;">Уровень древа: 1</p>
+
+  <div id="game-bottom">
+    <div id="farm-rate-info">⚡ 0.0000 $NCORE/сек</div>
+    <p id="upgrade-info" style="margin:0; font-size:12px; color:rgba(255,255,255,0.6);">Уровень древа: 1 / 9</p>
+    <div id="game-buttons-row">
+      <button id="btn-farm"
+        onpointerdown="startFarming()"
+        onpointerup="stopFarming()"
+        onpointerleave="stopFarming()">🌿 Фармить</button>
+      <button id="btn-upgrade-tree" class="btn-main" onclick="upgradeTree()">Улучшить</button>
+    </div>
   </div>
 </div>
 
@@ -435,13 +474,26 @@ function upgradeTree() {
   }
 }
 
-// ─── ОНЛАЙН-ФАРМИНГ (тикер раз в секунду) ────────────────────────────────────
-setInterval(() => {
-  if (document.getElementById('game-view').classList.contains('active') && selectedArtifact) {
+// ─── ФАРМИНГ ПО НАЖАТИЮ ──────────────────────────────────────────────────────
+let farmingInterval = null;
+
+function startFarming() {
+  if (farmingInterval || !selectedArtifact) return;
+  document.getElementById('btn-farm').classList.add('farming');
+  document.getElementById('btn-farm').innerText = '⚡ Фармлю...';
+  farmingInterval = setInterval(() => {
     balance += getFarmRate();
     updateUI();
-  }
-}, 1000);
+  }, 1000);
+}
+
+function stopFarming() {
+  if (!farmingInterval) return;
+  clearInterval(farmingInterval);
+  farmingInterval = null;
+  document.getElementById('btn-farm').classList.remove('farming');
+  document.getElementById('btn-farm').innerText = '🌿 Фармить';
+}
 
 // ─── TON CONNECT ─────────────────────────────────────────────────────────────
 const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
