@@ -20,7 +20,7 @@ body { background: var(--dark-bg); color: #e0f2e0; font-family: 'Segoe UI', sans
 .bg-overlay { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 20%, var(--dark-bg) 100%); }
 #portal-overlay { position: fixed; inset: 0; background: white; opacity: 0; z-index: 2000; pointer-events: none; transition: opacity 0.8s ease-in-out; }
 
-.tree-container { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: -1; overflow: hidden; }
+.tree-container { position: absolute; inset: 0; bottom: 120px; display: flex; align-items: center; justify-content: center; z-index: -1; overflow: hidden; }
 #tree-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 
 .view-container { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; }
@@ -89,8 +89,7 @@ section.active { display: flex !important; }
 #coin-balance { color: #ff33cc; font-weight: 900; font-size: 15px; text-shadow: 0 0 10px rgba(255,51,204,0.6); background: rgba(255,51,204,0.1); border: 1px solid rgba(255,51,204,0.25); border-radius: 20px; padding: 5px 14px; }
 #profile-icon-game { font-size: 20px; cursor: pointer; background: rgba(76,175,80,0.15); border: 1px solid rgba(76,175,80,0.3); padding: 6px 10px; border-radius: 50%; }
 
-/* FIX: game-bottom поверх canvas */
-#game-bottom { position: absolute; bottom: 30px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 20; }
+#game-bottom { position: absolute; bottom: 20px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 20; }
 #game-buttons-row { display: flex; gap: 12px; justify-content: center; width: 100%; padding: 0 20px; box-sizing: border-box; }
 #btn-farm { flex: 1; background: linear-gradient(135deg, #1a472a, #2d7a3a); border: 2px solid var(--primary-green); color: #fff; border-radius: 15px; font-weight: 900; font-size: 13px; padding: 15px 10px; cursor: pointer; box-shadow: 0 0 20px rgba(76,175,80,0.3); text-transform: uppercase; user-select: none; -webkit-user-select: none; transition: all 0.1s; }
 #btn-farm.farming { background: linear-gradient(135deg, #2d7a3a, #4caf50); box-shadow: 0 0 30px rgba(76,175,80,0.7); transform: scale(0.97); }
@@ -778,13 +777,21 @@ function doEnterGame(){
     document.getElementById('game-view').classList.add('active');
     const profileIcon=document.getElementById('profile-icon');
     if(profileIcon)profileIcon.style.display='none';
-    treeCanvas.width=treeCanvas.offsetWidth||window.innerWidth;
-    treeCanvas.height=treeCanvas.offsetHeight||window.innerHeight;
-    const seed=treeSeed||walletToSeed(currentWallet||'guest');
-    treeRng=makeRng(seed);
-    treeBranches=buildTreeBranches(treeLevel,makeRng(seed+treeLevel));
-    spawnAmbient(getTreeVisual());
-    if(!treeRafId)renderTree();
+
+    // FIX: ждём один frame после показа game-view чтобы получить правильные размеры
+    requestAnimationFrame(()=>{
+      const W = treeCanvas.offsetWidth  || window.innerWidth;
+      const H = treeCanvas.offsetHeight || window.innerHeight;
+      treeCanvas.width  = W;
+      treeCanvas.height = H;
+      const seed=treeSeed||walletToSeed(currentWallet||'guest');
+      treeRng=makeRng(seed);
+      treeBranches=buildTreeBranches(treeLevel,makeRng(seed+treeLevel));
+      spawnAmbient(getTreeVisual());
+      if(treeRafId){ cancelAnimationFrame(treeRafId); treeRafId=null; }
+      renderTree();
+    });
+
     updateUI();restoreFarmSession();
     setTimeout(()=>{overlay.style.opacity='0';document.getElementById('canvas-container').classList.remove('canvas-portal');},100);
   },1200);
