@@ -432,9 +432,33 @@ function switchTab(sId, el) {
 }
 
 // ─── NFT ─────────────────────────────────────────────────────────────────────
+const TRAIT_NAMES = {
+  // Ядра
+  'Y_common_1':  'Iron Cage',
+  'Y_common_2':  'Stone Cradle',
+  'Y_common_3':  'Root Weave',
+  'Y_rare_1':    'Crystal Nest',
+  'Y_rare_2':    'Magma Core',
+  'Y_rare_3':    'Tide Flame',
+  'Y_rare_4':    'Storm Surge',
+  'Y_epic_1':    'Void Prism',
+  'Y_epic_2':    'Astral Ring',
+  'Y_epic_3':    'Dark Spiral',
+  'Y_leg_1':     'Frost Vortex',
+  'Y_leg_2':     'Primal Surge',
+  'Y_leg_3':     'Ethereal Sphere',
+  // Фоны
+  'bg_Abyssal_Void':  'Abyssal Void',
+  'bg_AncientRuins':  'Ancient Ruins',
+  'bg_EtherealForge': 'Ethereal Forge',
+  'bg_Frozen':        'Frozen',
+  'bg_MysticForest':  'Mystic Forest',
+};
+
 function formatVal(val) {
   if (!val) return "";
-  return val.replace('bg_','').replace('frame_','').replace('Y_','').replace(/_/g,' ') + (val.startsWith('Y_') ? ' Core' : '');
+  if (TRAIT_NAMES[val]) return TRAIT_NAMES[val];
+  return val.replace('bg_','').replace('frame_','').replace('Y_','').replace(/_/g,' ');
 }
 
 function getRarityColor(text) {
