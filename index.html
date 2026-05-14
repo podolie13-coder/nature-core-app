@@ -825,7 +825,12 @@ function upgradeTree(){
   const cost=getUpgradeCost();
   if(balance>=cost&&treeLevel<9){
     balance-=cost;treeLevel++;
-    savePlayerNow();growTreeAnimation();updateUI();
+    savePlayerNow();
+    // Перестраиваем текущие ветки с новым уровнем
+    const s=treeSeed||walletToSeed(currentWallet||'guest');
+    treeBranches=buildTreeBranches(treeLevel-1,makeRng(s+(treeLevel-1)));
+    growTreeAnimation();
+    updateUI();
     if(!isDailyClaimed('daily_upgrade'))claimQuest('daily_upgrade',2,true);
   }
 }
