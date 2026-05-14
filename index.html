@@ -20,7 +20,6 @@ body { background: var(--dark-bg); color: #e0f2e0; font-family: 'Segoe UI', sans
 .bg-overlay { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 20%, var(--dark-bg) 100%); }
 #portal-overlay { position: fixed; inset: 0; background: white; opacity: 0; z-index: 2000; pointer-events: none; transition: opacity 0.8s ease-in-out; }
 
-/* Дерево на canvas */
 .tree-container { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: -1; overflow: hidden; }
 #tree-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 
@@ -72,12 +71,26 @@ section.active { display: flex !important; }
 .offline-cap-bar-wrap { background: rgba(255,255,255,0.07); border-radius: 8px; height: 6px; width: 100%; margin-bottom: 20px; overflow: hidden; }
 .offline-cap-bar { height: 100%; background: var(--primary-green); border-radius: 8px; transition: width 1s ease; }
 
+/* NFT Warning Modal */
+#nft-warning-modal { display: none; position: fixed; inset: 0; z-index: 3500; align-items: center; justify-content: center; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); }
+#nft-warning-modal.show { display: flex; }
+.nft-warn-box { background: linear-gradient(160deg,#1a0a0a,#050a05); border: 1px solid #ff3333; border-radius: 24px; padding: 28px 24px; text-align: center; max-width: 300px; width: 90%; box-shadow: 0 0 40px rgba(255,50,50,0.3); animation: modal-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+.nft-warn-icon { font-size: 48px; margin-bottom: 10px; }
+.nft-warn-title { color: #ff4444; font-size: 18px; font-weight: 900; letter-spacing: 1px; margin-bottom: 8px; }
+.nft-warn-text { color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 16px; line-height: 1.5; }
+.nft-warn-info { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; margin-bottom: 16px; font-size: 11px; }
+.nft-warn-label { color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+.nft-warn-buttons { display: flex; gap: 10px; }
+.nft-warn-cancel { flex: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 12px; padding: 12px; font-weight: 700; cursor: pointer; font-size: 13px; }
+.nft-warn-confirm { flex: 1; background: linear-gradient(135deg,#7a1a1a,#cc2222); border: none; color: #fff; border-radius: 12px; padding: 12px; font-weight: 900; cursor: pointer; font-size: 13px; }
+
 #game-topbar { position: absolute; top: 0; left: 0; right: 0; height: 54px; background: rgba(5,10,5,0.75); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 14px; z-index: 10; box-sizing: border-box; }
 #btn-back { background: none; border: 1px solid rgba(255,255,255,0.2); color: #e0f2e0; border-radius: 10px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
 #coin-balance { color: #ff33cc; font-weight: 900; font-size: 15px; text-shadow: 0 0 10px rgba(255,51,204,0.6); background: rgba(255,51,204,0.1); border: 1px solid rgba(255,51,204,0.25); border-radius: 20px; padding: 5px 14px; }
 #profile-icon-game { font-size: 20px; cursor: pointer; background: rgba(76,175,80,0.15); border: 1px solid rgba(76,175,80,0.3); padding: 6px 10px; border-radius: 50%; }
 
-#game-bottom { position: absolute; bottom: 30px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 10; }
+/* FIX: game-bottom поверх canvas */
+#game-bottom { position: absolute; bottom: 30px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 20; }
 #game-buttons-row { display: flex; gap: 12px; justify-content: center; width: 100%; padding: 0 20px; box-sizing: border-box; }
 #btn-farm { flex: 1; background: linear-gradient(135deg, #1a472a, #2d7a3a); border: 2px solid var(--primary-green); color: #fff; border-radius: 15px; font-weight: 900; font-size: 13px; padding: 15px 10px; cursor: pointer; box-shadow: 0 0 20px rgba(76,175,80,0.3); text-transform: uppercase; user-select: none; -webkit-user-select: none; transition: all 0.1s; }
 #btn-farm.farming { background: linear-gradient(135deg, #2d7a3a, #4caf50); box-shadow: 0 0 30px rgba(76,175,80,0.7); transform: scale(0.97); }
@@ -122,8 +135,7 @@ section.active { display: flex !important; }
 #loading-subtitle { font-size: 9px; color: rgba(255,255,255,0.3); letter-spacing: 2px; text-transform: uppercase; margin: 0; }
 .progress-container { width: 130px; height: 3px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
 .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #00cccc, #a8ff78); border-radius: 3px; transition: width 0.2s ease; }
-#nft-warning-modal { display:none; position:fixed; inset:0; z-index:3500; align-items:center; justify-content:center; background:rgba(0,0,0,0.9); backdrop-filter:blur(8px); }
-#nft-warning-modal.show { display:flex; }
+#loading-text { display: none; }
 </style>
 </head>
 <body>
@@ -145,7 +157,7 @@ section.active { display: flex !important; }
   </div>
   <div id="loading-artifact">
     <img id="loading-frame" src="assets/frames/frame_leg_7.png" alt="">
-    <img id="loading-core"  src="assets/cores/Y_leg_1.png" alt="">
+    <img id="loading-core" src="assets/cores/Y_leg_1.png" alt="">
   </div>
   <div id="loading-title">Nature Core</div>
   <div id="loading-subtitle">Minting your NFTs...</div>
@@ -166,22 +178,26 @@ section.active { display: flex !important; }
   </div>
 </div>
 
-<div id="nft-warning-modal">  <div style="background:linear-gradient(160deg,#1a0a0a,#050a05);border:1px solid #ff3333;border-radius:24px;padding:28px 24px;text-align:center;max-width:300px;width:90%;box-shadow:0 0 40px rgba(255,50,50,0.3);animation:modal-pop 0.4s cubic-bezier(0.34,1.56,0.64,1);">
-    <div style="font-size:48px;margin-bottom:10px;">⚠️</div>
-    <div style="color:#ff4444;font-size:18px;font-weight:900;letter-spacing:1px;margin-bottom:8px;">WARNING!</div>
-    <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:16px;line-height:1.5;">Changing your artifact will <b style="color:#ff4444;">reset your tree</b> back to level 1!</div>
-    <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:10px;margin-bottom:16px;font-size:11px;">
-      <div style="color:rgba(255,255,255,0.4);margin-bottom:4px;">Current artifact (bound):</div>
-      <div style="color:#ffb100;font-weight:700;" id="nft-warning-old">—</div>
-      <div style="color:rgba(255,255,255,0.4);margin:8px 0 4px;">New artifact:</div>
+<!-- FIX: правильный HTML тег profile-icon -->
+<div id="nft-warning-modal">
+  <div class="nft-warn-box">
+    <div class="nft-warn-icon">⚠️</div>
+    <div class="nft-warn-title">WARNING!</div>
+    <div class="nft-warn-text">Changing your artifact will <b style="color:#ff4444;">reset your tree</b> back to level 1!</div>
+    <div class="nft-warn-info">
+      <div class="nft-warn-label">Current artifact (bound):</div>
+      <div style="color:#ffb100;font-weight:700;margin-bottom:8px;" id="nft-warning-old">—</div>
+      <div class="nft-warn-label">New artifact:</div>
       <div style="color:#4caf50;font-weight:700;" id="nft-warning-new">—</div>
     </div>
-    <div style="display:flex;gap:10px;">
-      <button onclick="cancelNftChange()" style="flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:12px;padding:12px;font-weight:700;cursor:pointer;font-size:13px;">Cancel</button>
-      <button onclick="confirmNftChange()" style="flex:1;background:linear-gradient(135deg,#7a1a1a,#cc2222);border:none;color:#fff;border-radius:12px;padding:12px;font-weight:900;cursor:pointer;font-size:13px;">Reset & Switch</button>
+    <div class="nft-warn-buttons">
+      <button class="nft-warn-cancel" onclick="cancelNftChange()">Cancel</button>
+      <button class="nft-warn-confirm" onclick="confirmNftChange()">Reset & Switch</button>
     </div>
   </div>
-</div> style="position:fixed;top:15px;right:15px;z-index:1001;font-size:20px;cursor:pointer;background:rgba(0,0,0,0.6);padding:8px;border-radius:50%;border:1px solid var(--glow-color);">👤</div>
+</div>
+
+<div id="profile-icon" onclick="toggleProfile()" style="position:fixed;top:15px;right:15px;z-index:1001;font-size:20px;cursor:pointer;background:rgba(0,0,0,0.6);padding:8px;border-radius:50%;border:1px solid var(--glow-color);">👤</div>
 <div id="profile-menu" style="display:none;position:fixed;top:65px;right:15px;width:220px;background:rgba(5,10,5,0.98);border:1px solid var(--glow-color);border-radius:15px;padding:15px;z-index:1001;backdrop-filter:blur(10px);">
   <h4 style="margin:0 0 10px 0;color:var(--primary-green);">Profile</h4>
   <div id="ton-connect-btn"></div>
@@ -293,16 +309,10 @@ function getUpgradeCost() {
 // ─── ПРОЦЕДУРНОЕ ДЕРЕВО ───────────────────────────────────────────────────────
 const treeCanvas = document.getElementById('tree-canvas');
 const treeCtx    = treeCanvas.getContext('2d');
-let treeRng      = null;  // seeded random
-let treeBranches = [];
-let treeParticles = [];
-let treeAnimT    = 0;
-let treeGrowing  = false;
-let treeNextBranches = [];
-let treeAmbient  = [];
-let treeRafId    = null;
+let treeRng = null, treeBranches = [], treeParticles = [];
+let treeAnimT = 0, treeGrowing = false, treeNextBranches = [];
+let treeAmbient = [], treeRafId = null, treeAnimFrame = 0;
 
-// Простой seeded RNG (mulberry32)
 function makeRng(seed) {
   let s = seed >>> 0;
   return function() {
@@ -314,16 +324,12 @@ function makeRng(seed) {
   };
 }
 
-// Генерируем числовой seed из строки wallet адреса
-function walletToSeed(wallet) {
+function walletToSeed(str) {
   let h = 0;
-  for (let i = 0; i < wallet.length; i++) {
-    h = Math.imul(31, h) + wallet.charCodeAt(i) | 0;
-  }
+  for (let i = 0; i < str.length; i++) h = Math.imul(31, h) + str.charCodeAt(i) | 0;
   return Math.abs(h);
 }
 
-// Конфиг дерева по уровню + редкости
 function getTreeVisual() {
   const tier = getArtifactMultiplier();
   if (tier >= 4.0) return { lc:'#ffcc44', lc2:'#ffb100', gc:'#ffdd00', glowStr:14, leafShape:'diamond', ambientN:20, runeGlow:true  };
@@ -333,29 +339,24 @@ function getTreeVisual() {
 }
 
 function buildTreeBranches(level, rng) {
-  const depth  = Math.min(3 + Math.floor(level * 0.7), 8);
+  const depth = Math.min(3 + Math.floor(level * 0.7), 8);
   const baseLen = 30 + level * 4;
   const W = treeCanvas.width, H = treeCanvas.height;
   const BX = W / 2, BY = H - 30;
   const list = [];
-
   function rec(x, y, ang, len, dep, w) {
     if (dep === 0 || len < 3) return;
-    const r  = ang * Math.PI / 180;
-    const ex = x + Math.cos(r) * len;
-    const ey = y - Math.sin(r) * len;
+    const r = ang * Math.PI / 180;
+    const ex = x + Math.cos(r) * len, ey = y - Math.sin(r) * len;
     list.push({ x1:x, y1:y, x2:ex, y2:ey, dep, w, isLeaf: dep === 1 });
-    // Хаотичное ветвление — seed определяет углы
     const spread = 22 + rng() * 20;
-    const leftAng  = ang + spread + (rng() - 0.5) * 15;
+    const leftAng = ang + spread + (rng() - 0.5) * 15;
     const rightAng = ang - spread + (rng() - 0.5) * 15;
-    const lenMult  = 0.62 + rng() * 0.12;
+    const lenMult = 0.62 + rng() * 0.12;
     rec(ex, ey, leftAng,  len * lenMult, dep - 1, w * 0.65);
     rec(ex, ey, rightAng, len * lenMult, dep - 1, w * 0.65);
-    // Иногда третья ветка на высоких уровнях
     if (level >= 5 && dep >= 2 && rng() > 0.6) {
-      const midAng = ang + (rng() - 0.5) * 30;
-      rec(ex, ey, midAng, len * lenMult * 0.7, dep - 2, w * 0.5);
+      rec(ex, ey, ang + (rng()-0.5)*30, len*lenMult*0.7, dep-2, w*0.5);
     }
   }
   rec(BX, BY, 90, baseLen, depth, 10 + level);
@@ -365,15 +366,9 @@ function buildTreeBranches(level, rng) {
 function spawnGrowthParticles(vis) {
   const W = treeCanvas.width, H = treeCanvas.height;
   for (let i = 0; i < 40; i++) {
-    const a = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.2;
-    const s = 1.5 + Math.random() * 3.5;
-    treeParticles.push({
-      x: W/2 + (Math.random()-0.5)*40,
-      y: H - 30 - Math.random()*60,
-      vx: Math.cos(a)*s*0.5, vy: Math.sin(a)*s,
-      life: 1, decay: 0.018+Math.random()*0.018,
-      r: 2+Math.random()*3, c: vis.gc
-    });
+    const a = -Math.PI/2 + (Math.random()-0.5)*Math.PI*1.2;
+    const s = 1.5 + Math.random()*3.5;
+    treeParticles.push({ x:W/2+(Math.random()-0.5)*40, y:H-30-Math.random()*60, vx:Math.cos(a)*s*0.5, vy:Math.sin(a)*s, life:1, decay:0.018+Math.random()*0.018, r:2+Math.random()*3, c:vis.gc });
   }
 }
 
@@ -381,39 +376,16 @@ function spawnAmbient(vis) {
   const W = treeCanvas.width, H = treeCanvas.height;
   treeAmbient = [];
   for (let i = 0; i < vis.ambientN; i++) {
-    treeAmbient.push({
-      x: W/2 + (Math.random()-0.5)*160,
-      y: H-20 - Math.random()*220,
-      vy: -0.25-Math.random()*0.35,
-      vx: (Math.random()-0.5)*0.25,
-      life: Math.random(), decay: 0.004+Math.random()*0.004,
-      r: 1.5+Math.random()*2, c: vis.gc
-    });
+    treeAmbient.push({ x:W/2+(Math.random()-0.5)*160, y:H-20-Math.random()*220, vy:-0.25-Math.random()*0.35, vx:(Math.random()-0.5)*0.25, life:Math.random(), decay:0.004+Math.random()*0.004, r:1.5+Math.random()*2, c:vis.gc });
   }
 }
 
 function drawLeafShape(ctx, x, y, size, shape, color, glow, glowStr) {
-  ctx.fillStyle   = color;
-  ctx.shadowColor = glow;
-  ctx.shadowBlur  = glowStr;
-  if (shape === 'circle') {
-    ctx.beginPath(); ctx.arc(x,y,size,0,Math.PI*2); ctx.fill();
-  } else if (shape === 'crystal') {
-    ctx.beginPath();
-    ctx.moveTo(x,y-size*1.3); ctx.lineTo(x+size*0.7,y); ctx.lineTo(x,y+size*0.8); ctx.lineTo(x-size*0.7,y);
-    ctx.closePath(); ctx.fill();
-  } else if (shape === 'star') {
-    ctx.beginPath();
-    for (let i=0;i<10;i++) {
-      const a=i*Math.PI/5-Math.PI/2, r=i%2===0?size:size*0.45;
-      i===0?ctx.moveTo(x+Math.cos(a)*r,y+Math.sin(a)*r):ctx.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r);
-    }
-    ctx.closePath(); ctx.fill();
-  } else if (shape === 'diamond') {
-    ctx.beginPath();
-    ctx.moveTo(x,y-size*1.2); ctx.lineTo(x+size*0.8,y); ctx.lineTo(x,y+size*1.2); ctx.lineTo(x-size*0.8,y);
-    ctx.closePath(); ctx.fill();
-  }
+  ctx.fillStyle = color; ctx.shadowColor = glow; ctx.shadowBlur = glowStr;
+  if (shape === 'circle') { ctx.beginPath(); ctx.arc(x,y,size,0,Math.PI*2); ctx.fill(); }
+  else if (shape === 'crystal') { ctx.beginPath(); ctx.moveTo(x,y-size*1.3); ctx.lineTo(x+size*0.7,y); ctx.lineTo(x,y+size*0.8); ctx.lineTo(x-size*0.7,y); ctx.closePath(); ctx.fill(); }
+  else if (shape === 'star') { ctx.beginPath(); for(let i=0;i<10;i++){const a=i*Math.PI/5-Math.PI/2,r=i%2===0?size:size*0.45;i===0?ctx.moveTo(x+Math.cos(a)*r,y+Math.sin(a)*r):ctx.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r);} ctx.closePath(); ctx.fill(); }
+  else if (shape === 'diamond') { ctx.beginPath(); ctx.moveTo(x,y-size*1.2); ctx.lineTo(x+size*0.8,y); ctx.lineTo(x,y+size*1.2); ctx.lineTo(x-size*0.8,y); ctx.closePath(); ctx.fill(); }
   ctx.shadowBlur = 0;
 }
 
@@ -422,8 +394,8 @@ function drawTreeBranches(ctx, branches, alpha, vis, level, t) {
   branches.forEach(b => {
     ctx.globalAlpha = alpha;
     ctx.strokeStyle = b.dep <= 2 ? '#2a4a1a' : vis.lc2;
-    ctx.lineWidth   = Math.max(0.8, b.w * (b.dep / (3 + level * 0.7)) * 0.9);
-    ctx.lineCap     = 'round';
+    ctx.lineWidth = Math.max(0.8, b.w * (b.dep / (3 + level * 0.7)) * 0.9);
+    ctx.lineCap = 'round';
     if (vis.glowStr > 6) { ctx.shadowColor = vis.gc; ctx.shadowBlur = 3; }
     ctx.beginPath(); ctx.moveTo(b.x1,b.y1); ctx.lineTo(b.x2,b.y2); ctx.stroke();
     ctx.shadowBlur = 0;
@@ -438,103 +410,66 @@ function drawTreeBranches(ctx, branches, alpha, vis, level, t) {
   ctx.globalAlpha = 1;
 }
 
-function drawRunes(ctx, branches, t, W) {
+function drawRunes(ctx, branches, t) {
   const runeChars = ['ᚠ','ᚢ','ᚦ','ᚨ','ᚱ','ᚲ','ᚷ','ᚹ','ᛁ','ᛏ'];
   branches.filter(b => b.dep <= 2).forEach((b,i) => {
     const mx = (b.x1+b.x2)/2, my = (b.y1+b.y2)/2;
     const pulse = 0.5+0.5*Math.sin(t*1.8+i*1.1);
     ctx.globalAlpha = 0.45*pulse;
-    ctx.fillStyle   = '#ffdd00';
-    ctx.shadowColor = '#ffcc00'; ctx.shadowBlur = 7*pulse;
-    ctx.font = (6+b.dep)+'px serif';
-    ctx.textAlign = 'center';
+    ctx.fillStyle = '#ffdd00'; ctx.shadowColor = '#ffcc00'; ctx.shadowBlur = 7*pulse;
+    ctx.font = (6+b.dep)+'px serif'; ctx.textAlign = 'center';
     ctx.fillText(runeChars[i%runeChars.length], mx, my);
     ctx.shadowBlur = 0;
   });
   ctx.globalAlpha = 1; ctx.textAlign = 'left';
 }
 
-function easeInOut(t) { return t<0.5?2*t*t:-1+(4-2*t)*t; }
+function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
 
-let treeAnimFrame = 0;
 function renderTree() {
   treeAnimFrame += 0.016;
   const W = treeCanvas.width, H = treeCanvas.height;
   treeCtx.clearRect(0,0,W,H);
-
   const vis = getTreeVisual();
-
-  // Туман у основания
   const bg = treeCtx.createRadialGradient(W/2,H,0,W/2,H,140);
   bg.addColorStop(0, vis.gc+'33'); bg.addColorStop(1,'rgba(0,0,0,0)');
   treeCtx.fillStyle = bg; treeCtx.fillRect(0,0,W,H);
-
   if (treeGrowing) {
     const e = easeInOut(treeAnimT);
     drawTreeBranches(treeCtx, treeBranches, 1-e*0.6, vis, treeLevel, treeAnimFrame);
-    const nvis = getTreeVisualForLevel(treeLevel+1);
-    drawTreeBranches(treeCtx, treeNextBranches, e, nvis, treeLevel+1, treeAnimFrame);
+    drawTreeBranches(treeCtx, treeNextBranches, e, vis, treeLevel+1, treeAnimFrame);
   } else {
     drawTreeBranches(treeCtx, treeBranches, 1, vis, treeLevel, treeAnimFrame);
   }
-
-  if (vis.runeGlow) drawRunes(treeCtx, treeBranches, treeAnimFrame, W);
-
-  // Ambient частицы
+  if (vis.runeGlow) drawRunes(treeCtx, treeBranches, treeAnimFrame);
   treeAmbient.forEach((p,i) => {
     p.x+=p.vx; p.y+=p.vy; p.life-=p.decay;
-    if (p.life<=0) {
-      treeAmbient[i] = { x:W/2+(Math.random()-0.5)*160, y:H-20-Math.random()*220, vy:-0.25-Math.random()*0.35, vx:(Math.random()-0.5)*0.25, life:0.1, decay:0.004+Math.random()*0.004, r:1.5+Math.random()*2, c:vis.gc };
-      return;
-    }
-    treeCtx.globalAlpha = p.life*0.75;
-    treeCtx.fillStyle = p.c; treeCtx.shadowColor=p.c; treeCtx.shadowBlur=5;
-    treeCtx.beginPath(); treeCtx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2); treeCtx.fill();
-    treeCtx.shadowBlur=0;
+    if (p.life<=0) { treeAmbient[i]={x:W/2+(Math.random()-0.5)*160,y:H-20-Math.random()*220,vy:-0.25-Math.random()*0.35,vx:(Math.random()-0.5)*0.25,life:0.1,decay:0.004+Math.random()*0.004,r:1.5+Math.random()*2,c:vis.gc}; return; }
+    treeCtx.globalAlpha=p.life*0.75; treeCtx.fillStyle=p.c; treeCtx.shadowColor=p.c; treeCtx.shadowBlur=5;
+    treeCtx.beginPath(); treeCtx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2); treeCtx.fill(); treeCtx.shadowBlur=0;
   });
-
-  // Частицы роста
   treeParticles = treeParticles.filter(p=>p.life>0);
   treeParticles.forEach(p => {
     p.x+=p.vx; p.y+=p.vy; p.vy+=0.05; p.life-=p.decay;
-    treeCtx.globalAlpha=p.life*0.9;
-    treeCtx.fillStyle=p.c; treeCtx.shadowColor=p.c; treeCtx.shadowBlur=7;
-    treeCtx.beginPath(); treeCtx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2); treeCtx.fill();
-    treeCtx.shadowBlur=0;
+    treeCtx.globalAlpha=p.life*0.9; treeCtx.fillStyle=p.c; treeCtx.shadowColor=p.c; treeCtx.shadowBlur=7;
+    treeCtx.beginPath(); treeCtx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2); treeCtx.fill(); treeCtx.shadowBlur=0;
   });
   treeCtx.globalAlpha=1;
-
   treeRafId = requestAnimationFrame(renderTree);
-}
-
-function getTreeVisualForLevel(lvl) {
-  const mult = getArtifactMultiplier();
-  return getTreeVisual();
-}
-
-function initTree(wallet) {
-  const seed = wallet ? walletToSeed(wallet) : Math.floor(Math.random()*999999);
-  treeRng = makeRng(seed);
-  treeCanvas.width  = treeCanvas.offsetWidth  || window.innerWidth;
-  treeCanvas.height = treeCanvas.offsetHeight || window.innerHeight;
-  treeBranches = buildTreeBranches(treeLevel, makeRng(seed + treeLevel));
-  spawnAmbient(getTreeVisual());
-  if (!treeRafId) renderTree();
 }
 
 function growTreeAnimation() {
   if (treeGrowing) return;
-  const seed = currentWallet ? walletToSeed(currentWallet) : 12345;
+  const seed = treeSeed || walletToSeed(currentWallet||'guest');
   treeGrowing = true;
   treeNextBranches = buildTreeBranches(treeLevel, makeRng(seed + treeLevel));
   spawnGrowthParticles(getTreeVisual());
-
   const t0 = performance.now(), dur = 1600;
   function step(now) {
     treeAnimT = Math.min((now-t0)/dur, 1);
     if (treeAnimT < 1) { requestAnimationFrame(step); return; }
     treeBranches = treeNextBranches;
-    treeGrowing  = false; treeAnimT = 0;
+    treeGrowing = false; treeAnimT = 0;
     spawnAmbient(getTreeVisual());
   }
   requestAnimationFrame(step);
@@ -561,12 +496,12 @@ function isOneTimeClaimed(id) { return !!questsOneTime[id]; }
 async function claimQuest(id,reward,isDaily) {
   if(isDaily){if(isDailyClaimed(id))return;if(isDailyReset()){questsDaily={};dailyReset=Math.floor(Date.now()/1000);}questsDaily[id]=Math.floor(Date.now()/1000);}
   else{if(isOneTimeClaimed(id))return;questsOneTime[id]=true;}
-  balance+=reward;await savePlayerNow();updateUI();renderQuests();
+  balance+=reward; await savePlayerNow(); updateUI(); renderQuests();
 }
 
 async function goQuest(id,reward,url) {
-  if(url)window.open(url,'_blank');
-  if(id==='subscribe_tg')return;
+  if(url) window.open(url,'_blank');
+  if(id==='subscribe_tg') return;
   setTimeout(async()=>{if(!isOneTimeClaimed(id))await claimQuest(id,reward,false);},3000);
 }
 
@@ -582,8 +517,8 @@ async function checkTgSubscription(reward) {
 
 function renderQuests() {
   const container=document.getElementById('quests-container');
-  if(!container)return;
-  if(currentWallet&&!isOneTimeClaimed('connect_wallet'))questsOneTime['connect_wallet']=true;
+  if(!container) return;
+  if(currentWallet&&!isOneTimeClaimed('connect_wallet')) questsOneTime['connect_wallet']=true;
   let html='';
   html+='<div class="quest-section-title">🔄 Daily (resets in 24h)</div>';
   QUESTS_DAILY.forEach(q=>{
@@ -613,10 +548,10 @@ const TRAIT_NAMES = {
   'bg_Abyssal_Void':'Abyssal Void','bg_AncientRuins':'Ancient Ruins',
   'bg_EtherealForge':'Ethereal Forge','bg_Frozen':'Frozen','bg_MysticForest':'Mystic Forest',
 };
-const RARITY_MULTIPLIER = {common:1.0,rare:1.5,epic:2.5,legendary:4.0};
-const BACKGROUND_RARITY = {'bg_MysticForest':'common','bg_AncientRuins':'rare','bg_Abyssal_Void':'epic','bg_Frozen':'epic','bg_EtherealForge':'legendary'};
+const RARITY_MULTIPLIER={common:1.0,rare:1.5,epic:2.5,legendary:4.0};
+const BACKGROUND_RARITY={'bg_MysticForest':'common','bg_AncientRuins':'rare','bg_Abyssal_Void':'epic','bg_Frozen':'epic','bg_EtherealForge':'legendary'};
 
-function getRarityTier(val) {
+function getRarityTier(val){
   if(!val)return'common';
   if(BACKGROUND_RARITY[val])return BACKGROUND_RARITY[val];
   const v=val.toLowerCase();
@@ -630,15 +565,9 @@ function getRarityIcon(val){const t=getRarityTier(val);if(t==='legendary')return
 function getArtifactMultiplier(){
   if(!selectedArtifact||!selectedArtifact.traits)return 1.0;
   const t=selectedArtifact.traits;
-  const bg=RARITY_MULTIPLIER[getRarityTier(t.background)]||1.0;
-  const core=RARITY_MULTIPLIER[getRarityTier(t.core)]||1.0;
-  const frame=RARITY_MULTIPLIER[getRarityTier(t.frame)]||1.0;
-  return parseFloat(((bg+core+frame)/3).toFixed(3));
+  return parseFloat(((( RARITY_MULTIPLIER[getRarityTier(t.background)]||1)+(RARITY_MULTIPLIER[getRarityTier(t.core)]||1)+(RARITY_MULTIPLIER[getRarityTier(t.frame)]||1))/3).toFixed(3));
 }
-function getFarmRate(){
-  const treeRate=TREE_CONFIG.baseIncome*Math.pow(TREE_CONFIG.treeMultiplier,treeLevel-1);
-  return parseFloat((treeRate*getArtifactMultiplier()).toFixed(8));
-}
+function getFarmRate(){return parseFloat((TREE_CONFIG.baseIncome*Math.pow(TREE_CONFIG.treeMultiplier,treeLevel-1)*getArtifactMultiplier()).toFixed(8));}
 
 // ─── SUPABASE ────────────────────────────────────────────────────────────────
 const SUPABASE_URL='https://zdiphqyqoxpqdszoklzd.supabase.co';
@@ -653,19 +582,29 @@ let balance=parseFloat(localStorage.getItem('ncore_balance'))||0;
 let treeLevel=parseInt(localStorage.getItem('ncore_tree_lvl'))||1;
 let farmSessionEnd=parseInt(localStorage.getItem('ncore_farm_end'))||0;
 let pendingOfflineReward=0,farmingInterval=null,farmTimerInterval=null;
-let boundNft=localStorage.getItem('ncore_bound_nft')||null; // привязанный NFT
-let treeSeed=parseInt(localStorage.getItem('ncore_tree_seed'))||0; // seed дерева
+let boundNft=localStorage.getItem('ncore_bound_nft')||null;
+let treeSeed=parseInt(localStorage.getItem('ncore_tree_seed'))||0;
 
 async function loadPlayer(wallet){
   const{data,error}=await db.from('players').select('*').eq('wallet',wallet).single();
-  if(error||!data){await db.from('players').insert({wallet,balance:0,tree_level:1,farm_end:0,last_seen:Math.floor(Date.now()/1000),quests_daily:{},quests_one_time:{},daily_reset:0});return null;}
+  if(error||!data){
+    await db.from('players').insert({wallet,balance:0,tree_level:1,farm_end:0,last_seen:Math.floor(Date.now()/1000),quests_daily:{},quests_one_time:{},daily_reset:0});
+    return null;
+  }
   return data;
 }
+
 async function savePlayerNow(){
   if(!currentWallet)return;
-  const{error}=await db.from('players').upsert({wallet:currentWallet,balance,tree_level:treeLevel,farm_end:farmSessionEnd,last_seen:Math.floor(Date.now()/1000),updated_at:new Date().toISOString(),quests_daily:questsDaily,quests_one_time:questsOneTime,daily_reset:dailyReset,bound_nft:boundNft,tree_seed:treeSeed},{onConflict:'wallet'});
+  const{error}=await db.from('players').upsert({
+    wallet:currentWallet,balance,tree_level:treeLevel,farm_end:farmSessionEnd,
+    last_seen:Math.floor(Date.now()/1000),updated_at:new Date().toISOString(),
+    quests_daily:questsDaily,quests_one_time:questsOneTime,daily_reset:dailyReset,
+    bound_nft:boundNft,tree_seed:treeSeed
+  },{onConflict:'wallet'});
   if(error)console.error('Supabase save error:',error.message);
 }
+
 function savePlayer(){if(!currentWallet)return;clearTimeout(saveTimeout);saveTimeout=setTimeout(()=>savePlayerNow(),3000);}
 
 function applyPlayerData(data){
@@ -738,21 +677,32 @@ function formatVal(val){
   return val.replace('bg_','').replace('frame_','').replace('Y_','').replace(/_/g,' ');
 }
 
+// FIX: buildArtifact — используем data-index для надёжного выбора
 async function buildArtifact(index){
   if(!userNfts[index])return;
-  document.querySelectorAll('.thumb').forEach(t=>{t.classList.toggle('active',parseInt(t.dataset.index)===index);});
+  // FIX: ищем по data-index, не по порядку DOM
+  document.querySelectorAll('#nft-list .thumb').forEach(t=>{
+    t.classList.toggle('active', parseInt(t.dataset.index)===index);
+  });
   selectedArtifact=userNfts[index];
   const id=selectedArtifact.metadata.name.match(/#(\d+)/)?.[1]||'0';
   document.getElementById('canvas-container').style.display='flex';
   document.getElementById('btn-enter-game').style.display='block';
-  const inner=document.getElementById('artifact-inner'),skeleton=document.getElementById('artifact-skeleton');
+  const inner=document.getElementById('artifact-inner');
+  const skeleton=document.getElementById('artifact-skeleton');
   inner.classList.remove('loaded');inner.classList.add('loading');skeleton.classList.add('show');
   try{
     let meta;
     if(metadataCache.has(id)){meta=metadataCache.get(id);}
-    else{const res=await fetch(PATH_ASSETS+'metadata/'+id+'.json');meta=await res.json();metadataCache.set(id,meta);}
+    else{
+      const res=await fetch(PATH_ASSETS+'metadata/'+id+'.json');
+      meta=await res.json();metadataCache.set(id,meta);
+    }
     let traits={core:'Y_basic_1',background:'bg_basic',frame:'frame_basic'};
-    meta.attributes?.forEach(attr=>{const type=attr.trait_type.toLowerCase();if(traits[type]!==undefined)traits[type]=attr.value;});
+    meta.attributes?.forEach(attr=>{
+      const type=attr.trait_type.toLowerCase();
+      if(traits[type]!==undefined)traits[type]=attr.value;
+    });
     selectedArtifact.bgPath=PATH_ASSETS+'backgrounds/'+traits.background+'.png';
     selectedArtifact.framePath=PATH_ASSETS+'frames/'+traits.frame+'.png';
     selectedArtifact.corePath=PATH_ASSETS+'cores/'+traits.core+'.png';
@@ -772,65 +722,52 @@ async function buildArtifact(index){
     });
     document.documentElement.style.setProperty('--glow-color',getRarityColor(traits.frame));
     document.getElementById('app-bg').style.backgroundImage="url('"+selectedArtifact.bgPath+"')";
-    // Обновляем дерево если оно уже инициализировано
     if(treeRafId)spawnAmbient(getTreeVisual());
-  }catch(e){skeleton.classList.remove('show');inner.classList.remove('loading');inner.classList.add('loaded');console.error('NFT Error:',e);}
+  }catch(e){
+    skeleton.classList.remove('show');inner.classList.remove('loading');inner.classList.add('loaded');
+    console.error('NFT Error:',e);
+  }
 }
 
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=img.onerror=resolve;img.src=src;});}
 
 function enterGame(){
-  if(!selectedArtifact) return;
-  const nftId = selectedArtifact.metadata.name;
-
-  // Если уже привязан другой NFT — показываем предупреждение
-  if(boundNft && boundNft !== nftId) {
-    showNftWarning(nftId);
-    return;
-  }
-
-  // Первое использование — привязываем NFT и генерируем seed
-  if(!boundNft) {
-    boundNft = nftId;
-    treeSeed  = walletToSeed((currentWallet||'guest') + nftId);
-    localStorage.setItem('ncore_bound_nft', boundNft);
-    localStorage.setItem('ncore_tree_seed', treeSeed);
+  if(!selectedArtifact)return;
+  const nftId=selectedArtifact.metadata.name;
+  if(boundNft&&boundNft!==nftId){showNftWarning(nftId);return;}
+  if(!boundNft){
+    boundNft=nftId;
+    treeSeed=walletToSeed((currentWallet||'guest')+nftId);
+    localStorage.setItem('ncore_bound_nft',boundNft);
+    localStorage.setItem('ncore_tree_seed',treeSeed);
     savePlayerNow();
   }
-
   doEnterGame();
 }
 
-function showNftWarning(newNftId) {
-  const modal = document.getElementById('nft-warning-modal');
-  document.getElementById('nft-warning-new').innerText = newNftId;
-  document.getElementById('nft-warning-old').innerText = boundNft;
+function showNftWarning(newNftId){
+  const modal=document.getElementById('nft-warning-modal');
+  document.getElementById('nft-warning-new').innerText=newNftId;
+  document.getElementById('nft-warning-old').innerText=boundNft;
+  modal.dataset.pendingNft=newNftId;
   modal.classList.add('show');
-  // Сохраняем новый NFT для подтверждения
-  modal.dataset.pendingNft = newNftId;
 }
 
-function confirmNftChange() {
-  const modal = document.getElementById('nft-warning-modal');
-  const newNftId = modal.dataset.pendingNft;
+function confirmNftChange(){
+  const modal=document.getElementById('nft-warning-modal');
+  const newNftId=modal.dataset.pendingNft;
   modal.classList.remove('show');
-
-  // Сбрасываем дерево
-  boundNft   = newNftId;
-  treeLevel  = 1;
-  treeSeed   = walletToSeed((currentWallet||'guest') + newNftId);
-  farmSessionEnd = 0;
-  localStorage.setItem('ncore_bound_nft', boundNft);
-  localStorage.setItem('ncore_tree_seed', treeSeed);
-  localStorage.setItem('ncore_tree_lvl', 1);
+  boundNft=newNftId;treeLevel=1;
+  treeSeed=walletToSeed((currentWallet||'guest')+newNftId);
+  farmSessionEnd=0;
+  localStorage.setItem('ncore_bound_nft',boundNft);
+  localStorage.setItem('ncore_tree_seed',treeSeed);
+  localStorage.setItem('ncore_tree_lvl',1);
   localStorage.removeItem('ncore_farm_end');
-  savePlayerNow();
-  doEnterGame();
+  savePlayerNow();doEnterGame();
 }
 
-function cancelNftChange() {
-  document.getElementById('nft-warning-modal').classList.remove('show');
-}
+function cancelNftChange(){document.getElementById('nft-warning-modal').classList.remove('show');}
 
 function doEnterGame(){
   const overlay=document.getElementById('portal-overlay');
@@ -839,17 +776,16 @@ function doEnterGame(){
   setTimeout(()=>{
     document.getElementById('main-menu').classList.remove('active');
     document.getElementById('game-view').classList.add('active');
-    document.getElementById('profile-icon').style.display='none';
+    const profileIcon=document.getElementById('profile-icon');
+    if(profileIcon)profileIcon.style.display='none';
     treeCanvas.width=treeCanvas.offsetWidth||window.innerWidth;
     treeCanvas.height=treeCanvas.offsetHeight||window.innerHeight;
-    // Используем сохранённый seed дерева
-    const seed = treeSeed || walletToSeed(currentWallet||'guest');
-    treeRng = makeRng(seed);
-    treeBranches = buildTreeBranches(treeLevel, makeRng(seed + treeLevel));
+    const seed=treeSeed||walletToSeed(currentWallet||'guest');
+    treeRng=makeRng(seed);
+    treeBranches=buildTreeBranches(treeLevel,makeRng(seed+treeLevel));
     spawnAmbient(getTreeVisual());
-    if(!treeRafId) renderTree();
-    updateUI();
-    restoreFarmSession();
+    if(!treeRafId)renderTree();
+    updateUI();restoreFarmSession();
     setTimeout(()=>{overlay.style.opacity='0';document.getElementById('canvas-container').classList.remove('canvas-portal');},100);
   },1200);
 }
@@ -858,7 +794,8 @@ function exitGame(){
   stopFarmTimerDisplay();
   document.getElementById('game-view').classList.remove('active');
   document.getElementById('main-menu').classList.add('active');
-  document.getElementById('profile-icon').style.display='block';
+  const profileIcon=document.getElementById('profile-icon');
+  if(profileIcon)profileIcon.style.display='block';
 }
 
 function updateUI(){
@@ -880,9 +817,7 @@ function upgradeTree(){
   const cost=getUpgradeCost();
   if(balance>=cost&&treeLevel<9){
     balance-=cost;treeLevel++;
-    savePlayerNow();
-    growTreeAnimation(); // анимация роста вместо смены картинки
-    updateUI();
+    savePlayerNow();growTreeAnimation();updateUI();
     if(!isDailyClaimed('daily_upgrade'))claimQuest('daily_upgrade',2,true);
   }
 }
@@ -933,7 +868,10 @@ function formatTimer(sec){
   return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
 }
 
-const tonConnectUI=new TON_CONNECT_UI.TonConnectUI({manifestUrl:'https://podolie13-coder.github.io/nature-core-app/tonconnect-manifest.json',buttonRootId:'ton-connect-btn'});
+const tonConnectUI=new TON_CONNECT_UI.TonConnectUI({
+  manifestUrl:'https://podolie13-coder.github.io/nature-core-app/tonconnect-manifest.json',
+  buttonRootId:'ton-connect-btn'
+});
 
 tonConnectUI.onStatusChange(async(w)=>{
   if(w){
@@ -946,15 +884,21 @@ tonConnectUI.onStatusChange(async(w)=>{
       userNfts=d.nft_items;
       const list=document.getElementById('nft-list');list.innerHTML='';
       userNfts.forEach((n,i)=>{
-        const img=document.createElement('img');img.src=n.metadata.image;img.className='thumb';
-        img.dataset.index=i;img.onclick=()=>buildArtifact(i);list.appendChild(img);
+        const img=document.createElement('img');
+        img.src=n.metadata.image;img.className='thumb';
+        img.dataset.index=String(i); // FIX: явно строка
+        img.onclick=()=>buildArtifact(i);
+        list.appendChild(img);
       });
       buildArtifact(0);updateTokenBalance(currentWallet);
     }
   }else{currentWallet=null;}
 });
 
-function toggleProfile(){const menu=document.getElementById('profile-menu');menu.style.display=menu.style.display==='none'?'block':'none';}
+function toggleProfile(){
+  const menu=document.getElementById('profile-menu');
+  menu.style.display=menu.style.display==='none'?'block':'none';
+}
 
 async function updateTokenBalance(userAddress){
   try{
@@ -962,7 +906,10 @@ async function updateTokenBalance(userAddress){
     const data=await response.json();
     const JETTON_MASTER='0:7b5a7690291ee7ac764c526aaedd679d9ce74e21a6dbbb71b43f5d'.toLowerCase();
     const token=data.balances.find(item=>item.jetton.address.toLowerCase().includes(JETTON_MASTER.slice(4,20)));
-    if(token){const val=parseFloat(token.balance)/Math.pow(10,token.jetton.decimals||9);document.getElementById('balance-value').innerText=val.toLocaleString('en-US',{minimumFractionDigits:4});}
+    if(token){
+      const val=parseFloat(token.balance)/Math.pow(10,token.jetton.decimals||9);
+      document.getElementById('balance-value').innerText=val.toLocaleString('en-US',{minimumFractionDigits:4});
+    }
   }catch(e){console.error('Balance Error:',e);}
 }
 
@@ -984,7 +931,6 @@ const loadingInterval=setInterval(()=>{
     }
   }
   document.getElementById('progress-bar').style.width=progress+'%';
-  document.getElementById('loading-text').innerText=Math.floor(progress)+'%';
 },150);
 
 window.addEventListener('load',()=>setTimeout(()=>{isLoaded=true;},1500));
@@ -992,7 +938,9 @@ window.addEventListener('resize',()=>{
   if(treeRafId){
     treeCanvas.width=treeCanvas.offsetWidth;
     treeCanvas.height=treeCanvas.offsetHeight;
-    initTree(currentWallet);
+    const seed=treeSeed||walletToSeed(currentWallet||'guest');
+    treeBranches=buildTreeBranches(treeLevel,makeRng(seed+treeLevel));
+    spawnAmbient(getTreeVisual());
   }
 });
 </script>
