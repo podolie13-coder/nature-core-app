@@ -404,19 +404,19 @@ function formatVal(val) {
   return val.replace('bg_','').replace('frame_','').replace('Y_','').replace(/_/g,' ');
 }
 
-function getRarityColor(text) {
-  const t = text.toLowerCase();
-  if (t.includes('rare')) return 'var(--rarity-rare)';
-  if (t.includes('epic')) return 'var(--rarity-epic)';
-  if (t.includes('leg'))  return 'var(--rarity-leg)';
+function getRarityColor(val) {
+  const tier = getRarityTier(val);
+  if (tier === 'legendary') return 'var(--rarity-leg)';
+  if (tier === 'epic')      return 'var(--rarity-epic)';
+  if (tier === 'rare')      return 'var(--rarity-rare)';
   return 'var(--rarity-common)';
 }
 
-function getRarityIcon(text) {
-  const t = text.toLowerCase();
-  if (t.includes('leg'))  return '👑';
-  if (t.includes('epic')) return '💜';
-  if (t.includes('rare')) return '💙';
+function getRarityIcon(val) {
+  const tier = getRarityTier(val);
+  if (tier === 'legendary') return '👑';
+  if (tier === 'epic')      return '💜';
+  if (tier === 'rare')      return '💙';
   return '🟢';
 }
 
