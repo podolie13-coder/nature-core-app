@@ -79,7 +79,110 @@ section.active { display: flex !important; }
 #btn-upgrade-tree { flex: 1; }
 #farm-rate-info { font-size: 11px; color: rgba(255,255,255,0.45); white-space: nowrap; }
 
-#loading-screen { position: fixed; inset: 0; background: url('assets/img/viewwindow.png') center/cover no-repeat; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 15vh; transition: opacity 0.8s ease; }
+/* ── Экран Артефактов ───────────────────────────────────────────────────── */
+.screen-core-header {
+  text-align: center;
+  padding: 10px 0 4px;
+}
+.screen-core-title {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #4caf50, #a8ff78, #4caf50);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: title-shine 3s linear infinite;
+}
+@keyframes title-shine {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+.screen-core-subtitle {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+/* Атрибуты — улучшенный вид */
+.attr-item {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 7px 14px;
+  border-radius: 14px;
+  text-align: center;
+  min-width: 90px;
+  position: relative;
+  overflow: hidden;
+}
+.attr-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  opacity: 0.06;
+  border-radius: 14px;
+}
+.attr-label {
+  font-size: 7px;
+  opacity: 0.4;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.attr-value {
+  font-size: 11px;
+  font-weight: 900;
+  margin-top: 2px;
+}
+
+/* Кнопка использовать артефакт */
+.btn-enter-game {
+  position: relative;
+  width: 90%;
+  padding: 16px;
+  border: none;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #1a472a, #2d7a3a, #4caf50);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 24px rgba(76,175,80,0.4);
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+  margin-top: 4px;
+}
+.btn-enter-game::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -60%;
+  width: 40%; height: 200%;
+  background: rgba(255,255,255,0.15);
+  transform: skewX(-20deg);
+  animation: btn-shine 3s infinite;
+}
+@keyframes btn-shine {
+  0%   { left: -60%; }
+  100% { left: 160%; }
+}
+.btn-enter-game:active { transform: scale(0.97); box-shadow: 0 2px 12px rgba(76,175,80,0.3); }
+.btn-enter-icon { font-size: 18px; margin-right: 6px; }
+
+/* Футер */
+.screen-footer {
+  font-size: 10px;
+  color: rgba(255,255,255,0.2);
+  margin-top: 8px;
+  letter-spacing: 1px;
+}
+
+ background: url('assets/img/viewwindow.png') center/cover no-repeat; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 15vh; transition: opacity 0.8s ease; }
 .progress-container { width: 70%; max-width: 300px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; border: 1px solid var(--glow-color); margin-top: 15px; }
 .progress-bar { width: 0%; height: 100%; background: #ff33cc; transition: width 0.2s ease; box-shadow: 0 0 15px #ff33cc; }
 </style>
@@ -121,7 +224,10 @@ section.active { display: flex !important; }
 
 <div id="main-menu" class="view-container active">
   <section id="screen-core" class="active">
-    <h2 style="letter-spacing:2px;">Nature Core</h2>
+    <div class="screen-core-header">
+      <div class="screen-core-title">⬡ Артефакты</div>
+      <div class="screen-core-subtitle">Твоя коллекция Nature Core</div>
+    </div>
     <div class="artifact-selector" id="nft-list"></div>
     <div id="canvas-container" class="artifact-canvas" style="display:none;">
       <div id="artifact-skeleton"></div>
@@ -132,8 +238,10 @@ section.active { display: flex !important; }
       </div>
     </div>
     <div class="attr-container" id="nft-attrs"></div>
-    <button class="btn-main" id="btn-enter-game" style="display:none;background:var(--primary-green);" onclick="enterGame()">Использовать Артефакт</button>
-    <footer>&copy; 2026 Nature Core Project</footer>
+    <button class="btn-enter-game" id="btn-enter-game" style="display:none;" onclick="enterGame()">
+      <span class="btn-enter-icon">⚡</span> Использовать Артефакт
+    </button>
+    <footer class="screen-footer">&copy; 2026 Nature Core Project</footer>
   </section>
 
   <section id="screen-token">
@@ -337,6 +445,14 @@ function getRarityColor(text) {
   return 'var(--rarity-common)';
 }
 
+function getRarityIcon(text) {
+  const t = text.toLowerCase();
+  if (t.includes('leg'))  return '👑';
+  if (t.includes('epic')) return '💜';
+  if (t.includes('rare')) return '💙';
+  return '🟢';
+}
+
 async function buildArtifact(index) {
   if (!userNfts[index]) return;
   document.querySelectorAll('.thumb').forEach(t => {
@@ -378,10 +494,15 @@ async function buildArtifact(index) {
     attrsList.innerHTML = '';
     meta.attributes?.forEach(attr => {
       const color = getRarityColor(attr.value);
+      const icon  = getRarityIcon(attr.value);
       const div = document.createElement('div');
       div.className = 'attr-item';
       div.style.borderColor = color;
-      div.innerHTML = `<div class="attr-label">${attr.trait_type}</div><div class="attr-value" style="color:${color}">${formatVal(attr.value)}</div>`;
+      div.style.boxShadow = `0 0 10px ${color}22`;
+      div.innerHTML = `
+        <div class="attr-label">${attr.trait_type}</div>
+        <div class="attr-value" style="color:${color}">${icon} ${formatVal(attr.value)}</div>
+      `;
       attrsList.appendChild(div);
     });
     document.documentElement.style.setProperty('--glow-color', getRarityColor(traits.frame));
