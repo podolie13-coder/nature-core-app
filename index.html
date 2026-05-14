@@ -21,7 +21,7 @@ body { background: var(--dark-bg); color: #e0f2e0; font-family: 'Segoe UI', sans
 
 /* Игровой экран и Дерево */
 .tree-container { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: -1; overflow: hidden; }
-#tree-img { width: 100%; height: 100%; object-fit: cover; object-position: center; transform: scale(1.15); filter: brightness(1); transition: all 0.8s ease-in-out; }
+#tree-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(1); transition: all 0.8s ease-in-out; }
 
 /* Контейнеры видов */
 .view-container { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; }
@@ -296,11 +296,71 @@ section.active { display: flex !important; }
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 // ─── КОНСТАНТЫ ───────────────────────────────────────────────────────────────
 const PATH_ASSETS  = 'assets/';
 const COLLECTION   = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
-const MAX_OFFLINE_SECONDS = 6 * 60 * 60; // 6 часов в секундах
+const MAX_OFFLINE_SECONDS = 6 * 60 * 60;
+
+// ─── SUPABASE ─────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://zdiphqyqoxpqdszoklzd.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkaXBocXlxb3hwcWRzem9rbHpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NDY1MTUsImV4cCI6MjA5NDMyMjUxNX0.0P7pFGe_ZZtv_lKbJEn2g4wjpN2LaKcnBPLHqx-o4oQ';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentWallet = null; // адрес кошелька текущего игрока
+let saveTimeout   = null; // дебаунс сохранения
+
+// Загрузить данные игрока из БД
+async function loadPlayer(wallet) {
+  const { data, error } = await db.from('players').select('*').eq('wallet', wallet).single();
+  if (error || !data) {
+    // Новый игрок — создаём запись
+    await db.from('players').insert({ wallet, balance: 0, tree_level: 1, farm_end: 0, last_seen: Math.floor(Date.now()/1000) });
+    return null;
+  }
+  return data;
+}
+
+// Сохранить данные игрока в БД (с дебаунсом 3 сек)
+function savePlayer() {
+  if (!currentWallet) return;
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(async () => {
+    await db.from('players').upsert({
+      wallet:     currentWallet,
+      balance:    balance,
+      tree_level: treeLevel,
+      farm_end:   farmSessionEnd,
+      last_seen:  Math.floor(Date.now() / 1000),
+      updated_at: new Date().toISOString()
+    });
+  }, 3000);
+}
+
+// Применить данные из БД к локальному состоянию
+function applyPlayerData(data) {
+  if (!data) return;
+  balance       = parseFloat(data.balance)   || 0;
+  treeLevel     = parseInt(data.tree_level)  || 1;
+  farmSessionEnd = parseInt(data.farm_end)   || 0;
+
+  // Офлайн-фарминг: считаем по last_seen из БД
+  const now     = Math.floor(Date.now() / 1000);
+  const elapsed = now - (parseInt(data.last_seen) || now);
+  const capped  = Math.min(elapsed, MAX_OFFLINE_SECONDS);
+  const earned  = parseFloat((getFarmRate() * capped).toFixed(4));
+
+  if (capped >= 60 && earned > 0) {
+    pendingOfflineReward = earned;
+    showOfflineModal(earned, capped, elapsed);
+  }
+
+  // Синхронизируем localStorage
+  localStorage.setItem('ncore_balance',  balance);
+  localStorage.setItem('ncore_tree_lvl', treeLevel);
+  if (farmSessionEnd) localStorage.setItem('ncore_farm_end', farmSessionEnd);
+}
 
 const TREE_CONFIG = {
   files:       ["stage_1.png","stage_2.png","stage_3.png","stage_4.png","stage_5.png","stage_6.png","stage_7.png","stage_8.png","stage_9.png"],
@@ -377,7 +437,17 @@ function claimOfflineReward() {
 }
 
 function saveLastSeen() {
-  localStorage.setItem('ncore_last_seen', Math.floor(Date.now() / 1000));
+  const now = Math.floor(Date.now() / 1000);
+  localStorage.setItem('ncore_last_seen', now);
+  if (currentWallet) {
+    db.from('players').upsert({
+      wallet: currentWallet,
+      balance, tree_level: treeLevel,
+      farm_end: farmSessionEnd,
+      last_seen: now,
+      updated_at: new Date().toISOString()
+    });
+  }
 }
 
 // Сохраняем время при закрытии/скрытии страницы
@@ -511,6 +581,7 @@ function updateUI() {
 
   localStorage.setItem('ncore_balance',   balance);
   localStorage.setItem('ncore_tree_lvl',  treeLevel);
+  savePlayer(); // сохраняем в Supabase
 }
 
 function upgradeTree() {
@@ -615,7 +686,15 @@ const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
 
 tonConnectUI.onStatusChange(async (w) => {
   if (w) {
-    const res = await fetch(`https://tonapi.io/v2/accounts/${w.account.address}/nfts?collection=${COLLECTION}`);
+    currentWallet = w.account.address;
+
+    // Загружаем данные игрока из Supabase
+    const playerData = await loadPlayer(currentWallet);
+    applyPlayerData(playerData);
+    updateUI();
+
+    // Загружаем NFT
+    const res = await fetch(`https://tonapi.io/v2/accounts/${currentWallet}/nfts?collection=${COLLECTION}`);
     const d   = await res.json();
     if (d.nft_items) {
       userNfts = d.nft_items;
@@ -629,8 +708,10 @@ tonConnectUI.onStatusChange(async (w) => {
         list.appendChild(img);
       });
       buildArtifact(0);
-      updateTokenBalance(w.account.address);
+      updateTokenBalance(currentWallet);
     }
+  } else {
+    currentWallet = null;
   }
 });
 
