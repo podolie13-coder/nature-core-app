@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Nature Core Game v5.3</title>
+<title>Nature Core Game v5.4</title>
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 <style>
 :root {
@@ -51,7 +51,7 @@ section.active { display: flex !important; }
 .btn-main { background: var(--gold-gradient); background-size: 200% 100%; color: #000; border: none; padding: 15px 30px; border-radius: 15px; font-weight: 900; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
 .btn-main:disabled { filter: grayscale(1); cursor: not-allowed; }
 
-.nav-bar { height: 75px; background: rgba(5, 10, 5, 0.95); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; z-index: 1000; }
+.nav-bar { height: 75px; background: rgba(5,10,5,0.95); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; z-index: 1000; }
 .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.5; font-size: 11px; cursor: pointer; }
 .nav-item.active { opacity: 1; color: var(--primary-green); }
 .nav-item img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
@@ -92,6 +92,29 @@ section.active { display: flex !important; }
 .btn-enter-game:active { transform: scale(0.97); box-shadow: 0 2px 12px rgba(76,175,80,0.3); }
 .btn-enter-icon { font-size: 18px; margin-right: 6px; }
 .screen-footer { font-size: 10px; color: rgba(255,255,255,0.2); margin-top: 8px; letter-spacing: 1px; }
+
+/* ── Квесты ─────────────────────────────────────────────────────────────── */
+.quest-section-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+  color: rgba(255,255,255,0.3); margin: 12px 0 8px; align-self: flex-start; padding-left: 4px;
+}
+.quest-item {
+  width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px; padding: 14px; margin-bottom: 10px; display: flex;
+  align-items: center; gap: 12px; box-sizing: border-box;
+}
+.quest-item.done { opacity: 0.45; }
+.quest-icon { font-size: 26px; flex-shrink: 0; }
+.quest-info { flex: 1; }
+.quest-title { font-size: 13px; font-weight: 700; }
+.quest-reward { font-size: 11px; color: #ff33cc; margin-top: 2px; }
+.quest-badge {
+  font-size: 11px; font-weight: 900; padding: 6px 12px; border-radius: 10px;
+  border: none; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+}
+.quest-badge.available { background: var(--primary-green); color: #000; }
+.quest-badge.claimed { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); cursor: default; }
+.quest-badge.go { background: linear-gradient(135deg, #0070dd, #00aaff); color: #fff; }
 
 #loading-screen { position: fixed; inset: 0; background: url('assets/img/viewwindow.png') center/cover no-repeat; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 15vh; transition: opacity 0.8s ease; }
 .progress-container { width: 70%; max-width: 300px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; border: 1px solid var(--glow-color); margin-top: 15px; }
@@ -175,13 +198,11 @@ section.active { display: flex !important; }
   </section>
 
   <section id="screen-quests" style="padding-bottom:100px;">
-    <h2 style="text-align:center;">Quests</h2>
-    <div id="quests-list">
-      <div class="quest-item" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,51,204,0.3);border-radius:12px;padding:15px;margin-bottom:15px;display:flex;justify-content:space-between;">
-        <div><div style="font-weight:bold;">Subscribe to channel</div><div style="color:#ff33cc;">+10 $NCORE</div></div>
-        <button class="btn-main" style="padding:8px 15px;font-size:12px;">Complete</button>
-      </div>
+    <div class="screen-core-header" style="width:100%;">
+      <div class="screen-core-subtitle">Earn extra</div>
+      <div class="screen-core-title">⬡ Quests</div>
     </div>
+    <div id="quests-container" style="width:100%;"></div>
   </section>
 
   <nav class="nav-bar">
@@ -221,35 +242,138 @@ const COLLECTION          = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
 const MAX_OFFLINE_SECONDS = 6 * 60 * 60;
 const FARM_SESSION_SEC    = 6 * 60 * 60;
 
+// ─── КОНФИГ ДЕРЕВА (фиксированные цены) ─────────────────────────────────────
 const TREE_CONFIG = {
-  files:          ["stage_1.png","stage_2.png","stage_3.png","stage_4.png","stage_5.png","stage_6.png","stage_7.png","stage_8.png","stage_9.png"],
-  baseCost:       10,
-  multiplier:     1.6,
+  files: ["stage_1.png","stage_2.png","stage_3.png","stage_4.png","stage_5.png","stage_6.png","stage_7.png","stage_8.png","stage_9.png"],
+  upgradeCosts: [5, 20, 60, 150, 350, 700, 1200, 2000], // стоимость уровней 1→2 ... 8→9
   baseIncome:     0.00002,
   treeMultiplier: 1.5
 };
 
+function getUpgradeCost() {
+  if (treeLevel >= 9) return 0;
+  return TREE_CONFIG.upgradeCosts[treeLevel - 1];
+}
+
+// ─── КВЕСТЫ ──────────────────────────────────────────────────────────────────
+const QUESTS_ONE_TIME = [
+  { id: 'connect_wallet', icon: '👛', title: 'Connect Wallet',        reward: 3,  action: null },
+  { id: 'subscribe_tg',   icon: '📢', title: 'Subscribe to channel',  reward: 5,  action: 'https://t.me/NatureArtifactsAAbot' },
+  { id: 'subscribe_x',    icon: '🐦', title: 'Follow on X/Twitter',   reward: 5,  action: 'https://x.com/ElemetalA' },
+  { id: 'invite_friend',  icon: '👥', title: 'Invite a friend',       reward: 10, action: null },
+];
+
+const QUESTS_DAILY = [
+  { id: 'daily_login',   icon: '🌅', title: 'Open the app',      reward: 0.5 },
+  { id: 'daily_farm',    icon: '⚡', title: 'Start farming',     reward: 1   },
+  { id: 'daily_upgrade', icon: '🌳', title: 'Upgrade your tree', reward: 2   },
+];
+
+let questsOneTime = {};  // { quest_id: true }
+let questsDaily   = {};  // { quest_id: timestamp_claimed }
+let dailyReset    = 0;   // unix timestamp последнего сброса
+
+function isDailyReset() {
+  const now = Math.floor(Date.now() / 1000);
+  return (now - dailyReset) >= 86400; // 24 часа
+}
+
+function isDailyClaimed(id) {
+  if (isDailyReset()) return false;
+  return !!questsDaily[id];
+}
+
+function isOneTimeClaimed(id) {
+  return !!questsOneTime[id];
+}
+
+async function claimQuest(id, reward, isDaily) {
+  if (isDaily) {
+    if (isDailyClaimed(id)) return;
+    if (isDailyReset()) { questsDaily = {}; dailyReset = Math.floor(Date.now() / 1000); }
+    questsDaily[id] = Math.floor(Date.now() / 1000);
+  } else {
+    if (isOneTimeClaimed(id)) return;
+    questsOneTime[id] = true;
+  }
+  balance += reward;
+  await savePlayerNow();
+  updateUI();
+  renderQuests();
+}
+
+async function goQuest(id, reward, url) {
+  if (url) window.open(url, '_blank');
+  // Засчитываем через 3 сек (дали время зайти на страницу)
+  setTimeout(async () => {
+    if (!isOneTimeClaimed(id)) {
+      await claimQuest(id, reward, false);
+    }
+  }, 3000);
+}
+
+function renderQuests() {
+  const container = document.getElementById('quests-container');
+  if (!container) return;
+
+  // Проверяем что кошелёк подключён
+  const walletConnected = !!currentWallet;
+  if (walletConnected && !isOneTimeClaimed('connect_wallet')) {
+    questsOneTime['connect_wallet'] = true;
+  }
+
+  let html = '';
+
+  // Ежедневные
+  html += '<div class="quest-section-title">🔄 Daily (resets in 24h)</div>';
+  QUESTS_DAILY.forEach(q => {
+    const claimed = isDailyClaimed(q.id);
+    html += `
+      <div class="quest-item ${claimed ? 'done' : ''}">
+        <div class="quest-icon">${q.icon}</div>
+        <div class="quest-info">
+          <div class="quest-title">${q.title}</div>
+          <div class="quest-reward">+${q.reward} $NCORE</div>
+        </div>
+        ${claimed
+          ? '<span class="quest-badge claimed">✓ Done</span>'
+          : `<button class="quest-badge available" onclick="claimQuest('${q.id}', ${q.reward}, true)">Claim</button>`
+        }
+      </div>`;
+  });
+
+  // Разовые
+  html += '<div class="quest-section-title">⭐ One-time</div>';
+  QUESTS_ONE_TIME.forEach(q => {
+    const claimed = isOneTimeClaimed(q.id);
+    html += `
+      <div class="quest-item ${claimed ? 'done' : ''}">
+        <div class="quest-icon">${q.icon}</div>
+        <div class="quest-info">
+          <div class="quest-title">${q.title}</div>
+          <div class="quest-reward">+${q.reward} $NCORE</div>
+        </div>
+        ${claimed
+          ? '<span class="quest-badge claimed">✓ Done</span>'
+          : q.action
+            ? `<button class="quest-badge go" onclick="goQuest('${q.id}', ${q.reward}, '${q.action}')">Go →</button>`
+            : `<button class="quest-badge available" onclick="claimQuest('${q.id}', ${q.reward}, false)">Claim</button>`
+        }
+      </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
 // ─── НАЗВАНИЯ ТРЕЙТОВ ────────────────────────────────────────────────────────
 const TRAIT_NAMES = {
-  // Ядра
-  'Y_common_1': 'Iron Cage',
-  'Y_common_2': 'Stone Cradle',
-  'Y_common_3': 'Root Weave',
-  'Y_rare_1':   'Crystal Nest',
-  'Y_rare_2':   'Magma Core',
-  'Y_rare_3':   'Tide Flame',
-  'Y_rare_4':   'Storm Surge',
-  'Y_epic_1':   'Void Prism',
-  'Y_epic_2':   'Astral Ring',
-  'Y_epic_3':   'Dark Spiral',
-  'Y_leg_1':    'Frost Vortex',
-  'Y_leg_2':    'Primal Surge',
+  'Y_common_1': 'Iron Cage',      'Y_common_2': 'Stone Cradle',  'Y_common_3': 'Root Weave',
+  'Y_rare_1':   'Crystal Nest',   'Y_rare_2':   'Magma Core',    'Y_rare_3':   'Tide Flame',
+  'Y_rare_4':   'Storm Surge',    'Y_epic_1':   'Void Prism',    'Y_epic_2':   'Astral Ring',
+  'Y_epic_3':   'Dark Spiral',    'Y_leg_1':    'Frost Vortex',  'Y_leg_2':    'Primal Surge',
   'Y_leg_3':    'Ethereal Sphere',
-  // Фоны
-  'bg_Abyssal_Void':  'Abyssal Void',
-  'bg_AncientRuins':  'Ancient Ruins',
-  'bg_EtherealForge': 'Ethereal Forge',
-  'bg_Frozen':        'Frozen',
+  'bg_Abyssal_Void':  'Abyssal Void',  'bg_AncientRuins':  'Ancient Ruins',
+  'bg_EtherealForge': 'Ethereal Forge','bg_Frozen':        'Frozen',
   'bg_MysticForest':  'Mystic Forest',
 };
 
@@ -272,6 +396,22 @@ function getRarityTier(val) {
   if (v.includes('epic')) return 'epic';
   if (v.includes('rare')) return 'rare';
   return 'common';
+}
+
+function getRarityColor(val) {
+  const tier = getRarityTier(val);
+  if (tier === 'legendary') return 'var(--rarity-leg)';
+  if (tier === 'epic')      return 'var(--rarity-epic)';
+  if (tier === 'rare')      return 'var(--rarity-rare)';
+  return 'var(--rarity-common)';
+}
+
+function getRarityIcon(val) {
+  const tier = getRarityTier(val);
+  if (tier === 'legendary') return '👑';
+  if (tier === 'epic')      return '💜';
+  if (tier === 'rare')      return '💙';
+  return '🟢';
 }
 
 function getArtifactMultiplier() {
@@ -310,7 +450,11 @@ let farmTimerInterval = null;
 async function loadPlayer(wallet) {
   const { data, error } = await db.from('players').select('*').eq('wallet', wallet).single();
   if (error || !data) {
-    await db.from('players').insert({ wallet, balance: 0, tree_level: 1, farm_end: 0, last_seen: Math.floor(Date.now()/1000) });
+    await db.from('players').insert({
+      wallet, balance: 0, tree_level: 1, farm_end: 0,
+      last_seen: Math.floor(Date.now()/1000),
+      quests_daily: {}, quests_one_time: {}, daily_reset: 0
+    });
     return null;
   }
   return data;
@@ -319,9 +463,15 @@ async function loadPlayer(wallet) {
 async function savePlayerNow() {
   if (!currentWallet) return;
   const { error } = await db.from('players').upsert({
-    wallet: currentWallet, balance, tree_level: treeLevel,
-    farm_end: farmSessionEnd, last_seen: Math.floor(Date.now()/1000),
-    updated_at: new Date().toISOString()
+    wallet:         currentWallet,
+    balance,
+    tree_level:     treeLevel,
+    farm_end:       farmSessionEnd,
+    last_seen:      Math.floor(Date.now() / 1000),
+    updated_at:     new Date().toISOString(),
+    quests_daily:   questsDaily,
+    quests_one_time: questsOneTime,
+    daily_reset:    dailyReset
   }, { onConflict: 'wallet' });
   if (error) console.error('Supabase save error:', error.message);
 }
@@ -337,14 +487,24 @@ function applyPlayerData(data) {
   balance        = parseFloat(data.balance)  || 0;
   treeLevel      = parseInt(data.tree_level) || 1;
   farmSessionEnd = parseInt(data.farm_end)   || 0;
+  questsOneTime  = data.quests_one_time || {};
+  questsDaily    = data.quests_daily    || {};
+  dailyReset     = parseInt(data.daily_reset) || 0;
+
   const now     = Math.floor(Date.now() / 1000);
   const elapsed = now - (parseInt(data.last_seen) || now);
   const capped  = Math.min(elapsed, MAX_OFFLINE_SECONDS);
   const earned  = parseFloat((getFarmRate() * capped).toFixed(4));
   if (capped >= 60 && earned > 0) { pendingOfflineReward = earned; showOfflineModal(earned, capped, elapsed); }
+
   localStorage.setItem('ncore_balance',  balance);
   localStorage.setItem('ncore_tree_lvl', treeLevel);
   if (farmSessionEnd) localStorage.setItem('ncore_farm_end', farmSessionEnd);
+
+  // Ежедневный квест "зайти в приложение"
+  if (!isDailyClaimed('daily_login')) {
+    claimQuest('daily_login', 0.5, true);
+  }
 }
 
 // ─── ОФЛАЙН-ФАРМИНГ ──────────────────────────────────────────────────────────
@@ -352,7 +512,7 @@ function checkOfflineFarming() {
   if (currentWallet) return;
   const lastSeen = parseInt(localStorage.getItem('ncore_last_seen')) || 0;
   if (!lastSeen) { saveLastSeen(); return; }
-  const now = Math.floor(Date.now() / 1000);
+  const now     = Math.floor(Date.now() / 1000);
   const elapsed = now - lastSeen;
   const capped  = Math.min(elapsed, MAX_OFFLINE_SECONDS);
   const earned  = parseFloat((getFarmRate() * capped).toFixed(4));
@@ -395,6 +555,7 @@ function switchTab(sId, el) {
   document.getElementById(sId).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   el.classList.add('active');
+  if (sId === 'screen-quests') renderQuests();
 }
 
 // ─── NFT ─────────────────────────────────────────────────────────────────────
@@ -402,22 +563,6 @@ function formatVal(val) {
   if (!val) return "";
   if (TRAIT_NAMES[val]) return TRAIT_NAMES[val];
   return val.replace('bg_','').replace('frame_','').replace('Y_','').replace(/_/g,' ');
-}
-
-function getRarityColor(val) {
-  const tier = getRarityTier(val);
-  if (tier === 'legendary') return 'var(--rarity-leg)';
-  if (tier === 'epic')      return 'var(--rarity-epic)';
-  if (tier === 'rare')      return 'var(--rarity-rare)';
-  return 'var(--rarity-common)';
-}
-
-function getRarityIcon(val) {
-  const tier = getRarityTier(val);
-  if (tier === 'legendary') return '👑';
-  if (tier === 'epic')      return '💜';
-  if (tier === 'rare')      return '💙';
-  return '🟢';
 }
 
 async function buildArtifact(index) {
@@ -514,7 +659,7 @@ function refreshGarden() {
 }
 
 function updateUI() {
-  const cost         = Math.floor(TREE_CONFIG.baseCost * Math.pow(TREE_CONFIG.multiplier, treeLevel - 1));
+  const cost         = getUpgradeCost();
   const formattedBal = balance.toFixed(4);
   const ratePerSec   = getFarmRate();
   const artifactMult = getArtifactMultiplier();
@@ -538,13 +683,15 @@ function updateUI() {
 }
 
 function upgradeTree() {
-  const cost = Math.floor(TREE_CONFIG.baseCost * Math.pow(TREE_CONFIG.multiplier, treeLevel - 1));
+  const cost = getUpgradeCost();
   if (balance >= cost && treeLevel < 9) {
     balance -= cost; treeLevel++;
     const img = document.getElementById('tree-img');
     img.style.filter = "brightness(3)";
     setTimeout(() => { refreshGarden(); img.style.filter = "brightness(1)"; }, 400);
     savePlayerNow();
+    // Квест улучшения дерева
+    if (!isDailyClaimed('daily_upgrade')) claimQuest('daily_upgrade', 2, true);
   }
 }
 
@@ -555,6 +702,8 @@ function startFarming() {
   localStorage.setItem('ncore_farm_end', farmSessionEnd);
   savePlayerNow();
   runFarmSession();
+  // Квест запуска фарминга
+  if (!isDailyClaimed('daily_farm')) claimQuest('daily_farm', 1, true);
 }
 
 function runFarmSession() {
@@ -611,6 +760,7 @@ tonConnectUI.onStatusChange(async (w) => {
     const playerData = await loadPlayer(currentWallet);
     applyPlayerData(playerData);
     updateUI();
+    renderQuests();
     const res = await fetch(`https://tonapi.io/v2/accounts/${currentWallet}/nfts?collection=${COLLECTION}`);
     const d   = await res.json();
     if (d.nft_items) {
