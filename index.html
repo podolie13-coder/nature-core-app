@@ -14,29 +14,32 @@
 }
 body { background: var(--dark-bg); color: #e0f2e0; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
 
-/* Фон и Оверлеи */
 #app-bg { position: fixed; inset: 0; z-index: -2; background-size: cover; background-position: center; filter: brightness(0.3); transition: 1s; transform: scale(1.05); }
 .bg-overlay { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 20%, var(--dark-bg) 100%); }
 #portal-overlay { position: fixed; inset: 0; background: white; opacity: 0; z-index: 2000; pointer-events: none; transition: opacity 0.8s ease-in-out; }
 
-/* Игровой экран и Дерево */
 .tree-container { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: -1; overflow: hidden; }
-#tree-img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.05); filter: brightness(1); transition: all 0.8s ease-in-out; }
+#tree-img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.15); filter: brightness(1); transition: all 0.8s ease-in-out; }
 
-/* Контейнеры видов */
 .view-container { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; }
 .view-container.active { display: flex; }
 section { display: none; flex-direction: column; align-items: center; padding: 15px; width: 100%; height: calc(100vh - 75px); box-sizing: border-box; overflow-y: auto; }
 section.active { display: flex !important; }
 
-/* Артефакты и Атрибуты */
-.artifact-canvas { width: 180px; height: 180px; position: relative; margin: 16px 0; border-radius: 35px; overflow: visible; box-shadow: 0 0 30px rgba(0,0,0,0.9); background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; transition: transform 1.2s ease-in; }
-.artifact-canvas-inner { position: absolute; inset: 0; border-radius: 35px; overflow: hidden; width: 100%; height: 100%; }
+.artifact-canvas { width: 180px; height: 180px; position: relative; margin: 16px 0; border-radius: 35px; overflow: visible; box-shadow: none; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; transition: transform 1.2s ease-in; }
+.artifact-canvas-inner { position: absolute; inset: 0; border-radius: 35px; overflow: hidden; width: 100%; height: 100%; transition: filter 0.3s ease, opacity 0.3s ease; }
+.artifact-canvas-inner.loading { filter: blur(12px) brightness(2); opacity: 0.5; }
+.artifact-canvas-inner.loaded  { filter: blur(0px) brightness(1); opacity: 1; }
 .canvas-portal { transform: scale(10); filter: brightness(5); }
 .layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .layer-core { width: 82%; height: 82%; inset: 9%; z-index: 3; animation: core-float 3s infinite ease-in-out; }
 @keyframes core-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-.artifact-selector { display: flex; gap: 12px; overflow-x: auto; width: 100%; padding: 10px 0; scrollbar-width: none; }
+
+#artifact-skeleton { position: absolute; inset: 0; border-radius: 35px; background: linear-gradient(110deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.04) 75%); background-size: 200% 100%; animation: skeleton-shine 1.2s infinite; z-index: 10; display: none; }
+#artifact-skeleton.show { display: block; }
+@keyframes skeleton-shine { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.artifact-selector { display: flex; gap: 12px; overflow-x: auto; overflow-y: visible; width: 100%; padding: 10px 6px; scrollbar-width: none; }
 .artifact-selector::-webkit-scrollbar { display: none; }
 .thumb { width: 55px; height: 55px; border-radius: 12px; flex-shrink: 0; border: 2px solid transparent; opacity: 0.4; transition: 0.3s; cursor: pointer; }
 .thumb.active { opacity: 1; border-color: transparent; transform: scale(1.1); }
@@ -45,70 +48,16 @@ section.active { display: flex !important; }
 .attr-label { font-size: 7px; opacity: 0.5; text-transform: uppercase; }
 .attr-value { font-size: 10px; font-weight: 800; }
 
-/* Bloom переход артефакта */
-.artifact-canvas-inner {
-  transition: filter 0.3s ease, opacity 0.3s ease;
-}
-.artifact-canvas-inner.loading {
-  filter: blur(12px) brightness(2);
-  opacity: 0.5;
-}
-.artifact-canvas-inner.loaded {
-  filter: blur(0px) brightness(1);
-  opacity: 1;
-}
-
-/* Skeleton плейсхолдер */
-#artifact-skeleton {
-  position: absolute;
-  inset: 0;
-  border-radius: 35px;
-  background: linear-gradient(110deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.04) 75%);
-  background-size: 200% 100%;
-  animation: skeleton-shine 1.2s infinite;
-  z-index: 10;
-  display: none;
-}
-#artifact-skeleton.show { display: block; }
-@keyframes skeleton-shine {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* UI Элементы */
 .btn-main { background: var(--gold-gradient); background-size: 200% 100%; color: #000; border: none; padding: 15px 30px; border-radius: 15px; font-weight: 900; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
 .btn-main:disabled { filter: grayscale(1); cursor: not-allowed; }
 .nav-bar { height: 75px; background: rgba(5, 10, 5, 0.95); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; z-index: 1000; }
 .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; font-size: 11px; cursor: pointer; }
 .nav-item.active { opacity: 1; color: var(--primary-green); }
 
-/* Офлайн награда */
-#offline-reward-modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 3000;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.85);
-  backdrop-filter: blur(6px);
-}
+#offline-reward-modal { display: none; position: fixed; inset: 0; z-index: 3000; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); }
 #offline-reward-modal.show { display: flex; }
-.offline-modal-box {
-  background: linear-gradient(160deg, #0a1a0a, #050a05);
-  border: 1px solid var(--primary-green);
-  border-radius: 24px;
-  padding: 30px 24px;
-  text-align: center;
-  max-width: 300px;
-  width: 90%;
-  box-shadow: 0 0 40px rgba(76, 175, 80, 0.3);
-  animation: modal-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-@keyframes modal-pop {
-  from { transform: scale(0.7); opacity: 0; }
-  to   { transform: scale(1);   opacity: 1; }
-}
+.offline-modal-box { background: linear-gradient(160deg, #0a1a0a, #050a05); border: 1px solid var(--primary-green); border-radius: 24px; padding: 30px 24px; text-align: center; max-width: 300px; width: 90%; box-shadow: 0 0 40px rgba(76,175,80,0.3); animation: modal-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes modal-pop { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .offline-icon { font-size: 56px; margin-bottom: 10px; }
 .offline-title { color: var(--primary-green); font-size: 20px; font-weight: 900; letter-spacing: 1px; margin-bottom: 6px; }
 .offline-subtitle { color: rgba(255,255,255,0.5); font-size: 13px; margin-bottom: 18px; }
@@ -118,97 +67,18 @@ section.active { display: flex !important; }
 .offline-cap-bar-wrap { background: rgba(255,255,255,0.07); border-radius: 8px; height: 6px; width: 100%; margin-bottom: 20px; overflow: hidden; }
 .offline-cap-bar { height: 100%; background: var(--primary-green); border-radius: 8px; transition: width 1s ease; }
 
-/* Верхняя плашка игрового вида */
-#game-topbar {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 54px;
-  background: rgba(5, 10, 5, 0.75);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 14px;
-  z-index: 10;
-  box-sizing: border-box;
-}
-#btn-back {
-  background: none;
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #e0f2e0;
-  border-radius: 10px;
-  padding: 6px 12px;
-  font-size: 13px;
-  cursor: pointer;
-}
-#coin-balance {
-  color: #ff33cc;
-  font-weight: 900;
-  font-size: 15px;
-  text-shadow: 0 0 10px rgba(255,51,204,0.6);
-  background: rgba(255,51,204,0.1);
-  border: 1px solid rgba(255,51,204,0.25);
-  border-radius: 20px;
-  padding: 5px 14px;
-}
-#profile-icon-game {
-  font-size: 20px;
-  cursor: pointer;
-  background: rgba(76,175,80,0.15);
-  border: 1px solid rgba(76,175,80,0.3);
-  padding: 6px 10px;
-  border-radius: 50%;
-}
+#game-topbar { position: absolute; top: 0; left: 0; right: 0; height: 54px; background: rgba(5,10,5,0.75); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 14px; z-index: 10; box-sizing: border-box; }
+#btn-back { background: none; border: 1px solid rgba(255,255,255,0.2); color: #e0f2e0; border-radius: 10px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+#coin-balance { color: #ff33cc; font-weight: 900; font-size: 15px; text-shadow: 0 0 10px rgba(255,51,204,0.6); background: rgba(255,51,204,0.1); border: 1px solid rgba(255,51,204,0.25); border-radius: 20px; padding: 5px 14px; }
+#profile-icon-game { font-size: 20px; cursor: pointer; background: rgba(76,175,80,0.15); border: 1px solid rgba(76,175,80,0.3); padding: 6px 10px; border-radius: 50%; }
 
-
-#game-bottom {
-  position: absolute;
-  bottom: 30px;
-  left: 0; right: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  z-index: 10;
-}
-#game-buttons-row {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  width: 100%;
-  padding: 0 20px;
-  box-sizing: border-box;
-}
-#btn-farm {
-  flex: 1;
-  background: linear-gradient(135deg, #1a472a, #2d7a3a);
-  border: 2px solid var(--primary-green);
-  color: #fff;
-  border-radius: 15px;
-  font-weight: 900;
-  font-size: 13px;
-  padding: 15px 10px;
-  cursor: pointer;
-  box-shadow: 0 0 20px rgba(76,175,80,0.3);
-  text-transform: uppercase;
-  user-select: none;
-  -webkit-user-select: none;
-  transition: all 0.1s;
-}
-#btn-farm.farming {
-  background: linear-gradient(135deg, #2d7a3a, #4caf50);
-  box-shadow: 0 0 30px rgba(76,175,80,0.7);
-  transform: scale(0.97);
-}
+#game-bottom { position: absolute; bottom: 30px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 10; }
+#game-buttons-row { display: flex; gap: 12px; justify-content: center; width: 100%; padding: 0 20px; box-sizing: border-box; }
+#btn-farm { flex: 1; background: linear-gradient(135deg, #1a472a, #2d7a3a); border: 2px solid var(--primary-green); color: #fff; border-radius: 15px; font-weight: 900; font-size: 13px; padding: 15px 10px; cursor: pointer; box-shadow: 0 0 20px rgba(76,175,80,0.3); text-transform: uppercase; user-select: none; -webkit-user-select: none; transition: all 0.1s; }
+#btn-farm.farming { background: linear-gradient(135deg, #2d7a3a, #4caf50); box-shadow: 0 0 30px rgba(76,175,80,0.7); transform: scale(0.97); }
 #btn-upgrade-tree { flex: 1; }
-#farm-rate-info {
-  font-size: 11px;
-  color: rgba(255,255,255,0.45);
-  white-space: nowrap;
-}
+#farm-rate-info { font-size: 11px; color: rgba(255,255,255,0.45); white-space: nowrap; }
 
-/* Загрузка */
 #loading-screen { position: fixed; inset: 0; background: url('assets/img/viewwindow.png') center/cover no-repeat; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 15vh; transition: opacity 0.8s ease; }
 .progress-container { width: 70%; max-width: 300px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; border: 1px solid var(--glow-color); margin-top: 15px; }
 .progress-bar { width: 0%; height: 100%; background: #ff33cc; transition: width 0.2s ease; box-shadow: 0 0 15px #ff33cc; }
@@ -216,14 +86,12 @@ section.active { display: flex !important; }
 </head>
 <body>
 
-<!-- ЭКРАН ЗАГРУЗКИ -->
 <div id="loading-screen">
   <h2 style="color: #ff33cc; letter-spacing: 2px; margin: 0; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff;">Чеканим NFT...</h2>
   <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
   <div id="loading-text" style="color: #ff33cc; font-weight: 900; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff;">0%</div>
 </div>
 
-<!-- МОДАЛКА: ОФЛАЙН НАГРАДА -->
 <div id="offline-reward-modal">
   <div class="offline-modal-box">
     <div class="offline-icon">🌿</div>
@@ -232,32 +100,28 @@ section.active { display: flex !important; }
     <div class="offline-amount" id="offline-earned-amount">0 <span>$NCORE</span></div>
     <div class="offline-time" id="offline-away-time">Отсутствовал: 0 ч 0 мин</div>
     <div style="font-size:11px; color:rgba(255,255,255,0.35); margin-bottom:8px;">Накопитель (макс. 6 часов)</div>
-    <div class="offline-cap-bar-wrap">
-      <div class="offline-cap-bar" id="offline-cap-bar" style="width:0%"></div>
-    </div>
+    <div class="offline-cap-bar-wrap"><div class="offline-cap-bar" id="offline-cap-bar" style="width:0%"></div></div>
     <button class="btn-main" style="width:100%; padding:12px;" onclick="claimOfflineReward()">Забрать награду ✨</button>
   </div>
 </div>
 
-<!-- ПРОФИЛЬ (только для главного меню) -->
-<div id="profile-icon" onclick="toggleProfile()" style="position: fixed; top: 15px; right: 15px; z-index: 1001; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); padding: 8px; border-radius: 50%; border: 1px solid var(--glow-color);">👤</div>
-<div id="profile-menu" style="display: none; position: fixed; top: 65px; right: 15px; width: 220px; background: rgba(5, 10, 5, 0.98); border: 1px solid var(--glow-color); border-radius: 15px; padding: 15px; z-index: 1001; backdrop-filter: blur(10px);">
-  <h4 style="margin: 0 0 10px 0; color: var(--primary-green);">Профиль</h4>
+<div id="profile-icon" onclick="toggleProfile()" style="position:fixed;top:15px;right:15px;z-index:1001;font-size:20px;cursor:pointer;background:rgba(0,0,0,0.6);padding:8px;border-radius:50%;border:1px solid var(--glow-color);">👤</div>
+<div id="profile-menu" style="display:none;position:fixed;top:65px;right:15px;width:220px;background:rgba(5,10,5,0.98);border:1px solid var(--glow-color);border-radius:15px;padding:15px;z-index:1001;backdrop-filter:blur(10px);">
+  <h4 style="margin:0 0 10px 0;color:var(--primary-green);">Профиль</h4>
   <div id="ton-connect-btn"></div>
-  <div id="token-balance" style="font-size: 18px; font-weight: bold; color: #ff33cc; margin: 10px 0; text-shadow: 0 0 10px #ff33cc;">
-    <span id="balance-value">0</span> <span style="font-size: 12px;">$NCORE</span>
+  <div id="token-balance" style="font-size:18px;font-weight:bold;color:#ff33cc;margin:10px 0;text-shadow:0 0 10px #ff33cc;">
+    <span id="balance-value">0</span> <span style="font-size:12px;">$NCORE</span>
   </div>
-  <button onclick="toggleProfile()" style="width: 100%; background: none; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px; border-radius: 8px; cursor: pointer;">Закрыть</button>
+  <button onclick="toggleProfile()" style="width:100%;background:none;border:1px solid rgba(255,255,255,0.2);color:white;padding:5px;border-radius:8px;cursor:pointer;">Закрыть</button>
 </div>
 
 <div id="app-bg"></div>
 <div class="bg-overlay"></div>
 <div id="portal-overlay"></div>
 
-<!-- ГЛАВНОЕ МЕНЮ -->
 <div id="main-menu" class="view-container active">
   <section id="screen-core" class="active">
-    <h2 style="letter-spacing: 2px;">Nature Core</h2>
+    <h2 style="letter-spacing:2px;">Nature Core</h2>
     <div class="artifact-selector" id="nft-list"></div>
     <div id="canvas-container" class="artifact-canvas" style="display:none;">
       <div id="artifact-skeleton"></div>
@@ -268,35 +132,35 @@ section.active { display: flex !important; }
       </div>
     </div>
     <div class="attr-container" id="nft-attrs"></div>
-    <button class="btn-main" id="btn-enter-game" style="display:none; background:var(--primary-green);" onclick="enterGame()">Использовать Артефакт</button>
+    <button class="btn-main" id="btn-enter-game" style="display:none;background:var(--primary-green);" onclick="enterGame()">Использовать Артефакт</button>
     <footer>&copy; 2026 Nature Core Project</footer>
   </section>
 
   <section id="screen-token">
-    <div style="text-align: center; padding-top: 50px;">
-      <h2 style="color: white;">$NCORE</h2>
-      <img src="assets/img/Tokken.png" style="width: 120px; border-radius: 50%; border: 2px solid #ff33cc; box-shadow: 0 0 30px #ff33cc;">
-      <div style="color: #fff; font-size: 20px; margin-top: 15px;">Баланс: <span id="token-page-balance" style="color: #ff33cc; font-weight: bold;">0.00</span></div>
-      <div style="margin-top: 30px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,51,204,0.2);">
-        <h3 style="color: #ff33cc; font-size: 16px;">Токеномика проекта</h3>
-        <div style="text-align: left; font-size: 14px;">
-          <div style="display: flex; justify-content: space-between;"><span>🎮 P2E Награды:</span><b>35%</b></div>
-          <div style="display: flex; justify-content: space-between;"><span>💧 Ликвидность DEX:</span><b>20%</b></div>
-          <div style="display: flex; justify-content: space-between;"><span>📢 Маркетинг:</span><b>15%</b></div>
-          <div style="display: flex; justify-content: space-between;"><span>🏛 Экосистема:</span><b>10%</b></div>
-          <div style="display: flex; justify-content: space-between;"><span>🌿 Эко-фонд:</span><b>10%</b></div>
-          <div style="display: flex; justify-content: space-between;"><span>💎 Команда:</span><b>10%</b></div>
+    <div style="text-align:center;padding-top:50px;">
+      <h2 style="color:white;">$NCORE</h2>
+      <img src="assets/img/Tokken.png" style="width:120px;border-radius:50%;border:2px solid #ff33cc;box-shadow:0 0 30px #ff33cc;">
+      <div style="color:#fff;font-size:20px;margin-top:15px;">Баланс: <span id="token-page-balance" style="color:#ff33cc;font-weight:bold;">0.00</span></div>
+      <div style="margin-top:30px;background:rgba(255,255,255,0.05);padding:15px;border-radius:15px;border:1px solid rgba(255,51,204,0.2);">
+        <h3 style="color:#ff33cc;font-size:16px;">Токеномика проекта</h3>
+        <div style="text-align:left;font-size:14px;">
+          <div style="display:flex;justify-content:space-between;"><span>🎮 P2E Награды:</span><b>35%</b></div>
+          <div style="display:flex;justify-content:space-between;"><span>💧 Ликвидность DEX:</span><b>20%</b></div>
+          <div style="display:flex;justify-content:space-between;"><span>📢 Маркетинг:</span><b>15%</b></div>
+          <div style="display:flex;justify-content:space-between;"><span>🏛 Экосистема:</span><b>10%</b></div>
+          <div style="display:flex;justify-content:space-between;"><span>🌿 Эко-фонд:</span><b>10%</b></div>
+          <div style="display:flex;justify-content:space-between;"><span>💎 Команда:</span><b>10%</b></div>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="screen-quests" style="padding-bottom: 100px;">
-    <h2 style="text-align: center;">Миссии $NCORE</h2>
+  <section id="screen-quests" style="padding-bottom:100px;">
+    <h2 style="text-align:center;">Миссии $NCORE</h2>
     <div id="quests-list">
-      <div class="quest-item" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,51,204,0.3); border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between;">
-        <div><div style="font-weight: bold;">Подписка на канал</div><div style="color: #ff33cc;">+10 $NCORE</div></div>
-        <button class="btn-main" style="padding: 8px 15px; font-size: 12px;">Выполнить</button>
+      <div class="quest-item" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,51,204,0.3);border-radius:12px;padding:15px;margin-bottom:15px;display:flex;justify-content:space-between;">
+        <div><div style="font-weight:bold;">Подписка на канал</div><div style="color:#ff33cc;">+10 $NCORE</div></div>
+        <button class="btn-main" style="padding:8px 15px;font-size:12px;">Выполнить</button>
       </div>
     </div>
   </section>
@@ -308,21 +172,16 @@ section.active { display: flex !important; }
   </nav>
 </div>
 
-<!-- ИГРОВОЙ ВИД -->
 <div id="game-view" class="view-container">
-
-  <!-- Верхняя плашка -->
   <div id="game-topbar">
     <button onclick="exitGame()" id="btn-back">⬅ Меню</button>
     <div id="coin-balance">💰 0.00 $NCORE</div>
     <div id="profile-icon-game" onclick="toggleProfile()">👤</div>
   </div>
-
   <div class="tree-container"><img src="assets/tree/stage_1.png" id="tree-img" alt="Tree"></div>
-
   <div id="game-bottom">
     <div id="farm-rate-info">⚡ 0.0000 $NCORE/сек</div>
-    <p id="upgrade-info" style="margin:0; font-size:12px; color:rgba(255,255,255,0.6);">Уровень древа: 1 / 9</p>
+    <p id="upgrade-info" style="margin:0;font-size:12px;color:rgba(255,255,255,0.6);">Уровень древа: 1 / 9</p>
     <div id="game-buttons-row">
       <button id="btn-farm" onclick="startFarming()">🌿 Фармить</button>
       <button id="btn-upgrade-tree" class="btn-main" onclick="upgradeTree()">Улучшить</button>
@@ -332,54 +191,67 @@ section.active { display: flex !important; }
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-// ─── КОНСТАНТЫ ───────────────────────────────────────────────────────────────
-const PATH_ASSETS  = 'assets/';
-const COLLECTION   = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
+const PATH_ASSETS         = 'assets/';
+const COLLECTION          = 'EQB0QglMfw9kYBGaT2irSjaQPRlrtkKfwfgoKBQBrFK_Mv02';
 const MAX_OFFLINE_SECONDS = 6 * 60 * 60;
+const FARM_SESSION_SEC    = 6 * 60 * 60;
+const TREE_CONFIG = {
+  files:      ["stage_1.png","stage_2.png","stage_3.png","stage_4.png","stage_5.png","stage_6.png","stage_7.png","stage_8.png","stage_9.png"],
+  baseCost:   10, multiplier: 1.6, baseIncome: 0.01
+};
 
-// ─── SUPABASE ─────────────────────────────────────────────────────────────────
+// ─── SUPABASE ────────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://zdiphqyqoxpqdszoklzd.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkaXBocXlxb3hwcWRzem9rbHpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NDY1MTUsImV4cCI6MjA5NDMyMjUxNX0.0P7pFGe_ZZtv_lKbJEn2g4wjpN2LaKcnBPLHqx-o4oQ';
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let currentWallet = null; // адрес кошелька текущего игрока
-let saveTimeout   = null; // дебаунс сохранения
+let currentWallet = null;
+let saveTimeout   = null;
 
-// Загрузить данные игрока из БД
+// ─── СОСТОЯНИЕ ───────────────────────────────────────────────────────────────
+let userNfts = [], selectedArtifact = null, metadataCache = new Map();
+let balance        = parseFloat(localStorage.getItem('ncore_balance'))  || 0;
+let treeLevel      = parseInt(localStorage.getItem('ncore_tree_lvl'))   || 1;
+let farmSessionEnd = parseInt(localStorage.getItem('ncore_farm_end'))   || 0;
+let pendingOfflineReward = 0;
+let farmingInterval   = null;
+let farmTimerInterval = null;
+
+// ─── SUPABASE ФУНКЦИИ ────────────────────────────────────────────────────────
 async function loadPlayer(wallet) {
   const { data, error } = await db.from('players').select('*').eq('wallet', wallet).single();
   if (error || !data) {
-    // Новый игрок — создаём запись
     await db.from('players').insert({ wallet, balance: 0, tree_level: 1, farm_end: 0, last_seen: Math.floor(Date.now()/1000) });
     return null;
   }
   return data;
 }
 
-// Сохранить данные игрока в БД (с дебаунсом 3 сек)
+async function savePlayerNow() {
+  if (!currentWallet) return;
+  const { error } = await db.from('players').upsert({
+    wallet:     currentWallet,
+    balance:    balance,
+    tree_level: treeLevel,
+    farm_end:   farmSessionEnd,
+    last_seen:  Math.floor(Date.now() / 1000),
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'wallet' });
+  if (error) console.error('Supabase save error:', error.message);
+}
+
 function savePlayer() {
   if (!currentWallet) return;
   clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(async () => {
-    await db.from('players').upsert({
-      wallet:     currentWallet,
-      balance:    balance,
-      tree_level: treeLevel,
-      farm_end:   farmSessionEnd,
-      last_seen:  Math.floor(Date.now() / 1000),
-      updated_at: new Date().toISOString()
-    });
-  }, 3000);
+  saveTimeout = setTimeout(() => savePlayerNow(), 3000);
 }
 
-// Применить данные из БД к локальному состоянию
 function applyPlayerData(data) {
   if (!data) return;
-  balance       = parseFloat(data.balance)   || 0;
-  treeLevel     = parseInt(data.tree_level)  || 1;
+  balance        = parseFloat(data.balance)  || 0;
+  treeLevel      = parseInt(data.tree_level) || 1;
   farmSessionEnd = parseInt(data.farm_end)   || 0;
 
-  // Офлайн-фарминг: считаем по last_seen из БД
   const now     = Math.floor(Date.now() / 1000);
   const elapsed = now - (parseInt(data.last_seen) || now);
   const capped  = Math.min(elapsed, MAX_OFFLINE_SECONDS);
@@ -390,42 +262,20 @@ function applyPlayerData(data) {
     showOfflineModal(earned, capped, elapsed);
   }
 
-  // Синхронизируем localStorage
   localStorage.setItem('ncore_balance',  balance);
   localStorage.setItem('ncore_tree_lvl', treeLevel);
   if (farmSessionEnd) localStorage.setItem('ncore_farm_end', farmSessionEnd);
 }
 
-const TREE_CONFIG = {
-  files:       ["stage_1.png","stage_2.png","stage_3.png","stage_4.png","stage_5.png","stage_6.png","stage_7.png","stage_8.png","stage_9.png"],
-  baseCost:    10,
-  multiplier:  1.6,
-  baseIncome:  0.01   // $NCORE в секунду на 1-м уровне
-};
-
-// ─── СОСТОЯНИЕ ───────────────────────────────────────────────────────────────
-let userNfts = [], selectedArtifact = null, metadataCache = new Map();
-let balance   = parseFloat(localStorage.getItem('ncore_balance'))   || 0;
-let treeLevel = parseInt(localStorage.getItem('ncore_tree_lvl'))    || 1;
-
-// Офлайн-переменные
-let pendingOfflineReward = 0; // накоплено, но ещё не забрано
-
-// ─── ОФЛАЙН-ФАРМИНГ: проверка при запуске ────────────────────────────────────
+// ─── ОФЛАЙН-ФАРМИНГ ──────────────────────────────────────────────────────────
 function checkOfflineFarming() {
+  if (currentWallet) return; // если кошелёк подключён — данные уже из БД
   const lastSeen = parseInt(localStorage.getItem('ncore_last_seen')) || 0;
-  if (!lastSeen) {
-    saveLastSeen();
-    return;
-  }
-
-  const now        = Math.floor(Date.now() / 1000);
-  const elapsed    = now - lastSeen;                             // секунд прошло
-  const capped     = Math.min(elapsed, MAX_OFFLINE_SECONDS);    // не больше 6 ч
-  const ratePerSec = getFarmRate();
-  const earned     = parseFloat((ratePerSec * capped).toFixed(4));
-
-  // Показываем модалку только если прошло больше минуты и что-то накопилось
+  if (!lastSeen) { saveLastSeen(); return; }
+  const now    = Math.floor(Date.now() / 1000);
+  const elapsed = now - lastSeen;
+  const capped  = Math.min(elapsed, MAX_OFFLINE_SECONDS);
+  const earned  = parseFloat((getFarmRate() * capped).toFixed(4));
   if (capped >= 60 && earned > 0) {
     pendingOfflineReward = earned;
     showOfflineModal(earned, capped, elapsed);
@@ -434,31 +284,17 @@ function checkOfflineFarming() {
   }
 }
 
-function getFarmRate() {
-  // $NCORE в секунду с учётом уровня дерева
-  return TREE_CONFIG.baseIncome * treeLevel;
-}
+function getFarmRate() { return TREE_CONFIG.baseIncome * treeLevel; }
 
 function showOfflineModal(earned, cappedSec, realSec) {
-  const hours   = Math.floor(cappedSec / 3600);
-  const minutes = Math.floor((cappedSec % 3600) / 60);
-
-  document.getElementById('offline-earned-amount').innerHTML =
-    `${earned.toFixed(4)} <span>$NCORE</span>`;
-
-  // Если реальное время > 6 ч — показываем что накопитель был полон
+  document.getElementById('offline-earned-amount').innerHTML = `${earned.toFixed(4)} <span>$NCORE</span>`;
   const awayHours = Math.floor(realSec / 3600);
   const awayMins  = Math.floor((realSec % 3600) / 60);
   let awayText = `Отсутствовал: ${awayHours} ч ${awayMins} мин`;
   if (realSec > MAX_OFFLINE_SECONDS) awayText += ' (накопитель заполнен)';
   document.getElementById('offline-away-time').innerText = awayText;
-
-  // Прогресс-бар накопителя
   const pct = Math.min(100, Math.round((cappedSec / MAX_OFFLINE_SECONDS) * 100));
-  setTimeout(() => {
-    document.getElementById('offline-cap-bar').style.width = pct + '%';
-  }, 300);
-
+  setTimeout(() => { document.getElementById('offline-cap-bar').style.width = pct + '%'; }, 300);
   document.getElementById('offline-reward-modal').classList.add('show');
 }
 
@@ -466,30 +302,18 @@ function claimOfflineReward() {
   balance += pendingOfflineReward;
   pendingOfflineReward = 0;
   document.getElementById('offline-reward-modal').classList.remove('show');
-  saveLastSeen();
+  savePlayerNow();
   updateUI();
 }
 
 function saveLastSeen() {
-  const now = Math.floor(Date.now() / 1000);
-  localStorage.setItem('ncore_last_seen', now);
-  if (currentWallet) {
-    db.from('players').upsert({
-      wallet: currentWallet,
-      balance, tree_level: treeLevel,
-      farm_end: farmSessionEnd,
-      last_seen: now,
-      updated_at: new Date().toISOString()
-    });
-  }
+  localStorage.setItem('ncore_last_seen', Math.floor(Date.now() / 1000));
+  savePlayerNow();
 }
 
-// Сохраняем время при закрытии/скрытии страницы
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') saveLastSeen();
-});
-window.addEventListener('beforeunload', saveLastSeen);
-window.addEventListener('pagehide',     saveLastSeen);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') savePlayerNow(); });
+window.addEventListener('beforeunload', savePlayerNow);
+window.addEventListener('pagehide', savePlayerNow);
 
 // ─── НАВИГАЦИЯ ────────────────────────────────────────────────────────────────
 function switchTab(sId, el) {
@@ -499,7 +323,7 @@ function switchTab(sId, el) {
   el.classList.add('active');
 }
 
-// ─── NFT / АРТЕФАКТЫ ─────────────────────────────────────────────────────────
+// ─── NFT ─────────────────────────────────────────────────────────────────────
 function formatVal(val) {
   if (!val) return "";
   return val.replace('bg_','').replace('frame_','').replace('Y_','').replace(/_/g,' ') + (val.startsWith('Y_') ? ' Core' : '');
@@ -507,71 +331,49 @@ function formatVal(val) {
 
 function getRarityColor(text) {
   const t = text.toLowerCase();
-  if (t.includes('rare'))  return 'var(--rarity-rare)';
-  if (t.includes('epic'))  return 'var(--rarity-epic)';
-  if (t.includes('leg'))   return 'var(--rarity-leg)';
+  if (t.includes('rare')) return 'var(--rarity-rare)';
+  if (t.includes('epic')) return 'var(--rarity-epic)';
+  if (t.includes('leg'))  return 'var(--rarity-leg)';
   return 'var(--rarity-common)';
 }
 
 async function buildArtifact(index) {
   if (!userNfts[index]) return;
-
-  // Активный thumb
   document.querySelectorAll('.thumb').forEach(t => {
     t.classList.toggle('active', parseInt(t.dataset.index) === index);
   });
-
   selectedArtifact = userNfts[index];
   const id = selectedArtifact.metadata.name.match(/#(\d+)/)?.[1] || '0';
-
-  // Показываем канвас
   document.getElementById('canvas-container').style.display = 'flex';
-  document.getElementById('btn-enter-game').style.display  = 'block';
-
+  document.getElementById('btn-enter-game').style.display   = 'block';
   const inner    = document.getElementById('artifact-inner');
   const skeleton = document.getElementById('artifact-skeleton');
-
-  // Bloom: уходим в blur
   inner.classList.remove('loaded');
   inner.classList.add('loading');
   skeleton.classList.add('show');
-
   try {
     let meta;
-    if (metadataCache.has(id)) {
-      meta = metadataCache.get(id);
-    } else {
+    if (metadataCache.has(id)) { meta = metadataCache.get(id); }
+    else {
       const res = await fetch(`${PATH_ASSETS}metadata/${id}.json`);
       meta = await res.json();
       metadataCache.set(id, meta);
     }
-
     let traits = { core: 'Y_basic_1', background: 'bg_basic', frame: 'frame_basic' };
     meta.attributes?.forEach(attr => {
       const type = attr.trait_type.toLowerCase();
       if (traits[type] !== undefined) traits[type] = attr.value;
     });
-
     selectedArtifact.bgPath    = `${PATH_ASSETS}backgrounds/${traits.background}.png`;
     selectedArtifact.framePath = `${PATH_ASSETS}frames/${traits.frame}.png`;
     selectedArtifact.corePath  = `${PATH_ASSETS}cores/${traits.core}.png`;
-
-    // Предзагружаем картинки перед показом
-    await Promise.all([
-      preloadImage(selectedArtifact.bgPath),
-      preloadImage(selectedArtifact.framePath),
-      preloadImage(selectedArtifact.corePath),
-    ]);
-
+    await Promise.all([preloadImage(selectedArtifact.bgPath), preloadImage(selectedArtifact.framePath), preloadImage(selectedArtifact.corePath)]);
     document.getElementById('img-bg').src    = selectedArtifact.bgPath;
     document.getElementById('img-frame').src = selectedArtifact.framePath;
     document.getElementById('img-core').src  = selectedArtifact.corePath;
-
-    // Bloom: появляемся чисто
     skeleton.classList.remove('show');
     inner.classList.remove('loading');
     inner.classList.add('loaded');
-
     const attrsList = document.getElementById('nft-attrs');
     attrsList.innerHTML = '';
     meta.attributes?.forEach(attr => {
@@ -582,10 +384,8 @@ async function buildArtifact(index) {
       div.innerHTML = `<div class="attr-label">${attr.trait_type}</div><div class="attr-value" style="color:${color}">${formatVal(attr.value)}</div>`;
       attrsList.appendChild(div);
     });
-
     document.documentElement.style.setProperty('--glow-color', getRarityColor(traits.frame));
     document.getElementById('app-bg').style.backgroundImage = `url('${selectedArtifact.bgPath}')`;
-
   } catch (e) {
     skeleton.classList.remove('show');
     inner.classList.remove('loading');
@@ -595,15 +395,10 @@ async function buildArtifact(index) {
 }
 
 function preloadImage(src) {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.onload  = resolve;
-    img.onerror = resolve; // не блокируем если картинка не найдена
-    img.src = src;
-  });
+  return new Promise(resolve => { const img = new Image(); img.onload = img.onerror = resolve; img.src = src; });
 }
 
-// ─── ПЕРЕХОДЫ В ВИД ИГРЫ ─────────────────────────────────────────────────────
+// ─── ПЕРЕХОДЫ ────────────────────────────────────────────────────────────────
 function enterGame() {
   const overlay = document.getElementById('portal-overlay');
   document.getElementById('canvas-container').classList.add('canvas-portal');
@@ -628,7 +423,7 @@ function exitGame() {
   document.getElementById('profile-icon').style.display = 'block';
 }
 
-// ─── САД / ДЕРЕВО ────────────────────────────────────────────────────────────
+// ─── ДЕРЕВО ──────────────────────────────────────────────────────────────────
 function refreshGarden() {
   const tree = document.getElementById('tree-img');
   if (tree) tree.src = `${PATH_ASSETS}tree/${TREE_CONFIG.files[Math.min(treeLevel - 1, 8)]}`;
@@ -636,29 +431,27 @@ function refreshGarden() {
 }
 
 function updateUI() {
-  const cost           = Math.floor(TREE_CONFIG.baseCost * Math.pow(TREE_CONFIG.multiplier, treeLevel - 1));
-  const formattedBal   = balance.toFixed(2);
-  const ratePerSec     = getFarmRate();
-  const ratePerMin     = (ratePerSec * 60).toFixed(4);
+  const cost         = Math.floor(TREE_CONFIG.baseCost * Math.pow(TREE_CONFIG.multiplier, treeLevel - 1));
+  const formattedBal = balance.toFixed(2);
+  const ratePerSec   = getFarmRate();
+  const ratePerMin   = (ratePerSec * 60).toFixed(4);
 
-  document.getElementById('coin-balance').innerText      = `💰 ${formattedBal} $NCORE`;
+  document.getElementById('coin-balance').innerText       = `💰 ${formattedBal} $NCORE`;
   document.getElementById('token-page-balance').innerText = formattedBal;
-  document.getElementById('balance-value').innerText     = formattedBal;
-  document.getElementById('upgrade-info').innerText      = `Уровень древа: ${treeLevel} / 9`;
-  document.getElementById('farm-rate-info').innerText    = `⚡ ${ratePerSec.toFixed(4)} $NCORE/сек  ·  ${ratePerMin} /мин`;
+  document.getElementById('balance-value').innerText      = formattedBal;
+  document.getElementById('upgrade-info').innerText       = `Уровень древа: ${treeLevel} / 9`;
+  document.getElementById('farm-rate-info').innerText     = `⚡ ${ratePerSec.toFixed(4)} $NCORE/сек · ${ratePerMin} /мин`;
 
   const upBtn = document.getElementById('btn-upgrade-tree');
   if (treeLevel >= 9) {
-    upBtn.innerText  = "МАКСИМАЛЬНЫЙ УРОВЕНЬ";
-    upBtn.disabled   = true;
+    upBtn.innerText = "МАКСИМАЛЬНЫЙ УРОВЕНЬ"; upBtn.disabled = true;
   } else {
-    upBtn.innerText  = `Улучшить за ${cost} $NCORE`;
-    upBtn.disabled   = balance < cost;
+    upBtn.innerText = `Улучшить за ${cost} $NCORE`; upBtn.disabled = balance < cost;
   }
 
-  localStorage.setItem('ncore_balance',   balance);
-  localStorage.setItem('ncore_tree_lvl',  treeLevel);
-  savePlayer(); // сохраняем в Supabase
+  localStorage.setItem('ncore_balance',  balance);
+  localStorage.setItem('ncore_tree_lvl', treeLevel);
+  savePlayer();
 }
 
 function upgradeTree() {
@@ -669,100 +462,60 @@ function upgradeTree() {
     const img = document.getElementById('tree-img');
     img.style.filter = "brightness(3)";
     setTimeout(() => { refreshGarden(); img.style.filter = "brightness(1)"; }, 400);
-    // Сохраняем сразу без дебаунса
-    if (currentWallet) {
-      db.from('players').upsert({
-        wallet: currentWallet,
-        balance, tree_level: treeLevel,
-        farm_end: farmSessionEnd,
-        last_seen: Math.floor(Date.now() / 1000),
-        updated_at: new Date().toISOString()
-      });
-    }
+    savePlayerNow(); // немедленно
   }
 }
 
-// ─── ФАРМИНГ: СЕССИЯ 6 ЧАСОВ ─────────────────────────────────────────────────
-const FARM_SESSION_SEC = 6 * 60 * 60; // 6 часов
-let farmingInterval  = null;
-let farmTimerInterval = null;
-let farmSessionEnd   = 0; // timestamp (unix sec) конца сессии
-
+// ─── ФАРМИНГ ─────────────────────────────────────────────────────────────────
 function startFarming() {
-  if (!selectedArtifact) return;
-  if (farmingInterval) return; // уже идёт
-
+  if (!selectedArtifact || farmingInterval) return;
   farmSessionEnd = Math.floor(Date.now() / 1000) + FARM_SESSION_SEC;
   localStorage.setItem('ncore_farm_end', farmSessionEnd);
+  savePlayerNow();
   runFarmSession();
 }
 
 function runFarmSession() {
   const btn = document.getElementById('btn-farm');
   btn.classList.add('farming');
-
-  // Тикер начисления монет (раз в секунду)
   farmingInterval = setInterval(() => {
     const now = Math.floor(Date.now() / 1000);
-    if (now >= farmSessionEnd) {
-      endFarmSession();
-      return;
-    }
+    if (now >= farmSessionEnd) { endFarmSession(); return; }
     balance += getFarmRate();
     updateUI();
   }, 1000);
-
-  // Тикер таймера на кнопке (раз в секунду)
   farmTimerInterval = setInterval(() => {
     const remaining = farmSessionEnd - Math.floor(Date.now() / 1000);
-    if (remaining <= 0) { btn.innerText = '🌿 Фармить'; return; }
-    btn.innerText = '⚡ ' + formatTimer(remaining);
+    btn.innerText = remaining <= 0 ? '🌿 Фармить' : '⚡ ' + formatTimer(remaining);
   }, 1000);
-
-  // Сразу показываем таймер
-  const remaining = farmSessionEnd - Math.floor(Date.now() / 1000);
-  btn.innerText = '⚡ ' + formatTimer(Math.max(0, remaining));
+  btn.innerText = '⚡ ' + formatTimer(Math.max(0, farmSessionEnd - Math.floor(Date.now() / 1000)));
 }
 
 function endFarmSession() {
-  clearInterval(farmingInterval);
-  clearInterval(farmTimerInterval);
-  farmingInterval  = null;
-  farmTimerInterval = null;
-  farmSessionEnd   = 0;
+  clearInterval(farmingInterval); clearInterval(farmTimerInterval);
+  farmingInterval = null; farmTimerInterval = null; farmSessionEnd = 0;
   localStorage.removeItem('ncore_farm_end');
-
   const btn = document.getElementById('btn-farm');
-  btn.classList.remove('farming');
-  btn.innerText = '🌿 Фармить';
+  btn.classList.remove('farming'); btn.innerText = '🌿 Фармить';
+  savePlayerNow();
   updateUI();
 }
 
-function formatTimer(sec) {
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  const s = sec % 60;
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
-
 function stopFarmTimerDisplay() {
-  // При выходе из игры просто останавливаем визуальный таймер,
-  // farmingInterval продолжает считать в фоне
-  clearInterval(farmTimerInterval);
-  farmTimerInterval = null;
+  clearInterval(farmTimerInterval); farmTimerInterval = null;
 }
-
 
 function restoreFarmSession() {
-  const saved = parseInt(localStorage.getItem('ncore_farm_end')) || 0;
+  const saved = farmSessionEnd || parseInt(localStorage.getItem('ncore_farm_end')) || 0;
   if (!saved) return;
   const now = Math.floor(Date.now() / 1000);
-  if (saved > now) {
-    farmSessionEnd = saved;
-    runFarmSession();
-  } else {
-    localStorage.removeItem('ncore_farm_end');
-  }
+  if (saved > now) { farmSessionEnd = saved; runFarmSession(); }
+  else { farmSessionEnd = 0; localStorage.removeItem('ncore_farm_end'); }
+}
+
+function formatTimer(sec) {
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
 // ─── TON CONNECT ─────────────────────────────────────────────────────────────
@@ -774,13 +527,9 @@ const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
 tonConnectUI.onStatusChange(async (w) => {
   if (w) {
     currentWallet = w.account.address;
-
-    // Загружаем данные игрока из Supabase
     const playerData = await loadPlayer(currentWallet);
     applyPlayerData(playerData);
     updateUI();
-
-    // Загружаем NFT
     const res = await fetch(`https://tonapi.io/v2/accounts/${currentWallet}/nfts?collection=${COLLECTION}`);
     const d   = await res.json();
     if (d.nft_items) {
@@ -789,18 +538,14 @@ tonConnectUI.onStatusChange(async (w) => {
       list.innerHTML = '';
       userNfts.forEach((n, i) => {
         const img = document.createElement('img');
-        img.src   = n.metadata.image;
-        img.className = 'thumb';
-        img.dataset.index = i;
-        img.onclick = () => buildArtifact(i);
+        img.src = n.metadata.image; img.className = 'thumb';
+        img.dataset.index = i; img.onclick = () => buildArtifact(i);
         list.appendChild(img);
       });
       buildArtifact(0);
       updateTokenBalance(currentWallet);
     }
-  } else {
-    currentWallet = null;
-  }
+  } else { currentWallet = null; }
 });
 
 function toggleProfile() {
@@ -828,20 +573,18 @@ const loadingInterval = setInterval(() => {
   else {
     progress += 5;
     if (progress >= 100) {
-      progress = 100;
-      clearInterval(loadingInterval);
+      progress = 100; clearInterval(loadingInterval);
       setTimeout(() => {
         document.getElementById('loading-screen').style.opacity = '0';
         setTimeout(() => {
           document.getElementById('loading-screen').style.display = 'none';
-          // Проверяем офлайн-фарминг ПОСЛЕ скрытия загрузочного экрана
           checkOfflineFarming();
         }, 800);
       }, 500);
     }
   }
-  document.getElementById('progress-bar').style.width   = progress + '%';
-  document.getElementById('loading-text').innerText     = Math.floor(progress) + '%';
+  document.getElementById('progress-bar').style.width = progress + '%';
+  document.getElementById('loading-text').innerText   = Math.floor(progress) + '%';
 }, 150);
 
 window.addEventListener('load', () => setTimeout(() => { isLoaded = true; }, 1500));
