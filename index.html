@@ -241,10 +241,7 @@ section.active { display: flex !important; }
     <div id="farm-rate-info">⚡ 0.0000 $NCORE/сек</div>
     <p id="upgrade-info" style="margin:0; font-size:12px; color:rgba(255,255,255,0.6);">Уровень древа: 1 / 9</p>
     <div id="game-buttons-row">
-      <button id="btn-farm"
-        onpointerdown="startFarming()"
-        onpointerup="stopFarming()"
-        onpointerleave="stopFarming()">🌿 Фармить</button>
+      <button id="btn-farm" onclick="startFarming()">🌿 Фармить</button>
       <button id="btn-upgrade-tree" class="btn-main" onclick="upgradeTree()">Улучшить</button>
     </div>
   </div>
@@ -419,6 +416,7 @@ function enterGame() {
     document.getElementById('main-menu').classList.remove('active');
     document.getElementById('game-view').classList.add('active');
     refreshGarden();
+    restoreFarmSession();
     setTimeout(() => {
       overlay.style.opacity = "0";
       document.getElementById('canvas-container').classList.remove('canvas-portal');
@@ -474,25 +472,80 @@ function upgradeTree() {
   }
 }
 
-// ─── ФАРМИНГ ПО НАЖАТИЮ ──────────────────────────────────────────────────────
-let farmingInterval = null;
+// ─── ФАРМИНГ: СЕССИЯ 6 ЧАСОВ ─────────────────────────────────────────────────
+const FARM_SESSION_SEC = 6 * 60 * 60; // 6 часов
+let farmingInterval  = null;
+let farmTimerInterval = null;
+let farmSessionEnd   = 0; // timestamp (unix sec) конца сессии
 
 function startFarming() {
-  if (farmingInterval || !selectedArtifact) return;
-  document.getElementById('btn-farm').classList.add('farming');
-  document.getElementById('btn-farm').innerText = '⚡ Фармлю...';
+  if (!selectedArtifact) return;
+  if (farmingInterval) return; // уже идёт
+
+  farmSessionEnd = Math.floor(Date.now() / 1000) + FARM_SESSION_SEC;
+  localStorage.setItem('ncore_farm_end', farmSessionEnd);
+  runFarmSession();
+}
+
+function runFarmSession() {
+  const btn = document.getElementById('btn-farm');
+  btn.classList.add('farming');
+
+  // Тикер начисления монет (раз в секунду)
   farmingInterval = setInterval(() => {
+    const now = Math.floor(Date.now() / 1000);
+    if (now >= farmSessionEnd) {
+      endFarmSession();
+      return;
+    }
     balance += getFarmRate();
     updateUI();
   }, 1000);
+
+  // Тикер таймера на кнопке (раз в секунду)
+  farmTimerInterval = setInterval(() => {
+    const remaining = farmSessionEnd - Math.floor(Date.now() / 1000);
+    if (remaining <= 0) { btn.innerText = '🌿 Фармить'; return; }
+    btn.innerText = '⚡ ' + formatTimer(remaining);
+  }, 1000);
+
+  // Сразу показываем таймер
+  const remaining = farmSessionEnd - Math.floor(Date.now() / 1000);
+  btn.innerText = '⚡ ' + formatTimer(Math.max(0, remaining));
 }
 
-function stopFarming() {
-  if (!farmingInterval) return;
+function endFarmSession() {
   clearInterval(farmingInterval);
-  farmingInterval = null;
-  document.getElementById('btn-farm').classList.remove('farming');
-  document.getElementById('btn-farm').innerText = '🌿 Фармить';
+  clearInterval(farmTimerInterval);
+  farmingInterval  = null;
+  farmTimerInterval = null;
+  farmSessionEnd   = 0;
+  localStorage.removeItem('ncore_farm_end');
+
+  const btn = document.getElementById('btn-farm');
+  btn.classList.remove('farming');
+  btn.innerText = '🌿 Фармить';
+  updateUI();
+}
+
+function formatTimer(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+// Восстанавливаем сессию если она была активна (переоткрытие приложения)
+function restoreFarmSession() {
+  const saved = parseInt(localStorage.getItem('ncore_farm_end')) || 0;
+  if (!saved) return;
+  const now = Math.floor(Date.now() / 1000);
+  if (saved > now) {
+    farmSessionEnd = saved;
+    runFarmSession();
+  } else {
+    localStorage.removeItem('ncore_farm_end');
+  }
 }
 
 // ─── TON CONNECT ─────────────────────────────────────────────────────────────
