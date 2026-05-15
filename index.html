@@ -1019,7 +1019,10 @@ function updateGyro() {
 }
 
 initGyroscope();
-updateGyro();
+window.addEventListener('load',()=>{
+  setTimeout(()=>{isLoaded=true;},1500);
+  updateGyro();
+});
 window.addEventListener('resize',()=>{
   if(treeRafId){
     treeCanvas.width=treeCanvas.offsetWidth;
