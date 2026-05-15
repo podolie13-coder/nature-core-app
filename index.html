@@ -355,13 +355,15 @@ function getTreeVisual() {
 }
 
 function buildTreeBranches(level, rng) {
-  const depth = Math.min(4 + Math.floor(level * 0.8), 9);
-  const baseLen = 55 + level * 7;
+  const depth = Math.min(3 + Math.floor(level * 0.6), 7);
+  const baseLen = 45 + level * 5;
   const W = treeCanvas.width, H = treeCanvas.height;
-  const BX = W / 2, BY = H - 30;
+  const BX = W / 2, BY = H - 60;
   const list = [];
+  let count = 0;
   function rec(x, y, ang, len, dep, w) {
-    if (dep === 0 || len < 3) return;
+    if (dep === 0 || len < 3 || count > 250) return;
+    count++;
     const r = ang * Math.PI / 180;
     const ex = x + Math.cos(r) * len, ey = y - Math.sin(r) * len;
     list.push({ x1:x, y1:y, x2:ex, y2:ey, dep, w, isLeaf: dep === 1 });
