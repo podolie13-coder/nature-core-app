@@ -355,8 +355,8 @@ function getTreeVisual() {
 }
 
 function buildTreeBranches(level, rng) {
-  const depth = Math.min(4 + Math.floor(level * 0.8), 9);
-  const baseLen = 55 + level * 7;
+  const depth = Math.min(3 + Math.floor(level * 0.7), 8);
+  const baseLen = 30 + level * 4;
   const W = treeCanvas.width, H = treeCanvas.height;
   const BX = W / 2, BY = H - 30;
   const list = [];
@@ -969,7 +969,57 @@ const loadingInterval=setInterval(()=>{
   document.getElementById('progress-bar').style.width=progress+'%';
 },150);
 
-window.addEventListener('load',()=>setTimeout(()=>{isLoaded=true;},1500));
+// ─── ГИРОСКОП / ПАРАЛЛАКС ────────────────────────────────────────────────────
+let gyroX = 0, gyroY = 0;
+let targetGyroX = 0, targetGyroY = 0;
+
+function initGyroscope() {
+  if (!window.DeviceOrientationEvent) return;
+
+  // iOS 13+ требует разрешения
+  if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+    document.addEventListener('click', () => {
+      DeviceOrientationEvent.requestPermission().then(state => {
+        if (state === 'granted') listenGyro();
+      }).catch(console.error);
+    }, { once: true });
+  } else {
+    listenGyro();
+  }
+}
+
+function listenGyro() {
+  window.addEventListener('deviceorientation', (e) => {
+    // gamma = наклон влево/вправо (-90..90)
+    // beta  = наклон вперёд/назад (-180..180)
+    const maxTilt = 20;
+    targetGyroX = Math.max(-maxTilt, Math.min(maxTilt, e.gamma || 0));
+    targetGyroY = Math.max(-maxTilt, Math.min(maxTilt, (e.beta || 0) - 45));
+  });
+}
+
+function updateGyro() {
+  // Плавное движение через lerp
+  gyroX += (targetGyroX - gyroX) * 0.06;
+  gyroY += (targetGyroY - gyroY) * 0.06;
+
+  // Двигаем фон
+  const bg = document.getElementById('app-bg');
+  if (bg) {
+    bg.style.transform = `scale(1.05) translate(${gyroX * 0.4}px, ${gyroY * 0.3}px)`;
+  }
+
+  // Двигаем canvas дерева в противоположную сторону (параллакс)
+  const tc = document.querySelector('.tree-container');
+  if (tc && document.getElementById('game-view').classList.contains('active')) {
+    tc.style.transform = `translate(${-gyroX * 0.8}px, ${-gyroY * 0.6}px)`;
+  }
+
+  requestAnimationFrame(updateGyro);
+}
+
+initGyroscope();
+updateGyro();
 window.addEventListener('resize',()=>{
   if(treeRafId){
     treeCanvas.width=treeCanvas.offsetWidth;
