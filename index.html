@@ -355,8 +355,8 @@ function getTreeVisual() {
 }
 
 function buildTreeBranches(level, rng) {
-  const depth = Math.min(3 + Math.floor(level * 0.7), 8);
-  const baseLen = 30 + level * 4;
+  const depth = Math.min(4 + Math.floor(level * 0.8), 9);
+  const baseLen = 55 + level * 7;
   const W = treeCanvas.width, H = treeCanvas.height;
   const BX = W / 2, BY = H - 30;
   const list = [];
