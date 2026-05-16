@@ -645,7 +645,6 @@ async function rentGarden(gardenId){
       messages:[{
         address:TREASURY_WALLET,
         amount:nanotons,
-        payload:btoa('garden_'+gardenId+'_'+currentWallet.slice(-8)),
       }]
     };
     await tonConnectUI.sendTransaction(tx);
