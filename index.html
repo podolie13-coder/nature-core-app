@@ -589,16 +589,17 @@ function renderTree(){
 function growTreeAnimation(){
   if(treeGrowing)return;
   const seed=getGardenSeed(currentGardenId);
-  const lvl=getGardenLevel(currentGardenId);
+  const newLvl=getGardenLevel(currentGardenId); // уже новый уровень
   treeGrowing=true;
-  treeNextBranches=buildTreeBranches(lvl,makeRng(seed+lvl));
+  treeNextBranches=buildTreeBranches(newLvl,makeRng(seed+newLvl));
   spawnGrowthParticles(getTreeVisual());
   const t0=performance.now(),dur=1600;
   function step(now){
     treeAnimT=Math.min((now-t0)/dur,1);
     if(treeAnimT<1){requestAnimationFrame(step);return;}
-    treeBranches=treeNextBranches;treeGrowing=false;treeAnimT=0;
-    treeBranches=buildTreeBranches(getGardenLevel(currentGardenId),makeRng(seed+getGardenLevel(currentGardenId)));
+    treeBranches=treeNextBranches;
+    treeGrowing=false;treeAnimT=0;
+    treeBranches=buildTreeBranches(newLvl,makeRng(seed+newLvl));
     spawnAmbient(getTreeVisual());
   }
   requestAnimationFrame(step);
@@ -1111,6 +1112,9 @@ function upgradeTree(){
     balance-=cost;
     if(!gardens[currentGardenId])gardens[currentGardenId]={level:1,farm_end:0,seed:getGardenSeed(currentGardenId),expires:0};
     gardens[currentGardenId].level=(lvl+1);
+    // Перестраиваем текущие ветки со старым уровнем перед анимацией
+    const seed=getGardenSeed(currentGardenId);
+    treeBranches=buildTreeBranches(lvl,makeRng(seed+lvl));
     savePlayerNow();growTreeAnimation();updateUI();
     if(!isDailyClaimed('daily_upgrade'))claimQuest('daily_upgrade',2,true);
   }
