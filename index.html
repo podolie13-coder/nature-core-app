@@ -21,7 +21,8 @@ body { background: var(--dark-bg); color: #e0f2e0; font-family: 'Segoe UI', sans
 #portal-overlay { position: fixed; inset: 0; background: white; opacity: 0; z-index: 2000; pointer-events: none; transition: opacity 0.8s ease-in-out; }
 
 .tree-container { position: absolute; inset: 0; bottom: 120px; display: flex; align-items: center; justify-content: center; z-index: -1; overflow: hidden; }
-#tree-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+#tree-canvas { position: absolute; inset: 0; width: 100%; height: 100%; transition: filter 2s ease; }
+#tree-canvas.withered { filter: grayscale(1) brightness(0.4); }
 
 .view-container { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; }
 .view-container.active { display: flex; }
@@ -79,6 +80,27 @@ section.active { display: flex !important; }
 #wallet-modal { display: none; position: fixed; inset: 0; z-index: 3500; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
 #wallet-modal.show { display: flex; }
 .wallet-modal-box { background: linear-gradient(160deg,#0a0a1a,#050a05); border: 1px solid #0070dd; border-radius: 24px; padding: 28px 24px; text-align: center; max-width: 280px; width: 90%; box-shadow: 0 0 40px rgba(0,112,221,0.3); animation: modal-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+
+/* Withered modal */
+#withered-modal { display: none; position: fixed; inset: 0; z-index: 3500; align-items: center; justify-content: center; background: rgba(0,0,0,0.92); backdrop-filter: blur(10px); }
+#withered-modal.show { display: flex; }
+.withered-box { background: linear-gradient(160deg,#1a0f00,#050a05); border: 1px solid #8B4513; border-radius: 24px; padding: 28px 24px; text-align: center; max-width: 300px; width: 90%; box-shadow: 0 0 40px rgba(139,69,19,0.4); animation: modal-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+
+/* Garden modal */
+#garden-modal { display: none; position: fixed; inset: 0; z-index: 3500; align-items: center; justify-content: center; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); }
+#garden-modal.show { display: flex; }
+.garden-modal-box { background: linear-gradient(160deg,#0a1a0a,#050a05); border: 1px solid var(--primary-green); border-radius: 24px; padding: 24px 20px; max-width: 320px; width: 92%; box-shadow: 0 0 40px rgba(76,175,80,0.2); animation: modal-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); max-height: 85vh; overflow-y: auto; }
+.garden-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; }
+.garden-card:hover { border-color: var(--primary-green); background: rgba(76,175,80,0.08); }
+.garden-card.active-garden { border-color: #ffb100; background: rgba(255,177,0,0.08); }
+.garden-card.locked { opacity: 0.6; cursor: pointer; }
+.garden-icon { font-size: 32px; flex-shrink: 0; }
+.garden-info { flex: 1; }
+.garden-name { font-size: 14px; font-weight: 900; }
+.garden-boost { font-size: 11px; color: var(--primary-green); margin-top: 2px; }
+.garden-price { font-size: 11px; color: #ffb100; font-weight: 700; flex-shrink: 0; text-align: right; }
+.garden-timer { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
 .nft-warn-box { background: linear-gradient(160deg,#1a0a0a,#050a05); border: 1px solid #ff3333; border-radius: 24px; padding: 28px 24px; text-align: center; max-width: 300px; width: 90%; box-shadow: 0 0 40px rgba(255,50,50,0.3); animation: modal-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
 .nft-warn-icon { font-size: 48px; margin-bottom: 10px; }
 .nft-warn-title { color: #ff4444; font-size: 18px; font-weight: 900; letter-spacing: 1px; margin-bottom: 8px; }
@@ -95,11 +117,13 @@ section.active { display: flex !important; }
 #profile-icon-game { font-size: 20px; cursor: pointer; background: rgba(76,175,80,0.15); border: 1px solid rgba(76,175,80,0.3); padding: 6px 10px; border-radius: 50%; }
 
 #game-bottom { position: absolute; bottom: 20px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 20; }
-#game-buttons-row { display: flex; gap: 12px; justify-content: center; width: 100%; padding: 0 20px; box-sizing: border-box; }
-#btn-farm { flex: 1; background: linear-gradient(135deg, #1a472a, #2d7a3a); border: 2px solid var(--primary-green); color: #fff; border-radius: 15px; font-weight: 900; font-size: 13px; padding: 15px 10px; cursor: pointer; box-shadow: 0 0 20px rgba(76,175,80,0.3); text-transform: uppercase; user-select: none; -webkit-user-select: none; transition: all 0.1s; }
+#game-buttons-row { display: flex; gap: 10px; justify-content: center; width: 100%; padding: 0 16px; box-sizing: border-box; }
+#btn-farm { flex: 1; background: linear-gradient(135deg, #1a472a, #2d7a3a); border: 2px solid var(--primary-green); color: #fff; border-radius: 15px; font-weight: 900; font-size: 13px; padding: 15px 8px; cursor: pointer; box-shadow: 0 0 20px rgba(76,175,80,0.3); text-transform: uppercase; user-select: none; -webkit-user-select: none; transition: all 0.1s; }
 #btn-farm.farming { background: linear-gradient(135deg, #2d7a3a, #4caf50); box-shadow: 0 0 30px rgba(76,175,80,0.7); transform: scale(0.97); }
-#btn-upgrade-tree { flex: 1; }
+#btn-upgrade-tree { flex: 1; font-size: 12px; padding: 15px 8px; }
+#btn-garden { flex: 0 0 52px; background: rgba(255,177,0,0.15); border: 2px solid #ffb100; color: #ffb100; border-radius: 15px; font-size: 20px; padding: 15px 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 #farm-rate-info { font-size: 11px; color: rgba(255,255,255,0.45); white-space: nowrap; }
+#garden-timer-info { font-size: 10px; color: #ffb100; display: none; }
 
 .screen-core-header { text-align: center; padding: 10px 0 4px; }
 .screen-core-title { font-size: 22px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; background: linear-gradient(90deg, #4caf50, #a8ff78, #4caf50); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: title-shine 3s linear infinite; }
@@ -109,7 +133,7 @@ section.active { display: flex !important; }
 .btn-enter-game { position: relative; width: 90%; padding: 16px; border: none; border-radius: 18px; background: linear-gradient(135deg, #1a472a, #2d7a3a, #4caf50); color: #fff; font-size: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 24px rgba(76,175,80,0.4); overflow: hidden; transition: transform 0.15s, box-shadow 0.15s; margin-top: 4px; }
 .btn-enter-game::after { content: ''; position: absolute; top: -50%; left: -60%; width: 40%; height: 200%; background: rgba(255,255,255,0.15); transform: skewX(-20deg); animation: btn-shine 3s infinite; }
 @keyframes btn-shine { 0% { left: -60%; } 100% { left: 160%; } }
-.btn-enter-game:active { transform: scale(0.97); box-shadow: 0 2px 12px rgba(76,175,80,0.3); }
+.btn-enter-game:active { transform: scale(0.97); }
 .btn-enter-icon { font-size: 18px; margin-right: 6px; }
 .screen-footer { font-size: 10px; color: rgba(255,255,255,0.2); margin-top: 8px; letter-spacing: 1px; }
 
@@ -182,7 +206,6 @@ section.active { display: flex !important; }
   </div>
 </div>
 
-<!-- FIX: правильный HTML тег profile-icon -->
 <div id="nft-warning-modal">
   <div class="nft-warn-box">
     <div class="nft-warn-icon">⚠️</div>
@@ -210,6 +233,35 @@ section.active { display: flex !important; }
       <button onclick="closeWalletModal()" style="flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:12px;padding:12px;font-weight:700;cursor:pointer;font-size:13px;">Cancel</button>
       <button onclick="closeWalletModal();toggleProfile();" style="flex:1;background:linear-gradient(135deg,#0050aa,#0070dd);border:none;color:#fff;border-radius:12px;padding:12px;font-weight:900;cursor:pointer;font-size:13px;">Connect 🔗</button>
     </div>
+  </div>
+</div>
+
+<!-- Засохшее дерево -->
+<div id="withered-modal">
+  <div class="withered-box">
+    <div style="font-size:56px;margin-bottom:10px;">🍂</div>
+    <div style="color:#cd853f;font-size:18px;font-weight:900;letter-spacing:1px;margin-bottom:8px;">Garden Withered</div>
+    <div style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:16px;line-height:1.5;">Your garden rental has expired. Renew to restore your tree and resume farming!</div>
+    <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:10px;margin-bottom:16px;font-size:12px;color:rgba(255,255,255,0.5);">
+      Tree progress is saved. Renew anytime to continue.
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeWitheredModal()" style="flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:12px;padding:12px;font-weight:700;cursor:pointer;font-size:13px;">Later</button>
+      <button onclick="closeWitheredModal();openGardenModal();" style="flex:1;background:linear-gradient(135deg,#7a5a00,#cc9900);border:none;color:#fff;border-radius:12px;padding:12px;font-weight:900;cursor:pointer;font-size:13px;">Renew 🌿</button>
+    </div>
+  </div>
+</div>
+
+<!-- Магазин садов -->
+<div id="garden-modal">
+  <div class="garden-modal-box">
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:2px;">RENT A GARDEN</div>
+      <div style="font-size:20px;font-weight:900;color:#4caf50;letter-spacing:2px;">🌿 Gardens</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;">7 days rental · TON payment</div>
+    </div>
+    <div id="garden-cards"></div>
+    <button onclick="closeGardenModal()" style="width:100%;background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);border-radius:12px;padding:10px;cursor:pointer;font-size:13px;margin-top:4px;">Close</button>
   </div>
 </div>
 
@@ -294,10 +346,12 @@ section.active { display: flex !important; }
   </div>
   <div id="game-bottom">
     <div id="farm-rate-info">⚡ 0.000000 $NCORE/sec</div>
+    <div id="garden-timer-info">🌿 Garden expires in: <span id="garden-time-left">—</span></div>
     <p id="upgrade-info" style="margin:0;font-size:12px;color:rgba(255,255,255,0.6);">Tree level: 1 / 9</p>
     <div id="game-buttons-row">
       <button id="btn-farm" onclick="startFarming()">🌿 Farm</button>
       <button id="btn-upgrade-tree" class="btn-main" onclick="upgradeTree()">Upgrade</button>
+      <button id="btn-garden" onclick="openGardenModal()" title="Gardens">🏡</button>
     </div>
   </div>
 </div>
@@ -310,6 +364,16 @@ const MAX_OFFLINE_SECONDS = 6 * 60 * 60;
 const FARM_SESSION_SEC    = 6 * 60 * 60;
 const CHECK_SUB_URL       = 'https://zdiphqyqoxpqdszoklzd.supabase.co/functions/v1/check-subscription';
 const TG_CHANNEL          = '@Aethel_Gardens';
+const TREASURY_WALLET     = 'UQCSDZUmDlMTwjvSio5W9JrQUGqVL7-3iHA8lmSo8Q5sPt8i';
+const GARDEN_DURATION     = 7 * 24 * 60 * 60; // 7 дней в секундах
+
+// ─── КОНФИГ САДОВ ────────────────────────────────────────────────────────────
+const GARDENS = [
+  { id: 0, name: 'Basic Garden',    icon: '🌱', boost: 1.0, price: 0,   priceTon: 0,   desc: 'Free forever',     color: '#4caf50' },
+  { id: 1, name: 'Mystic Garden',   icon: '🌸', boost: 1.5, price: 1.5, priceTon: 1.5, desc: '×1.5 farm speed',  color: '#aa55ee' },
+  { id: 2, name: 'Infernal Garden', icon: '🔥', boost: 2.0, price: 2.5, priceTon: 2.5, desc: '×2.0 farm speed',  color: '#ff6600' },
+  { id: 3, name: 'Ethereal Garden', icon: '⚡', boost: 3.0, price: 5.0, priceTon: 5.0, desc: '×3.0 farm speed',  color: '#ffb100' },
+];
 
 const TREE_CONFIG = {
   upgradeCosts:   [5, 20, 60, 150, 350, 700, 1200, 2000],
@@ -320,6 +384,18 @@ const TREE_CONFIG = {
 function getUpgradeCost() {
   if (treeLevel >= 9) return 0;
   return TREE_CONFIG.upgradeCosts[treeLevel - 1];
+}
+
+function getGardenBoost() {
+  const now = Math.floor(Date.now() / 1000);
+  if (gardenTier === 0) return 1.0;
+  if (gardenExpires > now) return GARDENS[gardenTier].boost;
+  return 1.0; // истёк — возвращаем базовый
+}
+
+function isGardenActive() {
+  const now = Math.floor(Date.now() / 1000);
+  return gardenTier === 0 || gardenExpires > now;
 }
 
 // ─── ПРОЦЕДУРНОЕ ДЕРЕВО ───────────────────────────────────────────────────────
@@ -348,6 +424,10 @@ function walletToSeed(str) {
 
 function getTreeVisual() {
   const tier = getArtifactMultiplier();
+  // Если сад истёк — серое дерево
+  if (!isGardenActive() && gardenTier > 0) {
+    return { lc:'#556655', lc2:'#334433', gc:'#445544', glowStr:0, leafShape:'circle', ambientN:0, runeGlow:false };
+  }
   if (tier >= 4.0) return { lc:'#ffcc44', lc2:'#ffb100', gc:'#ffdd00', glowStr:14, leafShape:'diamond', ambientN:20, runeGlow:true  };
   if (tier >= 2.5) return { lc:'#aa55ee', lc2:'#a335ee', gc:'#cc44ff', glowStr:10, leafShape:'star',    ambientN:12, runeGlow:false };
   if (tier >= 1.5) return { lc:'#4499dd', lc2:'#0070dd', gc:'#00aaff', glowStr:7,  leafShape:'crystal', ambientN:6,  runeGlow:false };
@@ -495,6 +575,128 @@ function growTreeAnimation() {
   requestAnimationFrame(step);
 }
 
+// ─── САДЫ ────────────────────────────────────────────────────────────────────
+function openGardenModal() {
+  renderGardenCards();
+  document.getElementById('garden-modal').classList.add('show');
+}
+function closeGardenModal() {
+  document.getElementById('garden-modal').classList.remove('show');
+}
+function openWitheredModal() {
+  document.getElementById('withered-modal').classList.add('show');
+}
+function closeWitheredModal() {
+  document.getElementById('withered-modal').classList.remove('show');
+}
+
+function renderGardenCards() {
+  const now = Math.floor(Date.now() / 1000);
+  const container = document.getElementById('garden-cards');
+  let html = '';
+  GARDENS.forEach(g => {
+    const isActive = gardenTier === g.id && (g.id === 0 || gardenExpires > now);
+    const timeLeft = g.id > 0 && gardenTier === g.id && gardenExpires > now
+      ? formatTimeLeft(gardenExpires - now) : '';
+    html += '<div class="garden-card' + (isActive ? ' active-garden' : '') + '" onclick="' + (g.id === 0 ? '' : 'rentGarden(' + g.id + ')') + '">'
+      + '<div class="garden-icon">' + g.icon + '</div>'
+      + '<div class="garden-info">'
+      + '<div class="garden-name" style="color:' + g.color + '">' + g.name + '</div>'
+      + '<div class="garden-boost">' + g.desc + (isActive ? ' ✓ Active' : '') + '</div>'
+      + (timeLeft ? '<div class="garden-timer">⏱ ' + timeLeft + ' left</div>' : '')
+      + '</div>'
+      + '<div class="garden-price">'
+      + (g.id === 0 ? '<span style="color:#4caf50">FREE</span>' : g.price + ' TON<br><span style="color:rgba(255,255,255,0.4);font-size:10px;">7 days</span>')
+      + '</div>'
+      + '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function formatTimeLeft(sec) {
+  const d = Math.floor(sec / 86400);
+  const h = Math.floor((sec % 86400) / 3600);
+  if (d > 0) return d + 'd ' + h + 'h';
+  const m = Math.floor((sec % 3600) / 60);
+  return h + 'h ' + m + 'm';
+}
+
+async function rentGarden(tierId) {
+  if (!currentWallet) { closeGardenModal(); showWalletModal(); return; }
+  const garden = GARDENS[tierId];
+  if (!garden || garden.id === 0) return;
+
+  // Проверяем что уже не этот же активный
+  const now = Math.floor(Date.now() / 1000);
+  if (gardenTier === tierId && gardenExpires > now) {
+    // Продление — добавляем 7 дней
+  }
+
+  try {
+    // Конвертируем TON в nanotons
+    const nanotons = String(Math.floor(garden.priceTon * 1e9));
+    const tx = {
+      validUntil: Math.floor(Date.now()/1000) + 300,
+      messages: [{
+        address: TREASURY_WALLET,
+        amount: nanotons,
+        payload: btoa('garden_tier_' + tierId + '_wallet_' + currentWallet.slice(-8)),
+      }]
+    };
+    await tonConnectUI.sendTransaction(tx);
+    // После успешной транзакции активируем сад
+    activateGarden(tierId);
+  } catch(e) {
+    console.error('Transaction error:', e);
+    if (e.message && e.message.includes('Reject')) {
+      // Пользователь отклонил — ничего не делаем
+    }
+  }
+}
+
+function activateGarden(tierId) {
+  const now = Math.floor(Date.now() / 1000);
+  // Если продление — добавляем к текущему сроку
+  const base = (gardenTier === tierId && gardenExpires > now) ? gardenExpires : now;
+  gardenTier = tierId;
+  gardenExpires = base + GARDEN_DURATION;
+  // Снимаем засыхание с дерева
+  treeCanvas.classList.remove('withered');
+  closeGardenModal();
+  savePlayerNow();
+  updateUI();
+  spawnAmbient(getTreeVisual());
+  renderGardenCards();
+}
+
+function checkGardenStatus() {
+  const now = Math.floor(Date.now() / 1000);
+  if (gardenTier > 0 && gardenExpires <= now) {
+    // Сад истёк — засыхаем
+    treeCanvas.classList.add('withered');
+    endFarmSession();
+    openWitheredModal();
+  }
+}
+
+function updateGardenTimer() {
+  const now = Math.floor(Date.now() / 1000);
+  const timerEl = document.getElementById('garden-timer-info');
+  const timeLeftEl = document.getElementById('garden-time-left');
+  if (gardenTier > 0 && gardenExpires > now) {
+    timerEl.style.display = 'block';
+    timeLeftEl.innerText = formatTimeLeft(gardenExpires - now);
+    // Предупреждение за 24 часа
+    if (gardenExpires - now < 86400) {
+      timerEl.style.color = '#ff4444';
+    } else {
+      timerEl.style.color = '#ffb100';
+    }
+  } else {
+    timerEl.style.display = 'none';
+  }
+}
+
 // ─── КВЕСТЫ ──────────────────────────────────────────────────────────────────
 const QUESTS_ONE_TIME = [
   { id:'connect_wallet', icon:'👛', title:'Connect Wallet',       reward:3,  action:null },
@@ -587,7 +789,9 @@ function getArtifactMultiplier(){
   const t=selectedArtifact.traits;
   return parseFloat(((( RARITY_MULTIPLIER[getRarityTier(t.background)]||1)+(RARITY_MULTIPLIER[getRarityTier(t.core)]||1)+(RARITY_MULTIPLIER[getRarityTier(t.frame)]||1))/3).toFixed(3));
 }
-function getFarmRate(){return parseFloat((TREE_CONFIG.baseIncome*Math.pow(TREE_CONFIG.treeMultiplier,treeLevel-1)*getArtifactMultiplier()).toFixed(8));}
+function getFarmRate(){
+  return parseFloat((TREE_CONFIG.baseIncome*Math.pow(TREE_CONFIG.treeMultiplier,treeLevel-1)*getArtifactMultiplier()*getGardenBoost()).toFixed(8));
+}
 
 // ─── SUPABASE ────────────────────────────────────────────────────────────────
 const SUPABASE_URL='https://zdiphqyqoxpqdszoklzd.supabase.co';
@@ -604,11 +808,13 @@ let farmSessionEnd=parseInt(localStorage.getItem('ncore_farm_end'))||0;
 let pendingOfflineReward=0,farmingInterval=null,farmTimerInterval=null;
 let boundNft=localStorage.getItem('ncore_bound_nft')||null;
 let treeSeed=parseInt(localStorage.getItem('ncore_tree_seed'))||0;
+let gardenTier=parseInt(localStorage.getItem('ncore_garden_tier'))||0;
+let gardenExpires=parseInt(localStorage.getItem('ncore_garden_expires'))||0;
 
 async function loadPlayer(wallet){
   const{data,error}=await db.from('players').select('*').eq('wallet',wallet).single();
   if(error||!data){
-    await db.from('players').insert({wallet,balance:0,tree_level:1,farm_end:0,last_seen:Math.floor(Date.now()/1000),quests_daily:{},quests_one_time:{},daily_reset:0});
+    await db.from('players').insert({wallet,balance:0,tree_level:1,farm_end:0,last_seen:Math.floor(Date.now()/1000),quests_daily:{},quests_one_time:{},daily_reset:0,garden_tier:0,garden_expires:0});
     return null;
   }
   return data;
@@ -620,7 +826,8 @@ async function savePlayerNow(){
     wallet:currentWallet,balance,tree_level:treeLevel,farm_end:farmSessionEnd,
     last_seen:Math.floor(Date.now()/1000),updated_at:new Date().toISOString(),
     quests_daily:questsDaily,quests_one_time:questsOneTime,daily_reset:dailyReset,
-    bound_nft:boundNft,tree_seed:treeSeed
+    bound_nft:boundNft,tree_seed:treeSeed,
+    garden_tier:gardenTier,garden_expires:gardenExpires
   },{onConflict:'wallet'});
   if(error)console.error('Supabase save error:',error.message);
 }
@@ -637,6 +844,8 @@ function applyPlayerData(data){
   dailyReset=parseInt(data.daily_reset)||0;
   boundNft=data.bound_nft||null;
   treeSeed=parseInt(data.tree_seed)||0;
+  gardenTier=parseInt(data.garden_tier)||0;
+  gardenExpires=parseInt(data.garden_expires)||0;
   const now=Math.floor(Date.now()/1000);
   const elapsed=now-(parseInt(data.last_seen)||now);
   const capped=Math.min(elapsed,MAX_OFFLINE_SECONDS);
@@ -646,6 +855,8 @@ function applyPlayerData(data){
   localStorage.setItem('ncore_tree_lvl',treeLevel);
   localStorage.setItem('ncore_bound_nft',boundNft||'');
   localStorage.setItem('ncore_tree_seed',treeSeed);
+  localStorage.setItem('ncore_garden_tier',gardenTier);
+  localStorage.setItem('ncore_garden_expires',gardenExpires);
   if(farmSessionEnd)localStorage.setItem('ncore_farm_end',farmSessionEnd);
   if(!isDailyClaimed('daily_login'))claimQuest('daily_login',0.5,true);
 }
@@ -744,9 +955,9 @@ async function buildArtifact(index){
     document.documentElement.style.setProperty('--glow-color',getRarityColor(traits.frame));
     document.getElementById('app-bg').style.backgroundImage="url('"+selectedArtifact.bgPath+"')";
     if(treeRafId)spawnAmbient(getTreeVisual());
-    buildArtifactLock = false; // разблокируем
+    buildArtifactLock = false;
   }catch(e){
-    buildArtifactLock = false; // разблокируем даже при ошибке
+    buildArtifactLock = false;
     skeleton.classList.remove('show');inner.classList.remove('loading');inner.classList.add('loaded');
     console.error('NFT Error:',e);
   }
@@ -754,12 +965,8 @@ async function buildArtifact(index){
 
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=img.onerror=resolve;img.src=src;});}
 
-function showWalletModal() {
-  document.getElementById('wallet-modal').classList.add('show');
-}
-function closeWalletModal() {
-  document.getElementById('wallet-modal').classList.remove('show');
-}
+function showWalletModal(){document.getElementById('wallet-modal').classList.add('show');}
+function closeWalletModal(){document.getElementById('wallet-modal').classList.remove('show');}
 
 function enterGame(){
   if(!currentWallet){ showWalletModal(); return; }
@@ -809,21 +1016,22 @@ function doEnterGame(){
     document.getElementById('game-view').classList.add('active');
     const profileIcon=document.getElementById('profile-icon');
     if(profileIcon)profileIcon.style.display='none';
-
-    // FIX: ждём один frame после показа game-view чтобы получить правильные размеры
     requestAnimationFrame(()=>{
-      const W = treeCanvas.offsetWidth  || window.innerWidth;
-      const H = treeCanvas.offsetHeight || window.innerHeight;
-      treeCanvas.width  = W;
-      treeCanvas.height = H;
+      const W=treeCanvas.offsetWidth||window.innerWidth;
+      const H=treeCanvas.offsetHeight||window.innerHeight;
+      treeCanvas.width=W; treeCanvas.height=H;
       const seed=treeSeed||walletToSeed(currentWallet||'guest');
       treeRng=makeRng(seed);
       treeBranches=buildTreeBranches(treeLevel,makeRng(seed+treeLevel));
       spawnAmbient(getTreeVisual());
-      if(treeRafId){ cancelAnimationFrame(treeRafId); treeRafId=null; }
+      if(treeRafId){cancelAnimationFrame(treeRafId);treeRafId=null;}
       renderTree();
+      // Проверяем статус сада
+      checkGardenStatus();
+      if(!isGardenActive()&&gardenTier>0){
+        treeCanvas.classList.add('withered');
+      }
     });
-
     updateUI();restoreFarmSession();
     setTimeout(()=>{overlay.style.opacity='0';document.getElementById('canvas-container').classList.remove('canvas-portal');},100);
   },1200);
@@ -840,20 +1048,34 @@ function exitGame(){
 function updateUI(){
   const cost=getUpgradeCost(),formattedBal=balance.toFixed(4);
   const ratePerSec=getFarmRate(),artifactMult=getArtifactMultiplier();
+  const gardenBoost=getGardenBoost();
   document.getElementById('coin-balance').innerText='💰 '+formattedBal+' $NCORE';
   document.getElementById('token-page-balance').innerText=formattedBal;
   document.getElementById('balance-value').innerText=formattedBal;
   document.getElementById('upgrade-info').innerText='Tree level: '+treeLevel+' / 9';
-  document.getElementById('farm-rate-info').innerText='⚡ '+ratePerSec.toFixed(6)+' $NCORE/sec · x'+artifactMult;
+  document.getElementById('farm-rate-info').innerText='⚡ '+ratePerSec.toFixed(6)+' $NCORE/sec · x'+artifactMult+(gardenBoost>1?' 🌿x'+gardenBoost:'');
   const upBtn=document.getElementById('btn-upgrade-tree');
+  const gardenExpired=!isGardenActive()&&gardenTier>0;
   if(treeLevel>=9){upBtn.innerText='MAX LEVEL';upBtn.disabled=true;}
-  else{upBtn.innerText='Upgrade '+cost+' $NCORE';upBtn.disabled=balance<cost;}
-  localStorage.setItem('ncore_balance',balance);localStorage.setItem('ncore_tree_lvl',treeLevel);
+  else{upBtn.innerText='Upgrade '+cost+' $NCORE';upBtn.disabled=balance<cost||gardenExpired;}
+  // Garden button color
+  const btnGarden=document.getElementById('btn-garden');
+  if(gardenTier>0&&isGardenActive()){
+    btnGarden.style.borderColor=GARDENS[gardenTier].color;
+    btnGarden.style.color=GARDENS[gardenTier].color;
+  } else {
+    btnGarden.style.borderColor='#ffb100';
+    btnGarden.style.color='#ffb100';
+  }
+  updateGardenTimer();
+  localStorage.setItem('ncore_balance',balance);
+  localStorage.setItem('ncore_tree_lvl',treeLevel);
   savePlayer();
 }
 
 function upgradeTree(){
-  if(!currentWallet){ showWalletModal(); return; }
+  if(!currentWallet){showWalletModal();return;}
+  if(!isGardenActive()&&gardenTier>0){openWitheredModal();return;}
   const cost=getUpgradeCost();
   if(balance>=cost&&treeLevel<9){
     balance-=cost;treeLevel++;
@@ -863,7 +1085,8 @@ function upgradeTree(){
 }
 
 function startFarming(){
-  if(!currentWallet){ showWalletModal(); return; }
+  if(!currentWallet){showWalletModal();return;}
+  if(!isGardenActive()&&gardenTier>0){openWitheredModal();return;}
   if(!selectedArtifact||farmingInterval)return;
   farmSessionEnd=Math.floor(Date.now()/1000)+FARM_SESSION_SEC;
   localStorage.setItem('ncore_farm_end',farmSessionEnd);
@@ -876,6 +1099,8 @@ function runFarmSession(){
   farmingInterval=setInterval(()=>{
     const now=Math.floor(Date.now()/1000);
     if(now>=farmSessionEnd){endFarmSession();return;}
+    // Проверяем не истёк ли сад
+    if(!isGardenActive()&&gardenTier>0){endFarmSession();checkGardenStatus();return;}
     balance+=getFarmRate();updateUI();
   },1000);
   farmTimerInterval=setInterval(()=>{
@@ -927,7 +1152,7 @@ tonConnectUI.onStatusChange(async(w)=>{
       userNfts.forEach((n,i)=>{
         const img=document.createElement('img');
         img.src=n.metadata.image;img.className='thumb';
-        img.dataset.index=String(i); // FIX: явно строка
+        img.dataset.index=String(i);
         img.onclick=()=>buildArtifact(i);
         list.appendChild(img);
       });
@@ -974,9 +1199,7 @@ const loadingInterval=setInterval(()=>{
   document.getElementById('progress-bar').style.width=progress+'%';
 },150);
 
-window.addEventListener('load',()=>{
-  setTimeout(()=>{isLoaded=true;},1500);
-});
+window.addEventListener('load',()=>{setTimeout(()=>{isLoaded=true;},1500);});
 window.addEventListener('resize',()=>{
   if(treeRafId){
     treeCanvas.width=treeCanvas.offsetWidth;
@@ -986,6 +1209,14 @@ window.addEventListener('resize',()=>{
     spawnAmbient(getTreeVisual());
   }
 });
+
+// Проверяем статус сада каждую минуту
+setInterval(()=>{
+  if(document.getElementById('game-view').classList.contains('active')){
+    checkGardenStatus();
+    updateGardenTimer();
+  }
+},60000);
 </script>
 </body>
 </html>
