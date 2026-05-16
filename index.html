@@ -697,10 +697,11 @@ function formatVal(val){
   return val.replace('bg_','').replace('frame_','').replace('Y_','').replace(/_/g,' ');
 }
 
-// FIX: buildArtifact — используем data-index для надёжного выбора
+let buildArtifactLock = false;
 async function buildArtifact(index){
   if(!userNfts[index])return;
-  // FIX: ищем по data-index, не по порядку DOM
+  if(buildArtifactLock)return;
+  buildArtifactLock = true;
   document.querySelectorAll('#nft-list .thumb').forEach(t=>{
     t.classList.toggle('active', parseInt(t.dataset.index)===index);
   });
@@ -743,7 +744,9 @@ async function buildArtifact(index){
     document.documentElement.style.setProperty('--glow-color',getRarityColor(traits.frame));
     document.getElementById('app-bg').style.backgroundImage="url('"+selectedArtifact.bgPath+"')";
     if(treeRafId)spawnAmbient(getTreeVisual());
+    buildArtifactLock = false; // разблокируем
   }catch(e){
+    buildArtifactLock = false; // разблокируем даже при ошибке
     skeleton.classList.remove('show');inner.classList.remove('loading');inner.classList.add('loaded');
     console.error('NFT Error:',e);
   }
