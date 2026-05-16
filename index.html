@@ -147,6 +147,16 @@ section.active { display: flex !important; }
 .progress-container { width: 130px; height: 3px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
 .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg,#00cccc,#a8ff78); border-radius: 3px; transition: width 0.2s ease; }
 #loading-text { display: none; }
+/* FAQ Modal */
+#faq-modal { display: none; position: fixed; inset: 0; z-index: 4000; align-items: center; justify-content: center; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); }
+#faq-modal.show { display: flex; }
+.faq-box { background: linear-gradient(160deg,#0a1a0a,#050a05); border: 1px solid var(--primary-green); border-radius: 24px; padding: 24px 20px; max-width: 320px; width: 92%; max-height: 85vh; overflow-y: auto; box-shadow: 0 0 40px rgba(76,175,80,0.2); animation: modal-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+.faq-item { margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; overflow: hidden; }
+.faq-question { padding: 14px 16px; font-size: 13px; font-weight: 700; color: #e0f2e0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); user-select: none; -webkit-user-select: none; }
+.faq-question .faq-arrow { font-size: 11px; color: var(--primary-green); transition: transform 0.3s; flex-shrink: 0; margin-left: 8px; }
+.faq-question.open .faq-arrow { transform: rotate(180deg); }
+.faq-answer { display: none; padding: 12px 16px 14px; font-size: 12px; color: rgba(255,255,255,0.6); line-height: 1.6; border-top: 1px solid rgba(255,255,255,0.05); }
+.faq-answer.show { display: block; }
 </style>
 </head>
 <body>
@@ -256,6 +266,46 @@ section.active { display: flex !important; }
   </div>
 </div>
 
+<div id="faq-modal">
+  <div class="faq-box">
+    <div style="text-align:center;margin-bottom:18px;">
+      <div style="font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:2px;">HELP CENTER</div>
+      <div style="font-size:20px;font-weight:900;color:#4caf50;letter-spacing:2px;">❓ FAQ</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        What is $NCORE?<span class="faq-arrow">▼</span>
+      </div>
+      <div class="faq-answer">$NCORE is the in-game token of Nature Core. You earn it by farming with your tree. In the future it will be exchangeable for the real $NCORE jetton on TON blockchain.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        How do I farm tokens?<span class="faq-arrow">▼</span>
+      </div>
+      <div class="faq-answer">Connect your wallet, select an NFT artifact, choose a garden and press Farm. Your tree will generate $NCORE for up to 6 hours per session. Come back to collect and start a new session!</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        How do I rent a garden?<span class="faq-arrow">▼</span>
+      </div>
+      <div class="faq-answer">Tap "Use Artifact" → choose a garden → press Rent. You'll confirm a TON payment in your wallet. Rental lasts 7 days and can be extended anytime. Mystic (1.5 TON), Infernal (2.5 TON), Ethereal (5 TON).</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        What is an artifact?<span class="faq-arrow">▼</span>
+      </div>
+      <div class="faq-answer">An artifact is your Nature Core NFT from the TON blockchain. Its rarity (Common, Rare, Epic, Legendary) determines a multiplier that boosts your farming speed. The rarer the artifact, the more $NCORE you earn!</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        Why did my tree wither?<span class="faq-arrow">▼</span>
+      </div>
+      <div class="faq-answer">Your garden rental expired! A withered tree cannot farm or be upgraded. Don't worry — your tree level and progress are saved. Simply renew the rental to restore your garden and continue farming.</div>
+    </div>
+    <button onclick="closeFaq()" style="width:100%;background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);border-radius:12px;padding:10px;cursor:pointer;font-size:13px;margin-top:6px;">Close</button>
+  </div>
+</div>
+
 <div id="profile-icon" onclick="toggleProfile()" style="position:fixed;top:15px;right:15px;z-index:200;font-size:20px;cursor:pointer;background:rgba(0,0,0,0.6);padding:8px;border-radius:50%;border:1px solid var(--glow-color);">👤</div>
 <div id="profile-menu" style="display:none;position:fixed;top:65px;right:15px;width:220px;background:rgba(5,10,5,0.98);border:1px solid var(--glow-color);border-radius:15px;padding:15px;z-index:200;backdrop-filter:blur(10px);">
   <h4 style="margin:0 0 10px 0;color:var(--primary-green);">Profile</h4>
@@ -264,6 +314,7 @@ section.active { display: flex !important; }
     <span id="balance-value">0</span> <span style="font-size:12px;">$NCORE</span>
   </div>
   <button onclick="toggleProfile()" style="width:100%;background:none;border:1px solid rgba(255,255,255,0.2);color:white;padding:5px;border-radius:8px;cursor:pointer;">Close</button>
+  <button onclick="toggleProfile();openFaq();" style="width:100%;background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.3);color:#4caf50;padding:8px;border-radius:8px;cursor:pointer;margin-top:8px;font-weight:700;">❓ FAQ</button>
 </div>
 
 <div id="app-bg"></div>
@@ -1138,6 +1189,17 @@ tonConnectUI.onStatusChange(async(w)=>{
     }
   }else{currentWallet=null;}
 });
+
+function openFaq(){document.getElementById('faq-modal').classList.add('show');}
+function closeFaq(){document.getElementById('faq-modal').classList.remove('show');}
+function toggleFaq(el){
+  const answer=el.nextElementSibling;
+  const isOpen=el.classList.contains('open');
+  // Закрываем все
+  document.querySelectorAll('.faq-question').forEach(q=>{q.classList.remove('open');q.nextElementSibling.classList.remove('show');});
+  // Открываем текущий если был закрыт
+  if(!isOpen){el.classList.add('open');answer.classList.add('show');}
+}
 
 function toggleProfile(){
   const menu=document.getElementById('profile-menu');
