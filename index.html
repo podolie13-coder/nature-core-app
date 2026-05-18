@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Nature Core Game v5.5</title>
+<title>Nature Core Game v5.6</title>
 <link rel="preload" as="image" href="assets/frames/frame_leg_7.png">
 <link rel="preload" as="image" href="assets/cores/Y_leg_1.png">
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
@@ -52,6 +52,28 @@ section.active { display: flex !important; }
 .nav-item img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
 @keyframes modal-pop { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
+/* === STAGE BADGE (новый элемент) === */
+#tree-stage-badge {
+  position: absolute;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(5,10,5,0.75);
+  border: 1px solid rgba(76,175,80,0.3);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 1px;
+  pointer-events: none;
+  z-index: 15;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  white-space: nowrap;
+}
+#tree-stage-badge.visible { opacity: 1; }
+
 /* Modals */
 #offline-reward-modal,#nft-warning-modal,#wallet-modal,#withered-modal,#garden-select-modal,#garden-shop-modal { display: none; position: fixed; inset: 0; z-index: 3500; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
 #offline-reward-modal { background: rgba(0,0,0,0.85); z-index: 3000; }
@@ -76,12 +98,8 @@ section.active { display: flex !important; }
 .nft-warn-confirm { flex: 1; background: linear-gradient(135deg,#7a1a1a,#cc2222); border: none; color: #fff; border-radius: 12px; padding: 12px; font-weight: 900; cursor: pointer; font-size: 13px; }
 .wallet-modal-box { background: linear-gradient(160deg,#0a0a1a,#050a05); border: 1px solid #0070dd; border-radius: 24px; padding: 28px 24px; text-align: center; max-width: 280px; width: 90%; box-shadow: 0 0 40px rgba(0,112,221,0.3); animation: modal-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
 .withered-box { background: linear-gradient(160deg,#1a0f00,#050a05); border: 1px solid #8B4513; border-radius: 24px; padding: 28px 24px; text-align: center; max-width: 300px; width: 90%; box-shadow: 0 0 40px rgba(139,69,19,0.4); animation: modal-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
-
-/* Garden Select Modal (выбор сада при входе) */
 .garden-select-box { background: linear-gradient(160deg,#0a1a0a,#050a05); border: 1px solid var(--primary-green); border-radius: 24px; padding: 22px 18px; max-width: 320px; width: 92%; max-height: 88vh; overflow-y: auto; box-shadow: 0 0 40px rgba(76,175,80,0.2); animation: modal-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
-/* Garden Shop Modal (аренда) */
 .garden-shop-box { background: linear-gradient(160deg,#0a1a0a,#050a05); border: 1px solid var(--primary-green); border-radius: 24px; padding: 22px 18px; max-width: 320px; width: 92%; max-height: 88vh; overflow-y: auto; box-shadow: 0 0 40px rgba(76,175,80,0.2); animation: modal-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
-
 .garden-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; }
 .garden-card:active { transform: scale(0.98); }
 .garden-card.garden-active { border-color: #ffb100; background: rgba(255,177,0,0.08); }
@@ -97,7 +115,6 @@ section.active { display: flex !important; }
 .garden-timer-tag { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; }
 .garden-enter-btn { background: linear-gradient(135deg,#1a472a,#4caf50); border: none; color: #fff; border-radius: 10px; padding: 7px 14px; font-weight: 900; font-size: 12px; cursor: pointer; margin-top: 4px; }
 .garden-rent-btn { background: linear-gradient(135deg,#7a5a00,#cc9900); border: none; color: #fff; border-radius: 10px; padding: 7px 14px; font-weight: 900; font-size: 12px; cursor: pointer; margin-top: 4px; }
-
 #game-topbar { position: absolute; top: 0; left: 0; right: 0; height: 54px; background: rgba(5,10,5,0.75); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 14px; z-index: 10; box-sizing: border-box; }
 #btn-back { background: none; border: 1px solid rgba(255,255,255,0.2); color: #e0f2e0; border-radius: 10px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
 #coin-balance { color: #ff33cc; font-weight: 900; font-size: 15px; text-shadow: 0 0 10px rgba(255,51,204,0.6); background: rgba(255,51,204,0.1); border: 1px solid rgba(255,51,204,0.25); border-radius: 20px; padding: 5px 14px; }
@@ -110,7 +127,6 @@ section.active { display: flex !important; }
 #btn-gardens { flex: 0 0 52px; background: rgba(255,177,0,0.15); border: 2px solid #ffb100; color: #ffb100; border-radius: 15px; font-size: 20px; padding: 15px 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 #farm-rate-info { font-size: 11px; color: rgba(255,255,255,0.45); white-space: nowrap; }
 #garden-label { font-size: 10px; color: #ffb100; display: none; }
-
 .screen-core-header { text-align: center; padding: 10px 0 4px; }
 .screen-core-title { font-size: 22px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; background: linear-gradient(90deg,#4caf50,#a8ff78,#4caf50); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: title-shine 3s linear infinite; }
 @keyframes title-shine { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
@@ -147,7 +163,6 @@ section.active { display: flex !important; }
 .progress-container { width: 130px; height: 3px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
 .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg,#00cccc,#a8ff78); border-radius: 3px; transition: width 0.2s ease; }
 #loading-text { display: none; }
-/* FAQ Modal */
 #faq-modal { display: none; position: fixed; inset: 0; z-index: 4000; align-items: center; justify-content: center; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); }
 #faq-modal.show { display: flex; }
 .faq-box { background: linear-gradient(160deg,#0a1a0a,#050a05); border: 1px solid var(--primary-green); border-radius: 24px; padding: 24px 20px; max-width: 320px; width: 92%; max-height: 85vh; overflow-y: auto; box-shadow: 0 0 40px rgba(76,175,80,0.2); animation: modal-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
@@ -241,7 +256,6 @@ section.active { display: flex !important; }
   </div>
 </div>
 
-<!-- Выбор сада при входе -->
 <div id="garden-select-modal">
   <div class="garden-select-box">
     <div style="text-align:center;margin-bottom:16px;">
@@ -253,7 +267,6 @@ section.active { display: flex !important; }
   </div>
 </div>
 
-<!-- Магазин аренды -->
 <div id="garden-shop-modal">
   <div class="garden-shop-box">
     <div style="text-align:center;margin-bottom:16px;">
@@ -273,33 +286,23 @@ section.active { display: flex !important; }
       <div style="font-size:20px;font-weight:900;color:#4caf50;letter-spacing:2px;">❓ FAQ</div>
     </div>
     <div class="faq-item">
-      <div class="faq-question" onclick="toggleFaq(this)">
-        What is $NCORE?<span class="faq-arrow">▼</span>
-      </div>
+      <div class="faq-question" onclick="toggleFaq(this)">What is $NCORE?<span class="faq-arrow">▼</span></div>
       <div class="faq-answer">$NCORE is the in-game token of Nature Core. You earn it by farming with your tree. In the future it will be exchangeable for the real $NCORE jetton on TON blockchain.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-question" onclick="toggleFaq(this)">
-        How do I farm tokens?<span class="faq-arrow">▼</span>
-      </div>
+      <div class="faq-question" onclick="toggleFaq(this)">How do I farm tokens?<span class="faq-arrow">▼</span></div>
       <div class="faq-answer">Connect your wallet, select an NFT artifact, choose a garden and press Farm. Your tree will generate $NCORE for up to 6 hours per session. Come back to collect and start a new session!</div>
     </div>
     <div class="faq-item">
-      <div class="faq-question" onclick="toggleFaq(this)">
-        How do I rent a garden?<span class="faq-arrow">▼</span>
-      </div>
+      <div class="faq-question" onclick="toggleFaq(this)">How do I rent a garden?<span class="faq-arrow">▼</span></div>
       <div class="faq-answer">Tap "Use Artifact" → choose a garden → press Rent. You'll confirm a TON payment in your wallet. Rental lasts 30 days and can be extended anytime. Mystic (1.5 TON), Infernal (2.5 TON), Ethereal (5 TON).</div>
     </div>
     <div class="faq-item">
-      <div class="faq-question" onclick="toggleFaq(this)">
-        What is an artifact?<span class="faq-arrow">▼</span>
-      </div>
+      <div class="faq-question" onclick="toggleFaq(this)">What is an artifact?<span class="faq-arrow">▼</span></div>
       <div class="faq-answer">An artifact is your Nature Core NFT from the TON blockchain. Its rarity (Common, Rare, Epic, Legendary) determines a multiplier that boosts your farming speed. The rarer the artifact, the more $NCORE you earn!</div>
     </div>
     <div class="faq-item">
-      <div class="faq-question" onclick="toggleFaq(this)">
-        Why did my tree wither?<span class="faq-arrow">▼</span>
-      </div>
+      <div class="faq-question" onclick="toggleFaq(this)">Why did my tree wither?<span class="faq-arrow">▼</span></div>
       <div class="faq-answer">Your garden rental expired! A withered tree cannot farm or be upgraded. Don't worry — your tree level and progress are saved. Simply renew the rental to restore your garden and continue farming.</div>
     </div>
     <button onclick="closeFaq()" style="width:100%;background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);border-radius:12px;padding:10px;cursor:pointer;font-size:13px;margin-top:6px;">Close</button>
@@ -383,6 +386,8 @@ section.active { display: flex !important; }
   <div class="tree-container">
     <canvas id="tree-canvas"></canvas>
   </div>
+  <!-- Stage badge показывается при апгрейде -->
+  <div id="tree-stage-badge"></div>
   <div id="game-bottom">
     <div id="farm-rate-info">⚡ 0.000000 $NCORE/sec</div>
     <div id="garden-label">🌿 <span id="garden-label-text">Basic Garden</span> · <span id="garden-time-left"></span></div>
@@ -406,7 +411,6 @@ const TG_CHANNEL='@Aethel_Gardens';
 const TREASURY_WALLET='UQCSDZUmDlMTwjvSio5W9JrQUGqVL7-3iHA8lmSo8Q5sPt8i';
 const GARDEN_DURATION=30*24*60*60;
 
-// ─── КОНФИГ САДОВ ────────────────────────────────────────────────────────────
 const GARDENS=[
   {id:0,name:'Basic Garden',  icon:'🌱',boost:1.0,priceTon:0,  desc:'Free forever',    color:'#4caf50'},
   {id:1,name:'Mystic Garden', icon:'🌸',boost:1.5,priceTon:1.5,desc:'×1.5 farm speed', color:'#aa55ee'},
@@ -420,56 +424,59 @@ const TREE_CONFIG={
   treeMultiplier:1.5
 };
 
+// ─── 9 СТАДИЙ РОСТА ──────────────────────────────────────────────────────────
+// Каждая стадия описывает визуальные параметры дерева для уровней 1–9.
+// Используется в buildTreeBranches и growTreeAnimation для органичного роста.
+const TREE_STAGES = [
+  // lvl 1 — Семя/прорастание
+  { name:'Семя',       depthAdd:0, baseLen:18, spreadMin:0,  spreadMax:0,  branchProb:0, trunkW:2,  leafSize:2,  leafAlpha:0.0 },
+  // lvl 2 — Росток
+  { name:'Росток',     depthAdd:0, baseLen:28, spreadMin:15, spreadMax:20, branchProb:0, trunkW:3,  leafSize:3,  leafAlpha:0.5 },
+  // lvl 3 — Саженец
+  { name:'Саженец',    depthAdd:1, baseLen:38, spreadMin:18, spreadMax:24, branchProb:0, trunkW:5,  leafSize:4,  leafAlpha:0.7 },
+  // lvl 4 — Молодое
+  { name:'Молодое',    depthAdd:1, baseLen:46, spreadMin:20, spreadMax:26, branchProb:0, trunkW:7,  leafSize:5,  leafAlpha:0.8 },
+  // lvl 5 — Подрост
+  { name:'Подрост',    depthAdd:2, baseLen:52, spreadMin:20, spreadMax:28, branchProb:0.3, trunkW:9, leafSize:5.5,leafAlpha:0.85},
+  // lvl 6 — Зрелое
+  { name:'Зрелое',     depthAdd:2, baseLen:57, spreadMin:22, spreadMax:30, branchProb:0.5, trunkW:11,leafSize:6,  leafAlpha:0.9 },
+  // lvl 7 — Развитое
+  { name:'Развитое',   depthAdd:3, baseLen:60, spreadMin:22, spreadMax:32, branchProb:0.6, trunkW:13,leafSize:6.5,leafAlpha:0.92},
+  // lvl 8 — Могучее
+  { name:'Могучее',    depthAdd:3, baseLen:63, spreadMin:24, spreadMax:34, branchProb:0.7, trunkW:15,leafSize:7,  leafAlpha:0.95},
+  // lvl 9 — Легендарное
+  { name:'Легендарное',depthAdd:4, baseLen:66, spreadMin:25, spreadMax:36, branchProb:0.8, trunkW:17,leafSize:8,  leafAlpha:1.0 },
+];
+
+// Параметры анимации прорастания (только для lvl 1→2)
+// stroke-dashoffset эффект реализован через treeGrowProgress (0..1) в renderTree
+let treeGrowProgress = 1; // 1 = полностью нарисовано
+let treeGrowAnimating = false;
+
+function getStage(level) {
+  return TREE_STAGES[Math.min(level,9)-1];
+}
+
 // ─── СТЕЙТ ───────────────────────────────────────────────────────────────────
-let currentGardenId=0; // текущий открытый сад
-let gardens={}; // {0:{level,farm_end,seed}, 1:{level,farm_end,seed,expires}, ...}
+let currentGardenId=0;
+let gardens={};
 
-function getGardenData(id){
-  return gardens[id]||{level:1,farm_end:0,seed:0,expires:0};
-}
-function isGardenRented(id){
-  if(id===0)return true;
-  const g=getGardenData(id);
-  return g.expires>Math.floor(Date.now()/1000);
-}
-function getGardenBoost(id){
-  if(!isGardenRented(id))return 1.0;
-  return GARDENS[id]?.boost||1.0;
-}
+function getGardenData(id){ return gardens[id]||{level:1,farm_end:0,seed:0,expires:0}; }
+function isGardenRented(id){ if(id===0)return true; const g=getGardenData(id); return g.expires>Math.floor(Date.now()/1000); }
+function getGardenBoost(id){ if(!isGardenRented(id))return 1.0; return GARDENS[id]?.boost||1.0; }
 function getGardenLevel(id){ return getGardenData(id).level||1; }
-function getGardenSeed(id){
-  const g=getGardenData(id);
-  if(g.seed)return g.seed;
-  return walletToSeed((currentWallet||'guest')+id);
-}
+function getGardenSeed(id){ const g=getGardenData(id); if(g.seed)return g.seed; return walletToSeed((currentWallet||'guest')+id); }
+function getUpgradeCost(){ const lvl=getGardenLevel(currentGardenId); if(lvl>=9)return 0; return TREE_CONFIG.upgradeCosts[lvl-1]; }
+function getFarmRate(){ const lvl=getGardenLevel(currentGardenId); return parseFloat((TREE_CONFIG.baseIncome*Math.pow(TREE_CONFIG.treeMultiplier,lvl-1)*getArtifactMultiplier()*getGardenBoost(currentGardenId)).toFixed(8)); }
 
-function getUpgradeCost(){
-  const lvl=getGardenLevel(currentGardenId);
-  if(lvl>=9)return 0;
-  return TREE_CONFIG.upgradeCosts[lvl-1];
-}
-function getFarmRate(){
-  const lvl=getGardenLevel(currentGardenId);
-  return parseFloat((TREE_CONFIG.baseIncome*Math.pow(TREE_CONFIG.treeMultiplier,lvl-1)*getArtifactMultiplier()*getGardenBoost(currentGardenId)).toFixed(8));
-}
-
-// ─── ДЕРЕВО ──────────────────────────────────────────────────────────────────
+// ─── CANVAS ДЕРЕВО ───────────────────────────────────────────────────────────
 const treeCanvas=document.getElementById('tree-canvas');
 const treeCtx=treeCanvas.getContext('2d');
 let treeBranches=[],treeParticles=[],treeAmbient=[],treeRafId=null,treeAnimFrame=0;
 let treeGrowing=false,treeAnimT=0,treeNextBranches=[];
 
-function makeRng(seed){
-  let s=seed>>>0;
-  return function(){
-    s+=0x6D2B79F5;let t=s;
-    t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);
-    return((t^t>>>14)>>>0)/4294967296;
-  };
-}
-function walletToSeed(str){
-  let h=0;for(let i=0;i<str.length;i++)h=Math.imul(31,h)+str.charCodeAt(i)|0;return Math.abs(h);
-}
+function makeRng(seed){ let s=seed>>>0; return function(){ s+=0x6D2B79F5;let t=s; t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61); return((t^t>>>14)>>>0)/4294967296; }; }
+function walletToSeed(str){ let h=0;for(let i=0;i<str.length;i++)h=Math.imul(31,h)+str.charCodeAt(i)|0;return Math.abs(h); }
 
 function getTreeVisual(){
   const tier=getArtifactMultiplier();
@@ -481,41 +488,90 @@ function getTreeVisual(){
   return{lc:'#4caf50',lc2:'#2d7a2d',gc:'#4caf50',glowStr:4,leafShape:'circle',ambientN:0,runeGlow:false};
 }
 
-function buildTreeBranches(level,rng){
-  const depth=Math.min(3+Math.floor(level*0.6),7);
-  const baseLen=45+level*5;
-  const W=treeCanvas.width,H=treeCanvas.height;
-  const BX=W/2,BY=H-60;
-  const list=[];let count=0;
-  function rec(x,y,ang,len,dep,w){
-    if(dep===0||len<3||count>250)return;count++;
-    const r=ang*Math.PI/180;
-    const ex=x+Math.cos(r)*len,ey=y-Math.sin(r)*len;
-    list.push({x1:x,y1:y,x2:ex,y2:ey,dep,w,isLeaf:dep===1});
-    const spread=22+rng()*20;
-    const leftAng=ang+spread+(rng()-0.5)*15;
-    const rightAng=ang-spread+(rng()-0.5)*15;
-    const lenMult=0.62+rng()*0.12;
-    rec(ex,ey,leftAng,len*lenMult,dep-1,w*0.65);
-    rec(ex,ey,rightAng,len*lenMult,dep-1,w*0.65);
-    if(level>=5&&dep>=2&&rng()>0.6)rec(ex,ey,ang+(rng()-0.5)*30,len*lenMult*0.7,dep-2,w*0.5);
+// ─── ПОСТРОЕНИЕ ВЕТОК (с учётом стадии роста) ───────────────────────────────
+function buildTreeBranches(level, rng){
+  const stage = getStage(level);
+  const W=treeCanvas.width/(window.devicePixelRatio||1);
+  const H=treeCanvas.height/(window.devicePixelRatio||1);
+  const BX=W/2, BY=H-60;
+
+  // Уровень 1 — просто стебелёк, без веток
+  if(level===1){
+    return [{x1:BX,y1:BY,x2:BX,y2:BY-stage.baseLen,dep:1,w:stage.trunkW,isLeaf:false,isTrunk:true}];
   }
-  rec(BX,BY,90,baseLen,depth,10+level);
+
+  const depth = Math.min(3 + Math.floor(level*0.55) + stage.depthAdd, 8);
+  const baseLen = stage.baseLen + level*3;
+  const list=[]; let count=0;
+
+  function rec(x,y,ang,len,dep,w){
+    if(dep===0||len<3||count>300)return; count++;
+    const r=ang*Math.PI/180;
+    const ex=x+Math.cos(r)*len, ey=y-Math.sin(r)*len;
+    list.push({x1:x,y1:y,x2:ex,y2:ey,dep,w,isLeaf:dep===1,isTrunk:dep===depth});
+    if(dep===1)return;
+    const spread = stage.spreadMin + rng()*(stage.spreadMax-stage.spreadMin);
+    const leftAng  = ang+spread+(rng()-0.5)*14;
+    const rightAng = ang-spread+(rng()-0.5)*14;
+    const lm = 0.60+rng()*0.14;
+    rec(ex,ey,leftAng, len*lm,dep-1,w*0.64);
+    rec(ex,ey,rightAng,len*lm,dep-1,w*0.64);
+    // Дополнительные ветки для высоких уровней
+    if(level>=5 && dep>=2 && rng()<stage.branchProb)
+      rec(ex,ey,ang+(rng()-0.5)*28,len*lm*0.68,dep-2,w*0.5);
+  }
+  rec(BX,BY,90,baseLen,depth,stage.trunkW);
   return list;
 }
 
+// ─── ПРОРАСТАНИЕ: органический рост веток через dashOffset ──────────────────
+// Каждой ветке присваиваем «длину» для поочерёдного появления
+function assignGrowOrder(branches){
+  // Сортируем по глубине (trunk first) и добавляем growDelay
+  const maxDep = branches.reduce((m,b)=>Math.max(m,b.dep),0);
+  branches.forEach(b=>{
+    // Ветки с большей глубиной (ближе к стволу) появляются раньше
+    b.growDelay = (maxDep - b.dep) / maxDep;
+    b.growDur   = 0.12 + Math.random()*0.08;
+    // Длина для dashOffset
+    const dx=b.x2-b.x1, dy=b.y2-b.y1;
+    b.len = Math.sqrt(dx*dx+dy*dy);
+  });
+  return branches;
+}
+
 function spawnGrowthParticles(vis){
-  const W=treeCanvas.width,H=treeCanvas.height;
-  for(let i=0;i<40;i++){
-    const a=-Math.PI/2+(Math.random()-0.5)*Math.PI*1.2;
+  const W=treeCanvas.width/(window.devicePixelRatio||1);
+  const H=treeCanvas.height/(window.devicePixelRatio||1);
+  for(let i=0;i<50;i++){
+    const a=-Math.PI/2+(Math.random()-0.5)*Math.PI*1.4;
     const s=1.5+Math.random()*3.5;
-    treeParticles.push({x:W/2+(Math.random()-0.5)*40,y:H-30-Math.random()*60,vx:Math.cos(a)*s*0.5,vy:Math.sin(a)*s,life:1,decay:0.018+Math.random()*0.018,r:2+Math.random()*3,c:vis.gc});
+    treeParticles.push({x:W/2+(Math.random()-0.5)*50,y:H-30-Math.random()*70,vx:Math.cos(a)*s*0.5,vy:Math.sin(a)*s,life:1,decay:0.016+Math.random()*0.018,r:2+Math.random()*3,c:vis.gc});
   }
 }
+
+// Частицы почвы при первом прорастании
+function spawnSoilParticles(){
+  const W=treeCanvas.width/(window.devicePixelRatio||1);
+  const H=treeCanvas.height/(window.devicePixelRatio||1);
+  for(let i=0;i<16;i++){
+    const a = (-0.8+i*0.12)*Math.PI;
+    const spd = 1.5+Math.random()*2.5;
+    treeParticles.push({
+      x:W/2+(Math.random()-0.5)*20, y:H-55,
+      vx:Math.cos(a)*spd*0.8, vy:Math.sin(a)*spd*0.5-2,
+      life:1, decay:0.022+Math.random()*0.02,
+      r:2+Math.random()*3, c:'#9E7D52'
+    });
+  }
+}
+
 function spawnAmbient(vis){
-  const W=treeCanvas.width,H=treeCanvas.height;treeAmbient=[];
+  const W=treeCanvas.width/(window.devicePixelRatio||1);
+  const H=treeCanvas.height/(window.devicePixelRatio||1);
+  treeAmbient=[];
   for(let i=0;i<vis.ambientN;i++)
-    treeAmbient.push({x:W/2+(Math.random()-0.5)*160,y:H-20-Math.random()*220,vy:-0.25-Math.random()*0.35,vx:(Math.random()-0.5)*0.25,life:Math.random(),decay:0.004+Math.random()*0.004,r:1.5+Math.random()*2,c:vis.gc});
+    treeAmbient.push({x:W/2+(Math.random()-0.5)*180,y:H-20-Math.random()*240,vy:-0.25-Math.random()*0.35,vx:(Math.random()-0.5)*0.25,life:Math.random(),decay:0.004+Math.random()*0.004,r:1.5+Math.random()*2,c:vis.gc});
 }
 
 function drawLeafShape(ctx,x,y,size,shape,color,glow,glowStr){
@@ -527,19 +583,155 @@ function drawLeafShape(ctx,x,y,size,shape,color,glow,glowStr){
   ctx.shadowBlur=0;
 }
 
-function drawTreeBranches(ctx,branches,alpha,vis,level,t){
-  const leafSize=3+level*0.5;
+// ─── ОТРИСОВКА ВЕТОК С ОРГАНИЧЕСКИМ ПОЯВЛЕНИЕМ ──────────────────────────────
+function drawTreeBranches(ctx, branches, alpha, vis, level, t, growProg){
+  const stage = getStage(level);
+  const leafSize = stage.leafSize + level*0.3;
+
   branches.forEach(b=>{
-    ctx.globalAlpha=alpha;ctx.strokeStyle=b.dep<=2?'#2a4a1a':vis.lc2;
-    ctx.lineWidth=Math.max(0.8,b.w*(b.dep/(3+level*0.7))*0.9);ctx.lineCap='round';
-    if(vis.glowStr>6){ctx.shadowColor=vis.gc;ctx.shadowBlur=3;}
-    ctx.beginPath();ctx.moveTo(b.x1,b.y1);ctx.lineTo(b.x2,b.y2);ctx.stroke();ctx.shadowBlur=0;
-    if(b.isLeaf){
-      const pulse=0.88+0.12*Math.sin(t*2+b.x1*0.04);
-      ctx.globalAlpha=alpha*0.95;drawLeafShape(ctx,b.x2,b.y2,leafSize*pulse,vis.leafShape,vis.lc,vis.gc,vis.glowStr);
-      ctx.globalAlpha=alpha*0.5;drawLeafShape(ctx,b.x2-3,b.y2-3,leafSize*pulse*0.65,vis.leafShape,vis.lc2,vis.gc,vis.glowStr*0.4);
+    // Органический рост: ветка появляется по своему growDelay
+    let branchAlpha = alpha;
+    if(growProg !== undefined && growProg < 1){
+      const localProg = Math.min(Math.max((growProg - b.growDelay) / b.growDur, 0), 1);
+      // easeOut spring
+      const ep = localProg < 1 ? 1-Math.pow(1-localProg,3) : 1;
+      branchAlpha = alpha * ep;
+      if(branchAlpha < 0.01) return;
     }
-  });ctx.globalAlpha=1;
+
+    ctx.globalAlpha = branchAlpha;
+    ctx.strokeStyle = b.isTrunk ? '#2a5020' : (b.dep<=2 ? '#2a4a1a' : vis.lc2);
+    ctx.lineWidth = Math.max(0.8, b.w*(b.dep/(3+level*0.6))*0.85);
+    ctx.lineCap='round';
+
+    // Органический stroke-dashoffset для растущих веток
+    if(growProg !== undefined && growProg < 1){
+      const localProg = Math.min(Math.max((growProg - b.growDelay) / b.growDur, 0), 1);
+      const ep = 1-Math.pow(1-localProg,3);
+      if(b.len > 0){
+        ctx.setLineDash([b.len]);
+        ctx.lineDashOffset = b.len*(1-ep);
+      }
+    } else {
+      ctx.setLineDash([]);
+      ctx.lineDashOffset = 0;
+    }
+
+    if(vis.glowStr>6){ctx.shadowColor=vis.gc;ctx.shadowBlur=3;}
+    ctx.beginPath();ctx.moveTo(b.x1,b.y1);ctx.lineTo(b.x2,b.y2);ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.setLineDash([]);ctx.lineDashOffset=0;
+
+    // Листочки — тоже появляются плавно
+    if(b.isLeaf && stage.leafAlpha > 0){
+      let leafA = branchAlpha * stage.leafAlpha;
+      const pulse = 0.88+0.12*Math.sin(t*2+b.x1*0.04);
+      ctx.globalAlpha = leafA * 0.95;
+      drawLeafShape(ctx,b.x2,b.y2,leafSize*pulse,vis.leafShape,vis.lc,vis.gc,vis.glowStr);
+      ctx.globalAlpha = leafA * 0.5;
+      drawLeafShape(ctx,b.x2-3,b.y2-3,leafSize*pulse*0.65,vis.leafShape,vis.lc2,vis.gc,vis.glowStr*0.4);
+    }
+  });
+  ctx.globalAlpha=1;
+}
+
+// Стебелёк для уровня 1 — отдельная рисовалка с органическим ростом
+function drawSeedling(ctx, W, H, vis, growProg){
+  const GY = H-60;
+  const stage = getStage(1);
+  const stemH = stage.baseLen;
+
+  // Почва
+  ctx.fillStyle='#5a3a18';
+  ctx.beginPath();
+  ctx.ellipse(W/2, GY+10, 55, 12, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle='#7a5230';
+  ctx.beginPath();
+  ctx.ellipse(W/2, GY+8, 42, 8, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Семечко
+  ctx.fillStyle='#A0845C';
+  ctx.beginPath();
+  ctx.ellipse(W/2, GY+2, 16, 10, 0.1, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle='#B8956A';
+  ctx.globalAlpha=0.6;
+  ctx.beginPath();
+  ctx.ellipse(W/2-2, GY-1, 12, 7, -0.15, 0, Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha=1;
+
+  if(growProg < 0.01) return;
+
+  // Корешки
+  const rootProg = Math.min(growProg / 0.25, 1);
+  const roots=[
+    {d:`M${W/2},${GY+10} Q${W/2-18},${GY+28} ${W/2-26},${GY+44}`,len:50},
+    {d:`M${W/2},${GY+10} Q${W/2+16},${GY+26} ${W/2+24},${GY+42}`,len:50},
+    {d:`M${W/2},${GY+10} Q${W/2-5},${GY+34} ${W/2-7},${GY+50}`,len:45},
+  ];
+  roots.forEach((r,i)=>{
+    const rp = Math.min(Math.max(rootProg - i*0.12, 0) / 0.6, 1);
+    if(rp<0.01)return;
+    const ep = 1-Math.pow(1-rp,3);
+    const path = new Path2D(r.d);
+    ctx.save();
+    ctx.strokeStyle='#C8A87A';
+    ctx.lineWidth=1.8;ctx.lineCap='round';
+    ctx.setLineDash([r.len]);
+    ctx.lineDashOffset=r.len*(1-ep);
+    ctx.globalAlpha=0.7;
+    ctx.stroke(path);
+    ctx.setLineDash([]);ctx.lineDashOffset=0;
+    ctx.restore();
+  });
+
+  // Стебелёк с органическим ростом
+  const stemProg = Math.min(Math.max((growProg - 0.2) / 0.5, 0), 1);
+  if(stemProg < 0.01) return;
+  const stemEp = 1-Math.pow(1-stemProg, 2.5);
+  const topY = GY - stemH*stemEp;
+
+  ctx.save();
+  ctx.strokeStyle='#5A9448';
+  ctx.lineWidth=stage.trunkW;ctx.lineCap='round';
+  ctx.shadowColor=vis.gc;ctx.shadowBlur=vis.glowStr*0.5;
+  ctx.setLineDash([stemH*1.5]);
+  ctx.lineDashOffset=stemH*(1-stemEp);
+  ctx.beginPath();
+  ctx.moveTo(W/2, GY);
+  ctx.quadraticCurveTo(W/2+3, GY-stemH*stemEp*0.5, W/2, topY);
+  ctx.stroke();
+  ctx.setLineDash([]);ctx.lineDashOffset=0;
+  ctx.shadowBlur=0;
+  ctx.restore();
+
+  // Семядоли — появляются последними
+  const leafProg = Math.min(Math.max((growProg - 0.65) / 0.35, 0), 1);
+  if(leafProg < 0.01) return;
+  const lep = 1-Math.pow(1-leafProg, 2);
+
+  ctx.save();
+  ctx.translate(W/2, topY+8);
+  [[-1,1],[1,-1]].forEach(([side,swayDir], li)=>{
+    const lp2 = Math.min(Math.max((leafProg - li*0.15)/(1-li*0.15), 0), 1);
+    const lep2 = 1-Math.pow(1-lp2, 2);
+    if(lep2 < 0.01) return;
+    ctx.save();
+    ctx.translate(side*4*lep2, 0);
+    ctx.rotate(side*(0.35+0.25*lep2));
+    ctx.scale(lep2, lep2);
+    ctx.fillStyle = side<0 ? '#7DB96B' : '#92CC7A';
+    ctx.shadowColor=vis.gc; ctx.shadowBlur=vis.glowStr*0.4;
+    ctx.beginPath();
+    ctx.ellipse(side*14, 0, 18, 9, side*0.25, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.restore();
+  });
+  ctx.restore();
 }
 
 function drawRunes(ctx,branches,t){
@@ -549,70 +741,119 @@ function drawRunes(ctx,branches,t){
     const pulse=0.5+0.5*Math.sin(t*1.8+i*1.1);
     ctx.globalAlpha=0.45*pulse;ctx.fillStyle='#ffdd00';ctx.shadowColor='#ffcc00';ctx.shadowBlur=7*pulse;
     ctx.font=(6+b.dep)+'px serif';ctx.textAlign='center';ctx.fillText(runeChars[i%runeChars.length],mx,my);ctx.shadowBlur=0;
-  });ctx.globalAlpha=1;ctx.textAlign='left';
+  });
+  ctx.globalAlpha=1;ctx.textAlign='left';
 }
 
 function easeInOut(t){return t<0.5?2*t*t:-1+(4-2*t)*t;}
 
+// ─── ГЛАВНЫЙ РЕНДЕР ──────────────────────────────────────────────────────────
 function renderTree(){
   treeAnimFrame+=0.016;
-  const W=treeCanvas.width,H=treeCanvas.height;
-  treeCtx.clearRect(0,0,W,H);
+  const W=treeCanvas.width/(window.devicePixelRatio||1);
+  const H=treeCanvas.height/(window.devicePixelRatio||1);
+  treeCtx.clearRect(0,0,treeCanvas.width,treeCanvas.height);
+
   const vis=getTreeVisual();
-  const bg=treeCtx.createRadialGradient(W/2,H,0,W/2,H,140);
+  const lvl=getGardenLevel(currentGardenId);
+
+  // Фоновое свечение у корней
+  const bg=treeCtx.createRadialGradient(W/2,H,0,W/2,H,160);
   bg.addColorStop(0,vis.gc+'33');bg.addColorStop(1,'rgba(0,0,0,0)');
   treeCtx.fillStyle=bg;treeCtx.fillRect(0,0,W,H);
-  if(treeGrowing){
+
+  if(lvl===1){
+    // Стадия 1: рисуем seedling-анимацию
+    if(treeGrowing){
+      drawSeedling(treeCtx,W,H,vis, treeAnimT);
+    } else {
+      drawSeedling(treeCtx,W,H,vis, treeGrowProgress);
+    }
+  } else if(treeGrowing){
     const e=easeInOut(treeAnimT);
-    drawTreeBranches(treeCtx,treeBranches,1-e*0.6,vis,getGardenLevel(currentGardenId),treeAnimFrame);
-    drawTreeBranches(treeCtx,treeNextBranches,e,vis,getGardenLevel(currentGardenId)+1,treeAnimFrame);
-  }else{
-    drawTreeBranches(treeCtx,treeBranches,1,vis,getGardenLevel(currentGardenId),treeAnimFrame);
+    const prevLvl=lvl-1;
+    if(prevLvl===1){
+      // Переход от seedling к веткам
+      drawSeedling(treeCtx,W,H,vis,1-e);
+      drawTreeBranches(treeCtx,treeNextBranches,e,vis,lvl,treeAnimFrame,e);
+    } else {
+      drawTreeBranches(treeCtx,treeBranches,1-e*0.7,vis,prevLvl,treeAnimFrame,undefined);
+      drawTreeBranches(treeCtx,treeNextBranches,e,vis,lvl,treeAnimFrame,e);
+    }
+  } else {
+    drawTreeBranches(treeCtx,treeBranches,1,vis,lvl,treeAnimFrame,undefined);
   }
+
   if(vis.runeGlow)drawRunes(treeCtx,treeBranches,treeAnimFrame);
+
+  // Ambient particles
   treeAmbient.forEach((p,i)=>{
     p.x+=p.vx;p.y+=p.vy;p.life-=p.decay;
-    if(p.life<=0){treeAmbient[i]={x:W/2+(Math.random()-0.5)*160,y:H-20-Math.random()*220,vy:-0.25-Math.random()*0.35,vx:(Math.random()-0.5)*0.25,life:0.1,decay:0.004+Math.random()*0.004,r:1.5+Math.random()*2,c:vis.gc};return;}
+    if(p.life<=0){
+      const W2=W,H2=H;
+      treeAmbient[i]={x:W2/2+(Math.random()-0.5)*180,y:H2-20-Math.random()*240,vy:-0.25-Math.random()*0.35,vx:(Math.random()-0.5)*0.25,life:0.1,decay:0.004+Math.random()*0.004,r:1.5+Math.random()*2,c:vis.gc};
+      return;
+    }
     treeCtx.globalAlpha=p.life*0.75;treeCtx.fillStyle=p.c;treeCtx.shadowColor=p.c;treeCtx.shadowBlur=5;
     treeCtx.beginPath();treeCtx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);treeCtx.fill();treeCtx.shadowBlur=0;
   });
+
+  // Growth particles
   treeParticles=treeParticles.filter(p=>p.life>0);
   treeParticles.forEach(p=>{
-    p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.life-=p.decay;
+    p.x+=p.vx;p.y+=p.vy;p.vy+=0.04;p.life-=p.decay;
     treeCtx.globalAlpha=p.life*0.9;treeCtx.fillStyle=p.c;treeCtx.shadowColor=p.c;treeCtx.shadowBlur=7;
     treeCtx.beginPath();treeCtx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);treeCtx.fill();treeCtx.shadowBlur=0;
   });
   treeCtx.globalAlpha=1;
+
   treeRafId=requestAnimationFrame(renderTree);
 }
 
+// ─── АНИМАЦИЯ РОСТА ──────────────────────────────────────────────────────────
 function growTreeAnimation(){
   if(treeGrowing)return;
   const seed=getGardenSeed(currentGardenId);
-  const newLvl=getGardenLevel(currentGardenId); // уже новый уровень
+  const newLvl=getGardenLevel(currentGardenId);
+  const vis=getTreeVisual();
+
   treeGrowing=true;
-  treeNextBranches=buildTreeBranches(newLvl,makeRng(seed+newLvl));
-  spawnGrowthParticles(getTreeVisual());
-  const t0=performance.now(),dur=1600;
+  treeNextBranches=assignGrowOrder(buildTreeBranches(newLvl,makeRng(seed+newLvl)));
+  spawnGrowthParticles(vis);
+  if(newLvl===2) spawnSoilParticles(); // при первом прорастании
+
+  // Показываем badge стадии
+  showStageBadge(getStage(newLvl).name, newLvl);
+
+  const dur = newLvl <= 2 ? 2200 : 1800; // прорастание медленнее
+  const t0=performance.now();
+
   function step(now){
     treeAnimT=Math.min((now-t0)/dur,1);
     if(treeAnimT<1){requestAnimationFrame(step);return;}
     treeBranches=treeNextBranches;
     treeGrowing=false;treeAnimT=0;
-    treeBranches=buildTreeBranches(newLvl,makeRng(seed+newLvl));
-    spawnAmbient(getTreeVisual());
+    treeBranches=assignGrowOrder(buildTreeBranches(newLvl,makeRng(seed+newLvl)));
+    treeGrowProgress=1;
+    spawnAmbient(vis);
   }
   requestAnimationFrame(step);
 }
 
+// ─── BADGE СТАДИИ ────────────────────────────────────────────────────────────
+let badgeTimer=null;
+function showStageBadge(stageName, level){
+  const badge=document.getElementById('tree-stage-badge');
+  const stageLabels=['','🌱','🌿','🌲','🌳','🌴','✨','💫','👑','🏆'];
+  badge.textContent = (stageLabels[level]||'') + ' ' + stageName + ' · Уровень ' + level;
+  badge.classList.add('visible');
+  if(badgeTimer) clearTimeout(badgeTimer);
+  badgeTimer=setTimeout(()=>badge.classList.remove('visible'), 3500);
+}
+
 // ─── МУЛЬТИСАДЫ ──────────────────────────────────────────────────────────────
-function openGardenSelect(){
-  renderGardenSelectCards();
-  document.getElementById('garden-select-modal').classList.add('show');
-}
-function closeGardenSelect(){
-  document.getElementById('garden-select-modal').classList.remove('show');
-}
+function openGardenSelect(){ renderGardenSelectCards(); document.getElementById('garden-select-modal').classList.add('show'); }
+function closeGardenSelect(){ document.getElementById('garden-select-modal').classList.remove('show'); }
 
 function renderGardenSelectCards(){
   const now=Math.floor(Date.now()/1000);
@@ -623,15 +864,15 @@ function renderGardenSelectCards(){
     const rented=isGardenRented(g.id);
     const isCurrent=g.id===currentGardenId;
     const lvl=gd.level||1;
+    const stage=getStage(lvl);
     const timeLeft=g.id>0&&rented&&gd.expires>now?formatTimeLeft(gd.expires-now):'';
     const expired=g.id>0&&!rented&&gd.level>1;
-
-    html+='<div class="garden-card'+(isCurrent?' garden-current':'')+(expired?' garden-locked':'')+'">';
+    html+='<div class="garden-card'+(isCurrent?' garden-current':'')+(expired?' garden-locked':'')+'\">';
     html+='<div class="garden-icon-big">'+g.icon+'</div>';
     html+='<div class="garden-info">';
     html+='<div class="garden-name" style="color:'+g.color+'">'+g.name+'</div>';
     html+='<div class="garden-desc">'+g.desc+'</div>';
-    html+='<div class="garden-stat">Tree lvl '+lvl+'/9</div>';
+    html+='<div class="garden-stat">Tree lvl '+lvl+'/9 · '+stage.name+'</div>';
     if(timeLeft)html+='<div class="garden-stat" style="color:rgba(255,255,255,0.4)">⏱ '+timeLeft+' left</div>';
     if(expired)html+='<div class="garden-stat" style="color:#ff4444">⚠ Expired</div>';
     html+='</div>';
@@ -648,11 +889,7 @@ function renderGardenSelectCards(){
   container.innerHTML=html;
 }
 
-function enterGarden(gardenId){
-  closeGardenSelect();
-  currentGardenId=gardenId;
-  doEnterGame();
-}
+function enterGarden(gardenId){ closeGardenSelect(); currentGardenId=gardenId; doEnterGame(); }
 
 function openGardenShop(gardenId){
   const g=GARDENS[gardenId]||GARDENS[0];
@@ -661,7 +898,6 @@ function openGardenShop(gardenId){
   const rented=isGardenRented(gardenId);
   document.getElementById('garden-shop-subtitle').innerText=g.icon+' '+g.name.toUpperCase();
   document.getElementById('garden-shop-title').innerText=rented?'Extend Rental':'Rent Garden';
-
   let html='';
   html+='<div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px;margin-bottom:12px;text-align:center;">';
   html+='<div style="font-size:48px;margin-bottom:8px;">'+g.icon+'</div>';
@@ -671,7 +907,6 @@ function openGardenShop(gardenId){
     html+='<div style="font-size:11px;color:#ffb100;margin-top:8px;">⏱ '+formatTimeLeft(gd.expires-now)+' remaining</div>';
   }
   html+='</div>';
-
   if(gardenId===0){
     html+='<div style="text-align:center;padding:16px;color:#4caf50;font-weight:700;font-size:15px;">✓ This garden is always free!</div>';
   }else{
@@ -682,9 +917,7 @@ function openGardenShop(gardenId){
   document.getElementById('garden-shop-content').innerHTML=html;
   document.getElementById('garden-shop-modal').classList.add('show');
 }
-function closeGardenShop(){
-  document.getElementById('garden-shop-modal').classList.remove('show');
-}
+function closeGardenShop(){ document.getElementById('garden-shop-modal').classList.remove('show'); }
 
 async function rentGarden(gardenId){
   if(!currentWallet){closeGardenShop();showWalletModal();return;}
@@ -692,51 +925,27 @@ async function rentGarden(gardenId){
   if(!g||g.id===0)return;
   try{
     const nanotons=String(Math.floor(g.priceTon*1e9));
-    const tx={
-      validUntil:Math.floor(Date.now()/1000)+300,
-      messages:[{
-        address:TREASURY_WALLET,
-        amount:nanotons,
-      }]
-    };
+    const tx={validUntil:Math.floor(Date.now()/1000)+300,messages:[{address:TREASURY_WALLET,amount:nanotons}]};
     await tonConnectUI.sendTransaction(tx);
     activateGarden(gardenId);
-  }catch(e){
-    console.error('Transaction error:',e);
-  }
+  }catch(e){console.error('Transaction error:',e);}
 }
 
 function activateGarden(gardenId){
   const now=Math.floor(Date.now()/1000);
   const gd=getGardenData(gardenId);
   const base=(gd.expires>now)?gd.expires:now;
-  gardens[gardenId]={
-    level:gd.level||1,
-    farm_end:gd.farm_end||0,
-    seed:gd.seed||walletToSeed((currentWallet||'guest')+gardenId),
-    expires:base+GARDEN_DURATION
-  };
+  gardens[gardenId]={level:gd.level||1,farm_end:gd.farm_end||0,seed:gd.seed||walletToSeed((currentWallet||'guest')+gardenId),expires:base+GARDEN_DURATION};
   closeGardenShop();
   savePlayerNow();
-  // Если открыт этот сад — обновляем
-  if(currentGardenId===gardenId){
-    treeCanvas.classList.remove('withered');
-    spawnAmbient(getTreeVisual());
-    updateUI();
-  }
+  if(currentGardenId===gardenId){treeCanvas.classList.remove('withered');spawnAmbient(getTreeVisual());updateUI();}
 }
 
 function checkCurrentGardenStatus(){
   if(currentGardenId===0)return;
-  if(!isGardenRented(currentGardenId)){
-    treeCanvas.classList.add('withered');
-    endFarmSession();
-    document.getElementById('withered-modal').classList.add('show');
-  }
+  if(!isGardenRented(currentGardenId)){treeCanvas.classList.add('withered');endFarmSession();document.getElementById('withered-modal').classList.add('show');}
 }
-function closeWitheredModal(){
-  document.getElementById('withered-modal').classList.remove('show');
-}
+function closeWitheredModal(){ document.getElementById('withered-modal').classList.remove('show'); }
 
 function updateGardenLabel(){
   const g=GARDENS[currentGardenId];
@@ -744,17 +953,14 @@ function updateGardenLabel(){
   const labelText=document.getElementById('garden-label-text');
   const timeEl=document.getElementById('garden-time-left');
   if(!g)return;
-  labelEl.style.display='block';
-  labelEl.style.color=g.color;
+  labelEl.style.display='block';labelEl.style.color=g.color;
   labelText.innerText=g.name;
   if(currentGardenId>0&&isGardenRented(currentGardenId)){
     const gd=getGardenData(currentGardenId);
     const left=gd.expires-Math.floor(Date.now()/1000);
     timeEl.innerText=left>0?formatTimeLeft(left):'';
     if(left<86400)labelEl.style.color='#ff4444';
-  }else{
-    timeEl.innerText='';
-  }
+  }else{timeEl.innerText='';}
 }
 
 function formatTimeLeft(sec){
@@ -828,11 +1034,7 @@ const TRAIT_NAMES={'Y_common_1':'Iron Cage','Y_common_2':'Stone Cradle','Y_commo
 const RARITY_MULTIPLIER={common:1.0,rare:1.5,epic:2.5,legendary:4.0};
 const BACKGROUND_RARITY={'bg_MysticForest':'common','bg_AncientRuins':'rare','bg_Abyssal_Void':'epic','bg_Frozen':'epic','bg_EtherealForge':'legendary'};
 
-function getRarityTier(val){
-  if(!val)return'common';if(BACKGROUND_RARITY[val])return BACKGROUND_RARITY[val];
-  const v=val.toLowerCase();
-  if(v.includes('leg'))return'legendary';if(v.includes('epic'))return'epic';if(v.includes('rare'))return'rare';return'common';
-}
+function getRarityTier(val){ if(!val)return'common';if(BACKGROUND_RARITY[val])return BACKGROUND_RARITY[val]; const v=val.toLowerCase(); if(v.includes('leg'))return'legendary';if(v.includes('epic'))return'epic';if(v.includes('rare'))return'rare';return'common'; }
 function getRarityColor(val){const t=getRarityTier(val);if(t==='legendary')return'var(--rarity-leg)';if(t==='epic')return'var(--rarity-epic)';if(t==='rare')return'var(--rarity-rare)';return'var(--rarity-common)';}
 function getRarityIcon(val){const t=getRarityTier(val);if(t==='legendary')return'👑';if(t==='epic')return'💜';if(t==='rare')return'💙';return'🟢';}
 function getArtifactMultiplier(){
@@ -866,11 +1068,10 @@ async function loadPlayer(wallet){
 
 async function savePlayerNow(){
   if(!currentWallet)return;
-  // Синхронизируем farm_end текущего сада
   if(gardens[currentGardenId])gardens[currentGardenId].farm_end=farmSessionEnd;
   const{error}=await db.from('players').upsert({
     wallet:currentWallet,balance,
-    tree_level:getGardenLevel(currentGardenId), // сохраняем уровень текущего сада для совместимости
+    tree_level:getGardenLevel(currentGardenId),
     farm_end:farmSessionEnd,
     last_seen:Math.floor(Date.now()/1000),updated_at:new Date().toISOString(),
     quests_daily:questsDaily,quests_one_time:questsOneTime,daily_reset:dailyReset,
@@ -887,13 +1088,8 @@ function applyPlayerData(data){
   questsDaily=data.quests_daily||{};
   dailyReset=parseInt(data.daily_reset)||0;
   boundNft=data.bound_nft||null;
-  // Загружаем мультисады
   gardens=data.gardens||{};
-  // Если нет сада 0 — создаём с данными из старых полей
-  if(!gardens[0]){
-    gardens[0]={level:parseInt(data.tree_level)||1,farm_end:parseInt(data.farm_end)||0,seed:parseInt(data.tree_seed)||0,expires:0};
-  }
-  // Восстанавливаем farmSessionEnd текущего сада
+  if(!gardens[0]){gardens[0]={level:parseInt(data.tree_level)||1,farm_end:parseInt(data.farm_end)||0,seed:parseInt(data.tree_seed)||0,expires:0};}
   farmSessionEnd=getGardenData(currentGardenId).farm_end||0;
   const now=Math.floor(Date.now()/1000);
   const elapsed=now-(parseInt(data.last_seen)||now);
@@ -931,7 +1127,6 @@ function claimOfflineReward(){
   document.getElementById('offline-reward-modal').classList.remove('show');
   savePlayerNow();updateUI();
 }
-
 function saveLastSeen(){localStorage.setItem('ncore_last_seen',Math.floor(Date.now()/1000));savePlayerNow();}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')savePlayerNow();});
 window.addEventListener('beforeunload',savePlayerNow);
@@ -945,10 +1140,7 @@ function switchTab(sId,el){
   if(sId==='screen-quests')renderQuests();
 }
 
-function formatVal(val){
-  if(!val)return'';if(TRAIT_NAMES[val])return TRAIT_NAMES[val];
-  return val.replace('bg_','').replace('frame_','').replace('Y_','').replace(/_/g,' ');
-}
+function formatVal(val){ if(!val)return'';if(TRAIT_NAMES[val])return TRAIT_NAMES[val]; return val.replace('bg_','').replace('frame_','').replace('Y_','').replace(/_/g,' '); }
 
 let buildArtifactLock=false;
 async function buildArtifact(index){
@@ -993,7 +1185,6 @@ async function buildArtifact(index){
 }
 
 function preloadImage(src){return new Promise(resolve=>{const img=new Image();img.onload=img.onerror=resolve;img.src=src;});}
-
 function showWalletModal(){document.getElementById('wallet-modal').classList.add('show');}
 function closeWalletModal(){document.getElementById('wallet-modal').classList.remove('show');}
 
@@ -1004,7 +1195,6 @@ function enterGame(){
   if(boundNft&&boundNft!==nftId){showNftWarning(nftId);return;}
   if(!boundNft){
     boundNft=nftId;
-    // Устанавливаем seed для сада если нет
     GARDENS.forEach(g=>{
       if(!gardens[g.id])gardens[g.id]={level:1,farm_end:0,seed:walletToSeed((currentWallet||'guest')+g.id),expires:0};
       else if(!gardens[g.id].seed)gardens[g.id].seed=walletToSeed((currentWallet||'guest')+g.id);
@@ -1012,7 +1202,6 @@ function enterGame(){
     localStorage.setItem('ncore_bound_nft',boundNft);
     savePlayerNow();
   }
-  // Показываем выбор сада
   openGardenSelect();
 }
 
@@ -1028,7 +1217,6 @@ function confirmNftChange(){
   const newNftId=modal.dataset.pendingNft;
   modal.classList.remove('show');
   boundNft=newNftId;
-  // Сбрасываем все сады
   gardens={};
   GARDENS.forEach(g=>{gardens[g.id]={level:1,farm_end:0,seed:walletToSeed((currentWallet||'guest')+g.id),expires:g.id>0?(gardens[g.id]?.expires||0):0};});
   farmSessionEnd=0;
@@ -1051,16 +1239,14 @@ function doEnterGame(){
     requestAnimationFrame(()=>{
       const W=treeCanvas.offsetWidth||window.innerWidth;
       const H=treeCanvas.offsetHeight||window.innerHeight;
-      // Учитываем devicePixelRatio для чёткости на Retina/мобильных
       const dpr=window.devicePixelRatio||1;
-      treeCanvas.width=W*dpr;
-      treeCanvas.height=H*dpr;
-      treeCanvas.style.width=W+'px';
-      treeCanvas.style.height=H+'px';
+      treeCanvas.width=W*dpr;treeCanvas.height=H*dpr;
+      treeCanvas.style.width=W+'px';treeCanvas.style.height=H+'px';
       treeCtx.scale(dpr,dpr);
       const seed=getGardenSeed(currentGardenId);
       const lvl=getGardenLevel(currentGardenId);
-      treeBranches=buildTreeBranches(lvl,makeRng(seed+lvl));
+      treeBranches=assignGrowOrder(buildTreeBranches(lvl,makeRng(seed+lvl)));
+      treeGrowProgress=1;
       spawnAmbient(getTreeVisual());
       if(treeRafId){cancelAnimationFrame(treeRafId);treeRafId=null;}
       renderTree();
@@ -1076,7 +1262,6 @@ function doEnterGame(){
 
 function exitGame(){
   stopFarmTimerDisplay();
-  // Сохраняем farm_end текущего сада
   if(gardens[currentGardenId])gardens[currentGardenId].farm_end=farmSessionEnd;
   document.getElementById('game-view').classList.remove('active');
   document.getElementById('main-menu').classList.add('active');
@@ -1087,6 +1272,7 @@ function exitGame(){
 function updateUI(){
   const lvl=getGardenLevel(currentGardenId);
   const cost=getUpgradeCost();
+  const stage=getStage(lvl);
   const formattedBal=balance.toFixed(4);
   const ratePerSec=getFarmRate();
   const artifactMult=getArtifactMultiplier();
@@ -1094,13 +1280,13 @@ function updateUI(){
   document.getElementById('coin-balance').innerText='💰 '+formattedBal+' $NCORE';
   document.getElementById('token-page-balance').innerText=formattedBal;
   document.getElementById('balance-value').innerText=formattedBal;
-  document.getElementById('upgrade-info').innerText='Tree level: '+lvl+' / 9';
+  // Показываем уровень + название стадии
+  document.getElementById('upgrade-info').innerText='Tree level: '+lvl+' / 9 · '+stage.name;
   document.getElementById('farm-rate-info').innerText='⚡ '+ratePerSec.toFixed(6)+' $NCORE/sec · x'+artifactMult+(gardenBoost>1?' 🌿x'+gardenBoost:'');
   const upBtn=document.getElementById('btn-upgrade-tree');
   const gardenExpired=!isGardenRented(currentGardenId)&&currentGardenId>0;
   if(lvl>=9){upBtn.innerText='MAX LEVEL';upBtn.disabled=true;}
   else{upBtn.innerText='Upgrade '+cost+' $NCORE';upBtn.disabled=balance<cost||gardenExpired;}
-  // Garden button
   const g=GARDENS[currentGardenId]||GARDENS[0];
   const btnG=document.getElementById('btn-gardens');
   btnG.style.borderColor=g.color;btnG.style.color=g.color;
@@ -1117,10 +1303,10 @@ function upgradeTree(){
   if(balance>=cost&&lvl<9){
     balance-=cost;
     if(!gardens[currentGardenId])gardens[currentGardenId]={level:1,farm_end:0,seed:getGardenSeed(currentGardenId),expires:0};
-    gardens[currentGardenId].level=(lvl+1);
-    // Перестраиваем текущие ветки со старым уровнем перед анимацией
+    // Сохраняем текущие ветки ПЕРЕД апгрейдом
     const seed=getGardenSeed(currentGardenId);
-    treeBranches=buildTreeBranches(lvl,makeRng(seed+lvl));
+    treeBranches=assignGrowOrder(buildTreeBranches(lvl,makeRng(seed+lvl)));
+    gardens[currentGardenId].level=(lvl+1);
     savePlayerNow();growTreeAnimation();updateUI();
     if(!isDailyClaimed('daily_upgrade'))claimQuest('daily_upgrade',2,true);
   }
@@ -1205,12 +1391,9 @@ function closeFaq(){document.getElementById('faq-modal').classList.remove('show'
 function toggleFaq(el){
   const answer=el.nextElementSibling;
   const isOpen=el.classList.contains('open');
-  // Закрываем все
   document.querySelectorAll('.faq-question').forEach(q=>{q.classList.remove('open');q.nextElementSibling.classList.remove('show');});
-  // Открываем текущий если был закрыт
   if(!isOpen){el.classList.add('open');answer.classList.add('show');}
 }
-
 function toggleProfile(){
   const menu=document.getElementById('profile-menu');
   menu.style.display=menu.style.display==='none'?'block':'none';
@@ -1259,7 +1442,8 @@ window.addEventListener('resize',()=>{
     treeCanvas.style.width=W+'px';treeCanvas.style.height=H+'px';
     treeCtx.scale(dpr,dpr);
     const seed=getGardenSeed(currentGardenId);const lvl=getGardenLevel(currentGardenId);
-    treeBranches=buildTreeBranches(lvl,makeRng(seed+lvl));spawnAmbient(getTreeVisual());
+    treeBranches=assignGrowOrder(buildTreeBranches(lvl,makeRng(seed+lvl)));
+    spawnAmbient(getTreeVisual());
   }
 });
 
