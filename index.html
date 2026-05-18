@@ -259,7 +259,7 @@ section.active { display: flex !important; }
     <div style="text-align:center;margin-bottom:16px;">
       <div style="font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:2px;" id="garden-shop-subtitle">RENT GARDEN</div>
       <div style="font-size:20px;font-weight:900;color:#ffb100;letter-spacing:2px;" id="garden-shop-title">🌿 Garden</div>
-      <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;">7 days · TON payment</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;">30 days · TON payment</div>
     </div>
     <div id="garden-shop-content"></div>
     <button onclick="closeGardenShop()" style="width:100%;background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);border-radius:12px;padding:10px;cursor:pointer;font-size:13px;margin-top:4px;">Close</button>
@@ -288,7 +288,7 @@ section.active { display: flex !important; }
       <div class="faq-question" onclick="toggleFaq(this)">
         How do I rent a garden?<span class="faq-arrow">▼</span>
       </div>
-      <div class="faq-answer">Tap "Use Artifact" → choose a garden → press Rent. You'll confirm a TON payment in your wallet. Rental lasts 7 days and can be extended anytime. Mystic (1.5 TON), Infernal (2.5 TON), Ethereal (5 TON).</div>
+      <div class="faq-answer">Tap "Use Artifact" → choose a garden → press Rent. You'll confirm a TON payment in your wallet. Rental lasts 30 days and can be extended anytime. Mystic (1.5 TON), Infernal (2.5 TON), Ethereal (5 TON).</div>
     </div>
     <div class="faq-item">
       <div class="faq-question" onclick="toggleFaq(this)">
@@ -404,7 +404,7 @@ const FARM_SESSION_SEC=6*60*60;
 const CHECK_SUB_URL='https://zdiphqyqoxpqdszoklzd.supabase.co/functions/v1/check-subscription';
 const TG_CHANNEL='@Aethel_Gardens';
 const TREASURY_WALLET='UQCSDZUmDlMTwjvSio5W9JrQUGqVL7-3iHA8lmSo8Q5sPt8i';
-const GARDEN_DURATION=7*24*60*60;
+const GARDEN_DURATION=30*24*60*60;
 
 // ─── КОНФИГ САДОВ ────────────────────────────────────────────────────────────
 const GARDENS=[
@@ -640,7 +640,7 @@ function renderGardenSelectCards(){
       html+='<button class="garden-enter-btn" onclick="enterGarden('+g.id+')">Enter →</button>';
     }else{
       html+='<div class="garden-price-tag">'+g.priceTon+' TON</div>';
-      html+='<div class="garden-timer-tag">7 days</div>';
+      html+='<div class="garden-timer-tag">30 days</div>';
       html+='<button class="garden-rent-btn" onclick="closeGardenSelect();openGardenShop('+g.id+')">Rent</button>';
     }
     html+='</div></div>';
@@ -675,7 +675,7 @@ function openGardenShop(gardenId){
   if(gardenId===0){
     html+='<div style="text-align:center;padding:16px;color:#4caf50;font-weight:700;font-size:15px;">✓ This garden is always free!</div>';
   }else{
-    const btnText=rented?'Extend +7 days ('+g.priceTon+' TON)':'Rent 7 days ('+g.priceTon+' TON)';
+    const btnText=rented?'Extend +30 days ('+g.priceTon+' TON)':'Rent 30 days ('+g.priceTon+' TON)';
     html+='<button onclick="rentGarden('+gardenId+')" style="width:100%;background:linear-gradient(135deg,#7a5a00,#cc9900);border:none;color:#fff;border-radius:14px;padding:16px;font-weight:900;font-size:15px;cursor:pointer;margin-bottom:8px;">'+btnText+'</button>';
     html+='<div style="font-size:10px;color:rgba(255,255,255,0.3);text-align:center;">Payment goes to treasury wallet</div>';
   }
@@ -1051,7 +1051,13 @@ function doEnterGame(){
     requestAnimationFrame(()=>{
       const W=treeCanvas.offsetWidth||window.innerWidth;
       const H=treeCanvas.offsetHeight||window.innerHeight;
-      treeCanvas.width=W;treeCanvas.height=H;
+      // Учитываем devicePixelRatio для чёткости на Retina/мобильных
+      const dpr=window.devicePixelRatio||1;
+      treeCanvas.width=W*dpr;
+      treeCanvas.height=H*dpr;
+      treeCanvas.style.width=W+'px';
+      treeCanvas.style.height=H+'px';
+      treeCtx.scale(dpr,dpr);
       const seed=getGardenSeed(currentGardenId);
       const lvl=getGardenLevel(currentGardenId);
       treeBranches=buildTreeBranches(lvl,makeRng(seed+lvl));
@@ -1246,7 +1252,12 @@ const loadingInterval=setInterval(()=>{
 window.addEventListener('load',()=>{setTimeout(()=>{isLoaded=true;},1500);});
 window.addEventListener('resize',()=>{
   if(treeRafId){
-    treeCanvas.width=treeCanvas.offsetWidth;treeCanvas.height=treeCanvas.offsetHeight;
+    const W=treeCanvas.offsetWidth||window.innerWidth;
+    const H=treeCanvas.offsetHeight||window.innerHeight;
+    const dpr=window.devicePixelRatio||1;
+    treeCanvas.width=W*dpr;treeCanvas.height=H*dpr;
+    treeCanvas.style.width=W+'px';treeCanvas.style.height=H+'px';
+    treeCtx.scale(dpr,dpr);
     const seed=getGardenSeed(currentGardenId);const lvl=getGardenLevel(currentGardenId);
     treeBranches=buildTreeBranches(lvl,makeRng(seed+lvl));spawnAmbient(getTreeVisual());
   }
